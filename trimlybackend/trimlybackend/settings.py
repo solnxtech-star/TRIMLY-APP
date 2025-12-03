@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-k9&toki9k%@59k6jxkq_0s)zy31wl0k9-3yz^@1a)d^p+=80t9
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["https://trimly-app.onrender.com/"]
 
 
 # Application definition
