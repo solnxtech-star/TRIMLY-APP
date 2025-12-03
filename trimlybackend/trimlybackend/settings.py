@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-k9&toki9k%@59k6jxkq_0s)zy31wl0k9-3yz^@1a)d^p+=80t9
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["https://trimly-app.onrender.com/"]
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -122,3 +122,6 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'core.User'
+CORS_ALLOWED_ORIGINS = ["*"]                 
+
+CORS_ALLOW_CREDENTIALS = True
