@@ -131,16 +131,17 @@ const styles = StyleSheet.create({
   },
   nextButton: {
     position: 'absolute',
-    bottom: 60,
+    top: '50%',
     right: 32,
     width: 56,
     height: 56,
     borderRadius: 28,
     borderWidth: 2,
     borderColor: '#00C853', // Vibrant green border
-    backgroundColor: '#FFFFFF', // White background
+    backgroundColor: '#00C853', // Green background
     justifyContent: 'center',
     alignItems: 'center',
+    transform: [{ translateY: -28 }], // Half of the height to center perfectly
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -151,10 +152,10 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   nextButtonText: {
-    color: '#00C853', // Vibrant green arrow
+    color: '#FFFFFF', // White arrow
     fontSize: 32, // Bigger arrow
     fontWeight: 'bold',
     textAlign: 'center',
-    lineHeight: 40, // Match the container height for perfect vertical centering
+    lineHeight: 56, // Match the container height for perfect vertical centering
   },
 });
