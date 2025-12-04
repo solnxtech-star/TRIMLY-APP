@@ -6,13 +6,13 @@ import { ThemedView } from '@/components/themed-view';
 
 const { width, height } = Dimensions.get('window');
 
-export default function FeaturesScreen() {
+export default function GetStartedScreen() {
   return (
     <ThemedView style={styles.container}>
       {/* Full-bleed hero image with dark overlay */}
       <View style={styles.imageContainer}>
         <Image
-          source={require('@/assets/onboarding/Onboarding2.png')}
+          source={require('@/assets/onboarding/Onboarding4.png')}
           style={styles.heroImage}
           contentFit="cover"
         />
@@ -21,55 +21,29 @@ export default function FeaturesScreen() {
 
       {/* Content section */}
       <View style={styles.contentContainer}>
-        <ThemedText style={styles.title}>Why Choose Trimly?</ThemedText>
+        <ThemedText style={styles.title}>You're All Set!</ThemedText>
         <ThemedText style={styles.description}>
-          We've designed the ultimate platform to connect you with top-rated barbers and beauty professionals.
+          Ready to experience the best grooming services? Let's get started with Trimly today.
         </ThemedText>
-        
-        <View style={styles.featuresContainer}>
-          <View style={styles.featureItem}>
-            <ThemedText style={styles.featureEmoji}>🔍</ThemedText>
-            <ThemedText style={styles.featureTitle}>Easy Discovery</ThemedText>
-            <ThemedText style={styles.featureDescription}>
-              Find the best salons and beauty professionals in your area
-            </ThemedText>
-          </View>
-          
-          <View style={styles.featureItem}>
-            <ThemedText style={styles.featureEmoji}>📅</ThemedText>
-            <ThemedText style={styles.featureTitle}>Smart Scheduling</ThemedText>
-            <ThemedText style={styles.featureDescription}>
-              Book appointments 24/7 with real-time availability
-            </ThemedText>
-          </View>
-          
-          <View style={styles.featureItem}>
-            <ThemedText style={styles.featureEmoji}>💳</ThemedText>
-            <ThemedText style={styles.featureTitle}>Secure Payments</ThemedText>
-            <ThemedText style={styles.featureDescription}>
-              Pay securely through the app with multiple payment options
-            </ThemedText>
-          </View>
-        </View>
       </View>
 
       {/* Pagination dots */}
       <View style={styles.paginationContainer}>
         <View style={styles.dot} />
+        <View style={styles.dot} />
+        <View style={styles.dot} />
         <View style={[styles.dot, styles.activeDot]} />
-        <View style={styles.dot} />
-        <View style={styles.dot} />
       </View>
 
-      {/* Next button */}
+      {/* Get Started button */}
       {/* @ts-ignore */}
-      <Link href="/onboarding/account-type" style={styles.nextButton}>
-        <ThemedText style={styles.nextButtonText}>→</ThemedText>
+      <Link href="/auth/sign-up" style={styles.getStartedButton}>
+        <ThemedText style={styles.getStartedButtonText}>Get Started</ThemedText>
       </Link>
       
       {/* Back button */}
       {/* @ts-ignore */}
-      <Link href="/onboarding/welcome" style={styles.backButton}>
+      <Link href="/onboarding/account-type" style={styles.backButton}>
         <ThemedText style={styles.backButtonText}>←</ThemedText>
       </Link>
     </ThemedView>
@@ -117,29 +91,6 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     maxWidth: '85%',
   },
-  featuresContainer: {
-    gap: 20,
-  },
-  featureItem: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 12,
-    padding: 20,
-  },
-  featureEmoji: {
-    fontSize: 24,
-    marginBottom: 10,
-  },
-  featureTitle: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  featureDescription: {
-    color: 'rgba(255, 255, 255, 0.9)',
-    fontSize: 15,
-    lineHeight: 22,
-  },
   paginationContainer: {
     position: 'absolute',
     bottom: 80,
@@ -156,13 +107,13 @@ const styles = StyleSheet.create({
   activeDot: {
     backgroundColor: '#00C853', // Vibrant green for active dot
   },
-  nextButton: {
+  getStartedButton: {
     position: 'absolute',
     bottom: 60,
     right: 32,
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 180,
+    height: 50,
+    borderRadius: 25,
     backgroundColor: '#00C853', // Vibrant green
     justifyContent: 'center',
     alignItems: 'center',
@@ -175,9 +126,9 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
-  nextButtonText: {
+  getStartedButtonText: {
     color: '#FFFFFF',
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: 'bold',
   },
   backButton: {

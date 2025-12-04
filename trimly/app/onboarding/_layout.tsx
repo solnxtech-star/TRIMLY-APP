@@ -10,6 +10,7 @@ export default function OnboardingLayout() {
       <Stack.Screen name="welcome" />
       <Stack.Screen name="features" />
       <Stack.Screen name="account-type" />
+      <Stack.Screen name="get-started" />
     </Stack>
   );
 }
