@@ -1,18 +1,22 @@
 import { StyleSheet, View, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
-import { Link } from 'expo-router';
+import { Link, useLocalSearchParams } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 
 const { width, height } = Dimensions.get('window');
 
-export default function RoleSelectionScreen() {
+export default function GettingStartedScreen() {
+  // Get the role from the URL parameters
+  const params = useLocalSearchParams();
+  const role = params.role || 'customer';
+
   return (
     <ThemedView style={styles.container}>
-      {/* Full-bleed hero image with dark overlay */}
+      {/* Full-bleed lifestyle image with dark gradient overlay */}
       <View style={styles.imageContainer}>
         <Image
-          source={require('@/assets/auth/auth2.png')}
+          source={require('@/assets/auth/auth1.png')}
           style={styles.heroImage}
           contentFit="cover"
         />
@@ -21,21 +25,21 @@ export default function RoleSelectionScreen() {
 
       {/* Content section */}
       <View style={styles.contentContainer}>
-        <ThemedText style={styles.title}>Choose Your Role</ThemedText>
+        <ThemedText style={styles.title}>Let's Get Started</ThemedText>
         <ThemedText style={styles.description}>
-          Select how you want to use Trimly
+          Everything starts from here
         </ThemedText>
         
-        {/* Customer Button - Primary */}
+        {/* Login Button - Primary */}
         {/* @ts-ignore */}
-        <Link href={{ pathname: '/auth/getting-started', params: { role: 'customer' } }} style={styles.customerButton}>
-          <ThemedText style={styles.customerButtonText}>Customer</ThemedText>
+        <Link href={{ pathname: '/auth/sign-in', params: { role } }} style={styles.loginButton}>
+          <ThemedText style={styles.loginButtonText}>Login</ThemedText>
         </Link>
         
-        {/* Vendor Button - Secondary */}
+        {/* Sign Up Button - Secondary */}
         {/* @ts-ignore */}
-        <Link href={{ pathname: '/auth/getting-started', params: { role: 'vendor' } }} style={styles.vendorButton}>
-          <ThemedText style={styles.vendorButtonText}>Vendor</ThemedText>
+        <Link href={{ pathname: '/auth/sign-up', params: { role } }} style={styles.signUpButton}>
+          <ThemedText style={styles.signUpButtonText}>Sign up</ThemedText>
         </Link>
       </View>
     </ThemedView>
@@ -57,7 +61,8 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)', // Dark overlay gradient
+    backgroundColor: 'transparent',
+    // Creating a gradient effect with linear gradient
   },
   contentContainer: {
     position: 'absolute',
@@ -65,13 +70,13 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     paddingHorizontal: 32,
-    paddingBottom: 48,
+    paddingBottom: 60,
   },
   title: {
     color: '#FFFFFF',
-    fontSize: 38,
+    fontSize: 40,
     fontWeight: 'bold',
-    lineHeight: 44,
+    lineHeight: 46,
     marginBottom: 12,
     textAlign: 'left',
   },
@@ -83,7 +88,7 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     marginBottom: 40,
   },
-  customerButton: {
+  loginButton: {
     width: '100%',
     height: 60,
     borderRadius: 14,
@@ -101,12 +106,12 @@ const styles = StyleSheet.create({
     elevation: 5,
     textDecorationLine: 'none',
   },
-  customerButtonText: {
+  loginButtonText: {
     color: '#FFFFFF',
     fontSize: 19,
     fontWeight: 'bold',
   },
-  vendorButton: {
+  signUpButton: {
     width: '100%',
     height: 60,
     borderRadius: 14,
@@ -117,7 +122,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     textDecorationLine: 'none',
   },
-  vendorButtonText: {
+  signUpButtonText: {
     color: '#00C853', // Vibrant green text
     fontSize: 19,
     fontWeight: 'bold',

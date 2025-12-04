@@ -2,17 +2,26 @@ import { useState } from 'react';
 import { StyleSheet, TextInput, View, Alert } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Link, router } from 'expo-router';
+import { Link, useLocalSearchParams, router } from 'expo-router';
 
 export default function SignInScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  
+  // Get the role from the URL parameters
+  const params = useLocalSearchParams();
+  const role = params.role || 'customer';
 
   const handleSignIn = () => {
     // Here you would typically call your authentication API
     if (email && password) {
-      // Navigate to client dashboard after successful authentication
-      router.replace('/client/dashboard');
+      // Navigate to the appropriate dashboard based on the selected role
+      if (role === 'vendor') {
+        router.replace('/business/dashboard');
+      } else {
+        // Default to client dashboard for customer role or any other case
+        router.replace('/client/dashboard');
+      }
     } else {
       Alert.alert('Error', 'Please enter both email and password');
     }
@@ -20,7 +29,7 @@ export default function SignInScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <ThemedText type="title" style={styles.title}>Sign In</ThemedText>
+      <ThemedText type="title" style={styles.title}>Sign In as {role === 'vendor' ? 'Vendor' : 'Customer'}</ThemedText>
       
       <View style={styles.form}>
         <TextInput
@@ -48,7 +57,7 @@ export default function SignInScreen() {
           <ThemedText type="link">Forgot Password?</ThemedText>
         </Link>
         
-        <Link href="/auth/sign-up" style={styles.link}>
+        <Link href={{ pathname: '/auth/sign-up', params: { role } }} style={styles.link}>
           <ThemedText type="link">Don't have an account? Sign Up</ThemedText>
         </Link>
       </View>

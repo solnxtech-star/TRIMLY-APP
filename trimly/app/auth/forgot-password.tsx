@@ -2,10 +2,14 @@ import { useState } from 'react';
 import { StyleSheet, TextInput, View, Alert } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Link, router } from 'expo-router';
+import { Link, useLocalSearchParams, router } from 'expo-router';
 
 export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState('');
+  
+  // Get the role from the URL parameters
+  const params = useLocalSearchParams();
+  const role = params.role || 'customer';
 
   const handleResetPassword = () => {
     // Here you would typically call your password reset API
@@ -13,7 +17,7 @@ export default function ForgotPasswordScreen() {
       Alert.alert(
         'Password Reset Email Sent',
         'Check your email for instructions to reset your password.',
-        [{ text: 'OK', onPress: () => router.replace('/auth/sign-in') }]
+        [{ text: 'OK', onPress: () => router.replace({ pathname: '/auth/sign-in', params: { role } }) }]
       );
     } else {
       Alert.alert('Error', 'Please enter your email address');
@@ -38,10 +42,10 @@ export default function ForgotPasswordScreen() {
         />
         
         <ThemedView style={styles.button} onTouchEnd={handleResetPassword}>
-          <ThemedText style={styles.buttonText}>Send Reset Link</ThemedText>
+          <ThemedText style={styles.buttonText}>Reset Password</ThemedText>
         </ThemedView>
         
-        <Link href="/auth/sign-in" style={styles.link}>
+        <Link href={{ pathname: '/auth/sign-in', params: { role } }} style={styles.link}>
           <ThemedText type="link">Back to Sign In</ThemedText>
         </Link>
       </View>
