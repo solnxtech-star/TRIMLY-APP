@@ -38,7 +38,6 @@ export default function WelcomeScreen() {
       {/* Next button */}
       {/* @ts-ignore */}
       <Link href="/onboarding/features" style={styles.nextButton}>
-        <View style={styles.nextButtonBorder} />
         <ThemedText style={styles.nextButtonText}>→</ThemedText>
       </Link>
     </ThemedView>
@@ -108,10 +107,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 60,
     right: 32,
-    width: 56, // Smaller button
+    width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: 'transparent', // Transparent background
+    borderWidth: 2,
+    borderColor: '#00C853', // Vibrant green border
+    backgroundColor: '#00C853', // White background
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -123,18 +124,11 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
-  nextButtonBorder: {
-    position: 'absolute',
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    borderWidth: 2,
-    borderColor: '#00C853', // Vibrant green border
-    borderStyle: 'solid',
-  },
   nextButtonText: {
-    color: '#00C853', // Vibrant green arrow
+    color: '#ffffff', // Vibrant green arrow
     fontSize: 32, // Bigger arrow
     fontWeight: 'bold',
+    textAlign: 'center',
+    lineHeight: 40, 
   },
 });

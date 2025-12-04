@@ -21,30 +21,10 @@ export default function AccountTypeScreen() {
 
       {/* Content section */}
       <View style={styles.contentContainer}>
-        <ThemedText style={styles.title}>Choose Account Type</ThemedText>
+        <ThemedText style={styles.title}>Schedule Appointments in a Few Taps</ThemedText>
         <ThemedText style={styles.description}>
-          Select how you want to use Trimly
+          Pick your preferred Vendor, choose a time slot, and book instantly—no waiting!
         </ThemedText>
-        
-        <View style={styles.accountCardsContainer}>
-          {/* @ts-ignore */}
-          <Link href="/onboarding/get-started" style={styles.accountCard}>
-            <ThemedText style={styles.cardEmoji}>👤</ThemedText>
-            <ThemedText style={styles.cardTitle}>Client</ThemedText>
-            <ThemedText style={styles.cardDescription}>
-              Book appointments with beauty professionals
-            </ThemedText>
-          </Link>
-          
-          {/* @ts-ignore */}
-          <Link href="/onboarding/get-started" style={styles.accountCard}>
-            <ThemedText style={styles.cardEmoji}>💼</ThemedText>
-            <ThemedText style={styles.cardTitle}>Business Owner</ThemedText>
-            <ThemedText style={styles.cardDescription}>
-              Manage your salon and appointments
-            </ThemedText>
-          </Link>
-        </View>
       </View>
 
       {/* Pagination dots */}
@@ -57,14 +37,10 @@ export default function AccountTypeScreen() {
 
       {/* Next button - Will be enabled after selection */}
       <View style={[styles.nextButton, styles.disabledButton]}>
-        <View style={styles.nextButtonBorder} />
         <ThemedText style={styles.nextButtonText}>→</ThemedText>
       </View>
       
-      {/* @ts-ignore */}
-      <Link href="/onboarding/features" style={styles.backButton}>
-        <ThemedText style={styles.backButtonText}>←</ThemedText>
-      </Link>
+      {/* Back button - REMOVED as per user request */}
     </ThemedView>
   );
 }
@@ -76,7 +52,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     position: 'relative',
-    height: height, // Full screen height
+    height: "100%"
   },
   heroImage: {
     width: '100%',
@@ -110,32 +86,6 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     maxWidth: '85%',
   },
-  accountCardsContainer: {
-    gap: 20,
-  },
-  accountCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 12,
-    padding: 30,
-    alignItems: 'center',
-    textDecorationLine: 'none',
-  },
-  cardEmoji: {
-    fontSize: 36,
-    marginBottom: 15,
-  },
-  cardTitle: {
-    color: '#FFFFFF',
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  cardDescription: {
-    color: 'rgba(255, 255, 255, 0.9)',
-    fontSize: 15,
-    lineHeight: 22,
-    textAlign: 'center',
-  },
   paginationContainer: {
     position: 'absolute',
     bottom: 80,
@@ -159,46 +109,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 60,
     right: 32,
-    width: 56, // Smaller button
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: 'transparent', // Transparent background
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  nextButtonBorder: {
-    position: 'absolute',
     width: 56,
     height: 56,
     borderRadius: 28,
     borderWidth: 2,
     borderColor: '#00C853', // Vibrant green border
-    borderStyle: 'solid',
-  },
-  disabledButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  nextButtonText: {
-    color: '#00C853', // Vibrant green arrow
-    fontSize: 32, // Bigger arrow
-    fontWeight: 'bold',
-  },
-  backButton: {
-    position: 'absolute',
-    bottom: 60,
-    left: 32,
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: '#FFFFFF', // White background
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -210,9 +126,14 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
-  backButtonText: {
-    color: '#FFFFFF',
-    fontSize: 24,
+  nextButtonText: {
+    color: '#00C853', // Vibrant green arrow
+    fontSize: 32, // Bigger arrow
     fontWeight: 'bold',
+    textAlign: 'center',
+    lineHeight: 40, // Match the container height for perfect vertical centering
+  },
+  disabledButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
   },
 });

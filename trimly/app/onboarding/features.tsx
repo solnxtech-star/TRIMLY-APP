@@ -21,36 +21,10 @@ export default function FeaturesScreen() {
 
       {/* Content section */}
       <View style={styles.contentContainer}>
-        <ThemedText style={styles.title}>Why Choose Trimly?</ThemedText>
+        <ThemedText style={styles.title}>No More Long Waits or DMs.</ThemedText>
         <ThemedText style={styles.description}>
-          We've designed the ultimate platform to connect you with top-rated barbers and beauty professionals.
+          Schedule services ahead of time and skip the hassle of texting barbers or stylists back and forth.
         </ThemedText>
-        
-        <View style={styles.featuresContainer}>
-          <View style={styles.featureItem}>
-            <ThemedText style={styles.featureEmoji}>🔍</ThemedText>
-            <ThemedText style={styles.featureTitle}>Easy Discovery</ThemedText>
-            <ThemedText style={styles.featureDescription}>
-              Find the best salons and beauty professionals in your area
-            </ThemedText>
-          </View>
-          
-          <View style={styles.featureItem}>
-            <ThemedText style={styles.featureEmoji}>📅</ThemedText>
-            <ThemedText style={styles.featureTitle}>Smart Scheduling</ThemedText>
-            <ThemedText style={styles.featureDescription}>
-              Book appointments 24/7 with real-time availability
-            </ThemedText>
-          </View>
-          
-          <View style={styles.featureItem}>
-            <ThemedText style={styles.featureEmoji}>💳</ThemedText>
-            <ThemedText style={styles.featureTitle}>Secure Payments</ThemedText>
-            <ThemedText style={styles.featureDescription}>
-              Pay securely through the app with multiple payment options
-            </ThemedText>
-          </View>
-        </View>
       </View>
 
       {/* Pagination dots */}
@@ -64,15 +38,10 @@ export default function FeaturesScreen() {
       {/* Next button */}
       {/* @ts-ignore */}
       <Link href="/onboarding/account-type" style={styles.nextButton}>
-        <View style={styles.nextButtonBorder} />
         <ThemedText style={styles.nextButtonText}>→</ThemedText>
       </Link>
       
-      {/* Back button */}
-      {/* @ts-ignore */}
-      <Link href="/onboarding/welcome" style={styles.backButton}>
-        <ThemedText style={styles.backButtonText}>←</ThemedText>
-      </Link>
+      {/* Back button - REMOVED as per user request */}
     </ThemedView>
   );
 }
@@ -84,7 +53,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     position: 'relative',
-    height: height, // Full screen height
+    height: "100%"
   },
   heroImage: {
     width: '100%',
@@ -164,43 +133,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 60,
     right: 32,
-    width: 56, // Smaller button
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: 'transparent', // Transparent background
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  nextButtonBorder: {
-    position: 'absolute',
     width: 56,
     height: 56,
     borderRadius: 28,
     borderWidth: 2,
     borderColor: '#00C853', // Vibrant green border
-    borderStyle: 'solid',
-  },
-  nextButtonText: {
-    color: '#00C853', // Vibrant green arrow
-    fontSize: 32, // Bigger arrow
-    fontWeight: 'bold',
-  },
-  backButton: {
-    position: 'absolute',
-    bottom: 60,
-    left: 32,
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: '#FFFFFF', // White background
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -212,9 +150,11 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
-  backButtonText: {
-    color: '#FFFFFF',
-    fontSize: 24,
+  nextButtonText: {
+    color: '#00C853', // Vibrant green arrow
+    fontSize: 32, // Bigger arrow
     fontWeight: 'bold',
+    textAlign: 'center',
+    lineHeight: 40, // Match the container height for perfect vertical centering
   },
 });

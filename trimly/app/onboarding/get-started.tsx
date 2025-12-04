@@ -21,9 +21,9 @@ export default function GetStartedScreen() {
 
       {/* Content section */}
       <View style={styles.contentContainer}>
-        <ThemedText style={styles.title}>You're All Set!</ThemedText>
+        <ThemedText style={styles.title}>Pay Easily & Securely</ThemedText>
         <ThemedText style={styles.description}>
-          Ready to experience the best grooming services? Let's get started with Trimly today.
+          Make hassle-free payments via your favorite payment methods, all within the app.
         </ThemedText>
       </View>
 
@@ -38,15 +38,10 @@ export default function GetStartedScreen() {
       {/* Get Started button */}
       {/* @ts-ignore */}
       <Link href="/auth/role-selection" style={styles.getStartedButton}>
-        <View style={styles.getStartedButtonBorder} />
         <ThemedText style={styles.getStartedButtonText}>→</ThemedText>
       </Link>
       
-      {/* Back button */}
-      {/* @ts-ignore */}
-      <Link href="/onboarding/account-type" style={styles.backButton}>
-        <ThemedText style={styles.backButtonText}>←</ThemedText>
-      </Link>
+      {/* Back button - REMOVED as per user request */}
     </ThemedView>
   );
 }
@@ -58,7 +53,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     position: 'relative',
-    height: height, // Full screen height
+    height: "100%"
   },
   heroImage: {
     width: '100%',
@@ -115,43 +110,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 60,
     right: 32,
-    width: 56, // Smaller button
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: 'transparent', // Transparent background
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  getStartedButtonBorder: {
-    position: 'absolute',
     width: 56,
     height: 56,
     borderRadius: 28,
     borderWidth: 2,
     borderColor: '#00C853', // Vibrant green border
-    borderStyle: 'solid',
-  },
-  getStartedButtonText: {
-    color: '#00C853', // Vibrant green arrow
-    fontSize: 32, // Bigger arrow
-    fontWeight: 'bold',
-  },
-  backButton: {
-    position: 'absolute',
-    bottom: 60,
-    left: 32,
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: '#FFFFFF', // White background
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -163,9 +127,11 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
-  backButtonText: {
-    color: '#FFFFFF',
-    fontSize: 24,
+  getStartedButtonText: {
+    color: '#00C853', // Vibrant green arrow
+    fontSize: 32, // Bigger arrow
     fontWeight: 'bold',
+    textAlign: 'center',
+    lineHeight: 40, // Match the container height for perfect vertical centering
   },
 });
