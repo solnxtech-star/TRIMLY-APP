@@ -37,7 +37,7 @@ export default function GetStartedScreen() {
 
       {/* Get Started button */}
       {/* @ts-ignore */}
-      <Link href="/auth/sign-up" style={styles.getStartedButton}>
+      <Link href="/auth/role-selection" style={styles.getStartedButton}>
         <ThemedText style={styles.getStartedButtonText}>Get Started</ThemedText>
       </Link>
       
