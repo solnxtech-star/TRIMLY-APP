@@ -1,12 +1,10 @@
 import { useState } from 'react';
-import { StyleSheet, TextInput, View, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, TextInput, View, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Link, useLocalSearchParams, router } from 'expo-router';
 
-export default function SignUpScreen() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+export default function ChangePasswordScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -16,23 +14,19 @@ export default function SignUpScreen() {
   const params = useLocalSearchParams();
   const role = params.role || 'customer';
 
-  const handleSignUp = () => {
-    // Here you would typically call your authentication API
-    if (name && email && password && confirmPassword) {
+  const handleChangePassword = () => {
+    // Here you would typically call your change password API
+    if (password && confirmPassword) {
       if (password !== confirmPassword) {
-        Alert.alert('Error', 'Passwords do not match');
+        // Handle password mismatch
         return;
       }
       
-      // Navigate to the appropriate dashboard based on the selected role
-      if (role === 'vendor') {
-        router.replace('/business/dashboard');
-      } else {
-        // Default to client dashboard for customer role or any other case
-        router.replace('/client/dashboard');
-      }
-    } else {
-      Alert.alert('Error', 'Please fill in all fields');
+      // Simulate API call
+      setTimeout(() => {
+        // Navigate to sign in screen after successful password change
+        router.replace({ pathname: '/auth/sign-in', params: { role } });
+      }, 1000);
     }
   };
 
@@ -44,28 +38,8 @@ export default function SignUpScreen() {
       
       <ThemedView style={styles.content}>
         {/* Page Header */}
-        <ThemedText style={styles.title}>Create Account</ThemedText>
-        <ThemedText style={styles.subtitle}>Join us today to discover amazing services</ThemedText>
-        
-        {/* Name Input Field */}
-        <ThemedText style={styles.label}>Full Name</ThemedText>
-        <TextInput
-          style={styles.input}
-          value={name}
-          onChangeText={setName}
-          placeholder="Enter your full name"
-        />
-        
-        {/* Email Input Field */}
-        <ThemedText style={styles.label}>Email</ThemedText>
-        <TextInput
-          style={styles.input}
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          placeholder="Enter your email"
-        />
+        <ThemedText style={styles.title}>Enter New Password</ThemedText>
+        <ThemedText style={styles.subtitle}>Your new password must be different from previously used password.</ThemedText>
         
         {/* Password Input Field */}
         <ThemedText style={styles.label}>Password</ThemedText>
@@ -75,7 +49,7 @@ export default function SignUpScreen() {
             value={password}
             onChangeText={setPassword}
             secureTextEntry={!showPassword}
-            placeholder="Create a password"
+            placeholder="Enter new password"
           />
           <TouchableOpacity 
             style={styles.eyeIcon}
@@ -93,7 +67,7 @@ export default function SignUpScreen() {
             value={confirmPassword}
             onChangeText={setConfirmPassword}
             secureTextEntry={!showConfirmPassword}
-            placeholder="Confirm your password"
+            placeholder="Confirm new password"
           />
           <TouchableOpacity 
             style={styles.eyeIcon}
@@ -103,21 +77,13 @@ export default function SignUpScreen() {
           </TouchableOpacity>
         </View>
         
-        {/* Sign Up Button */}
+        {/* Change Password Button */}
         <TouchableOpacity 
-          style={styles.signUpButton} 
-          onPress={handleSignUp}
+          style={styles.changePasswordButton} 
+          onPress={handleChangePassword}
         >
-          <ThemedText style={styles.signUpButtonText}>Create Account</ThemedText>
+          <ThemedText style={styles.changePasswordButtonText}>Change Password</ThemedText>
         </TouchableOpacity>
-        
-        {/* Sign In Link */}
-        <View style={styles.signInContainer}>
-          <ThemedText style={styles.signInText}>Already have an account? </ThemedText>
-          <Link href={{ pathname: '/auth/sign-in', params: { role } }}>
-            <ThemedText style={styles.signInLink}>Sign In</ThemedText>
-          </Link>
-        </View>
       </ThemedView>
     </ThemedView>
   );
@@ -144,7 +110,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 32,
-    paddingTop: 80,
+    paddingTop: 85,
   },
   title: {
     fontSize: 34,
@@ -156,7 +122,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#6B7280',
     lineHeight: 24,
-    marginBottom: 40,
+    marginBottom: 50,
   },
   label: {
     fontSize: 14,
@@ -185,31 +151,17 @@ const styles = StyleSheet.create({
   eyeIconText: {
     fontSize: 24,
   },
-  signUpButton: {
+  changePasswordButton: {
     backgroundColor: '#2D8A4B',
     borderRadius: 12,
     height: 56,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 40,
+    marginTop: 40,
   },
-  signUpButtonText: {
+  changePasswordButtonText: {
     color: '#FFFFFF',
     fontSize: 17,
-    fontWeight: '500',
-  },
-  signInContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  signInText: {
-    fontSize: 16,
-    color: '#6B7280',
-  },
-  signInLink: {
-    fontSize: 16,
-    color: '#2D8A4B',
     fontWeight: '500',
   },
 });

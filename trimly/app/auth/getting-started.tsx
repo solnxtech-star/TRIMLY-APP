@@ -1,4 +1,4 @@
-import { StyleSheet, View, Dimensions } from 'react-native';
+import { StyleSheet, View, Dimensions, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
 import { Link, useLocalSearchParams } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
@@ -41,6 +41,40 @@ export default function GettingStartedScreen() {
         <Link href={{ pathname: '/auth/sign-up', params: { role } }} style={styles.signUpButton}>
           <ThemedText style={styles.signUpButtonText}>Sign up</ThemedText>
         </Link>
+        
+        {/* Divider Section */}
+        <View style={styles.dividerContainer}>
+          <View style={styles.dividerLine} />
+          <ThemedText style={styles.dividerText}>or continue with</ThemedText>
+          <View style={styles.dividerLine} />
+        </View>
+        
+        {/* Social Login Options */}
+        <View style={styles.socialLoginContainer}>
+          <TouchableOpacity style={styles.socialButton}>
+            <Image 
+              source={require('@/assets/auth/google.png')} 
+              style={styles.socialIcon}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.socialButton}>
+            <Image 
+              source={require('@/assets/auth/facebook.png')} 
+              style={styles.socialIcon}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.socialButton}>
+            <Image 
+              source={require('@/assets/auth/apple.png')} 
+              style={styles.socialIcon}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+        </View>
       </View>
     </ThemedView>
   );
@@ -73,7 +107,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#FFFFFF',
-    fontSize: 30,
+    fontSize: 34,
     fontWeight: 'bold',
     lineHeight: 46,
     marginBottom: 12,
@@ -104,8 +138,6 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
     textDecorationLine: 'none',
-    paddingTop: 15,
-    textAlign: 'center'
   },
   loginButtonText: {
     color: '#FFFFFF',
@@ -122,14 +154,46 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 30,
     textDecorationLine: 'none',
-    paddingTop: 15,
-    textAlign: 'center'
   },
   signUpButtonText: {
     color: '#00C853', // Vibrant green text
     fontSize: 17,
     fontWeight: 'bold',
     letterSpacing: 0.8
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  dividerText: {
+    fontSize: 15,
+    color: '#FFFFFF',
+    marginHorizontal: 15,
+  },
+  socialLoginContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  socialButton: {
+    width: 52,
+    height: 52,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  socialIcon: {
+    width: 32,
+    height: 32,
   },
 });
