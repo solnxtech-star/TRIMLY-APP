@@ -16,7 +16,7 @@ export default function GettingStartedScreen() {
       {/* Full-bleed lifestyle image with dark gradient overlay */}
       <View style={styles.imageContainer}>
         <Image
-          source={require('@/assets/auth/auth1.png')}
+          source={require('@/assets/auth/auth2.png')}
           style={styles.heroImage}
           contentFit="cover"
         />
@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#FFFFFF',
-    fontSize: 40,
+    fontSize: 30,
     fontWeight: 'bold',
     lineHeight: 46,
     marginBottom: 12,
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
   },
   description: {
     color: 'rgba(255, 255, 255, 0.85)',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '500',
     lineHeight: 26,
     textAlign: 'left',
@@ -104,11 +104,14 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
     textDecorationLine: 'none',
+    paddingTop: 15,
+    textAlign: 'center'
   },
   loginButtonText: {
     color: '#FFFFFF',
-    fontSize: 19,
+    fontSize: 17,
     fontWeight: 'bold',
+    letterSpacing: 0.8
   },
   signUpButton: {
     width: '100%',
@@ -120,10 +123,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     textDecorationLine: 'none',
+    paddingTop: 15,
+    textAlign: 'center'
   },
   signUpButtonText: {
     color: '#00C853', // Vibrant green text
-    fontSize: 19,
+    fontSize: 17,
     fontWeight: 'bold',
+    letterSpacing: 0.8
   },
 });

@@ -12,7 +12,7 @@ export default function RoleSelectionScreen() {
       {/* Full-bleed hero image with dark overlay */}
       <View style={styles.imageContainer}>
         <Image
-          source={require('@/assets/auth/auth2.png')}
+          source={require('@/assets/auth/auth1.png')}
           style={styles.heroImage}
           contentFit="cover"
         />
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#FFFFFF',
-    fontSize: 38,
+    fontSize: 30,
     fontWeight: 'bold',
     lineHeight: 44,
     marginBottom: 12,
@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
   },
   description: {
     color: 'rgba(255, 255, 255, 0.85)',
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: '500',
     lineHeight: 26,
     textAlign: 'left',
@@ -100,11 +100,13 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
     textDecorationLine: 'none',
+    textAlign: 'center',
+    paddingTop: 15
   },
   customerButtonText: {
     color: '#FFFFFF',
-    fontSize: 19,
-    fontWeight: 'bold',
+    fontSize: 17,
+    fontWeight: 'bold'
   },
   vendorButton: {
     width: '100%',
@@ -116,10 +118,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     textDecorationLine: 'none',
+    textAlign: 'center',
+    paddingTop: 15
   },
   vendorButtonText: {
     color: '#00C853', // Vibrant green text
-    fontSize: 19,
+    fontSize: 17,
     fontWeight: 'bold',
   },
 });

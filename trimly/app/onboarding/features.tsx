@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
   },
   nextButton: {
     position: 'absolute',
-    top: '50%',
+    bottom: 60,
     right: 32,
     width: 56,
     height: 56,
@@ -156,6 +156,8 @@ const styles = StyleSheet.create({
     fontSize: 32, // Bigger arrow
     fontWeight: 'bold',
     textAlign: 'center',
-    lineHeight: 56, // Match the container height for perfect vertical centering
+    lineHeight: 40, 
+    alignItems: 'center',
+    justifyContent: 'center'
   },
 });
