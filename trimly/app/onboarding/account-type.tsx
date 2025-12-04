@@ -57,6 +57,7 @@ export default function AccountTypeScreen() {
 
       {/* Next button - Will be enabled after selection */}
       <View style={[styles.nextButton, styles.disabledButton]}>
+        <View style={styles.nextButtonBorder} />
         <ThemedText style={styles.nextButtonText}>→</ThemedText>
       </View>
       
@@ -75,7 +76,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     position: 'relative',
-    height: height * 0.75,
+    height: height, // Full screen height
   },
   heroImage: {
     width: '100%',
@@ -83,11 +84,11 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Dark overlay gradient
+    backgroundColor: 'rgba(0, 0, 0, 0.7)', // Darker overlay for better text contrast
   },
   contentContainer: {
     position: 'absolute',
-    bottom: height * 0.25 + 80, // Position above pagination
+    bottom: 120, // Position above pagination and next button
     left: 0,
     right: 0,
     paddingHorizontal: 32,
@@ -149,16 +150,19 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   activeDot: {
+    width: 20, // Longer than the others
+    height: 10,
+    borderRadius: 5,
     backgroundColor: '#00C853', // Vibrant green for active dot
   },
   nextButton: {
     position: 'absolute',
     bottom: 60,
     right: 32,
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: '#00C853', // Vibrant green
+    width: 56, // Smaller button
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'transparent', // Transparent background
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -170,12 +174,21 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
+  nextButtonBorder: {
+    position: 'absolute',
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    borderWidth: 2,
+    borderColor: '#00C853', // Vibrant green border
+    borderStyle: 'solid',
+  },
   disabledButton: {
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
   },
   nextButtonText: {
-    color: '#FFFFFF',
-    fontSize: 24,
+    color: '#00C853', // Vibrant green arrow
+    fontSize: 32, // Bigger arrow
     fontWeight: 'bold',
   },
   backButton: {

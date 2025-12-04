@@ -61,8 +61,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'transparent',
-    // Creating a gradient effect with linear gradient
+    backgroundColor: 'rgba(0, 0, 0, 0.7)', // Darker overlay for better text contrast
   },
   contentContainer: {
     position: 'absolute',

@@ -38,7 +38,8 @@ export default function GetStartedScreen() {
       {/* Get Started button */}
       {/* @ts-ignore */}
       <Link href="/auth/role-selection" style={styles.getStartedButton}>
-        <ThemedText style={styles.getStartedButtonText}>Get Started</ThemedText>
+        <View style={styles.getStartedButtonBorder} />
+        <ThemedText style={styles.getStartedButtonText}>→</ThemedText>
       </Link>
       
       {/* Back button */}
@@ -57,7 +58,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     position: 'relative',
-    height: height * 0.75,
+    height: height, // Full screen height
   },
   heroImage: {
     width: '100%',
@@ -65,11 +66,11 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Dark overlay gradient
+    backgroundColor: 'rgba(0, 0, 0, 0.7)', // Darker overlay for better text contrast
   },
   contentContainer: {
     position: 'absolute',
-    bottom: height * 0.25 + 80, // Position above pagination
+    bottom: 120, // Position above pagination and next button
     left: 0,
     right: 0,
     paddingHorizontal: 32,
@@ -105,16 +106,19 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   activeDot: {
+    width: 20, // Longer than the others
+    height: 10,
+    borderRadius: 5,
     backgroundColor: '#00C853', // Vibrant green for active dot
   },
   getStartedButton: {
     position: 'absolute',
     bottom: 60,
     right: 32,
-    width: 180,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: '#00C853', // Vibrant green
+    width: 56, // Smaller button
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'transparent', // Transparent background
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -126,9 +130,18 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
+  getStartedButtonBorder: {
+    position: 'absolute',
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    borderWidth: 2,
+    borderColor: '#00C853', // Vibrant green border
+    borderStyle: 'solid',
+  },
   getStartedButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
+    color: '#00C853', // Vibrant green arrow
+    fontSize: 32, // Bigger arrow
     fontWeight: 'bold',
   },
   backButton: {
