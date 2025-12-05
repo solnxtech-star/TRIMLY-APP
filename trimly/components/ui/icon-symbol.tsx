@@ -18,6 +18,7 @@ const MAPPING: IconMapping = {
   'paperplane.fill': 'send',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
+  'chevron.down': 'expand-more',
   'magnifyingglass': 'search',
   'calendar': 'event',
   'person.fill': 'person',
@@ -29,6 +30,17 @@ const MAPPING: IconMapping = {
   'help-circle': 'help-outline',
   'lock-closed': 'lock',
   'exit': 'exit-to-app',
+  'bell': 'notifications',
+  'key': 'vpn-key',
+  'trash': 'delete',
+  'phone': 'phone',
+  'globe': 'language',
+  'facebook': 'facebook',
+  'twitter': 'chat',
+  'instagram': 'photo',
+  'star': 'star',
+  'location': 'location-on',
+  'whatsapp': 'question-answer',
 };
 
 /**
