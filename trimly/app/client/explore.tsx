@@ -2,13 +2,12 @@ import { StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 
-export default function AppointmentsScreen() {
+export default function ExploreScreen() {
   return (
     <ThemedView style={styles.container}>
-      <ThemedText type="title">Bookings</ThemedText>
-      <ThemedText>Your upcoming bookings will appear here</ThemedText>
+      <ThemedText type="title">Explore</ThemedText>
+      <ThemedText>Discover services and vendors</ThemedText>
       <View style={styles.separator} />
-      <ThemedText>You haven't made any bookings yet.</ThemedText>
     </ThemedView>
   );
 }
@@ -18,7 +17,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
   },
   separator: {
     marginVertical: 30,
