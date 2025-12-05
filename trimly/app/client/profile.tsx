@@ -25,13 +25,13 @@ export default function ProfileScreen() {
   };
 
   const menuItems = [
-    { icon: 'person', label: 'Your profile', type: 'default' },
-    { icon: 'credit-card', label: 'Payment Methods', type: 'default' },
-    { icon: 'heart', label: 'Saved', type: 'default' },
-    { icon: 'settings', label: 'Settings', type: 'default' },
-    { icon: 'receipt', label: 'Transactions', type: 'default' },
-    { icon: 'help-circle', label: 'Help Center', type: 'default' },
-    { icon: 'lock-closed', label: 'Privacy Policy', type: 'default' },
+    { icon: 'person', label: 'Your profile', route: '/client/profile/edit-profile' },
+    { icon: 'credit-card', label: 'Payment Methods', route: '/client/profile/payment-methods' },
+    { icon: 'heart', label: 'Saved', route: '/client/profile/saved-salons' },
+    { icon: 'settings', label: 'Settings', route: '/client/profile/settings' },
+    { icon: 'receipt', label: 'Transactions', route: '/client/profile/transactions' },
+    { icon: 'help-circle', label: 'Help Center', route: '/client/profile/help-center' },
+    { icon: 'lock-closed', label: 'Privacy Policy', route: '/client/profile/privacy-policy' },
   ];
 
   return (
@@ -46,7 +46,11 @@ export default function ProfileScreen() {
         {/* Menu Items */}
         <View style={styles.menuContainer}>
           {menuItems.map((item, index) => (
-            <TouchableOpacity key={index} style={styles.menuItem}>
+            <TouchableOpacity 
+              key={index} 
+              style={styles.menuItem}
+              onPress={() => router.push(item.route as any)}
+            >
               <View style={styles.iconContainer}>
                 <IconSymbol name={item.icon} size={20} color="#2D8659" />
               </View>

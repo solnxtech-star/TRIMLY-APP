@@ -75,12 +75,9 @@ export default function HelpCenterScreen() {
         {activeTab === 'faq' ? (
           <View style={styles.contentContainer}>
             {faqData.map((item, index) => (
-              <Collapsible 
-                key={index} 
-                title={item.question} 
-                subtitle={item.answer}
-                icon="chevron.down"
-              />
+              <Collapsible key={index} title={item.question}>
+                <ThemedText>{item.answer}</ThemedText>
+              </Collapsible>
             ))}
           </View>
         ) : (
