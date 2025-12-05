@@ -1,10 +1,13 @@
-import { useEffect } from 'react';
-import { StyleSheet, View, TouchableOpacity, Alert } from 'react-native';
+import { useState, useEffect } from 'react';
+import { StyleSheet, View, TouchableOpacity, Alert, TextInput } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useLocalSearchParams, router } from 'expo-router';
 
 export default function VerifyEmailScreen() {
+  const [code, setCode] = useState(['', '', '', '']);
+  const [focusedIndex, setFocusedIndex] = useState(-1);
+  
   // Get the role from the URL parameters
   const params = useLocalSearchParams();
   const role = params.role || 'customer';
@@ -14,6 +17,28 @@ export default function VerifyEmailScreen() {
     // Simulate sending verification email
     console.log(`Sending verification email to ${email}`);
   }, [email]);
+
+  const handleCodeChange = (index: number, value: string) => {
+    if (/^\d*$/.test(value) && value.length <= 1) {
+      const newCode = [...code];
+      newCode[index] = value;
+      setCode(newCode);
+      
+      // Auto-focus next input if value entered
+      if (value && index < 3) {
+        setFocusedIndex(index + 1);
+      }
+    }
+  };
+
+  const handleKeyPress = (index: number, key: string) => {
+    if (key === 'Backspace' && !code[index] && index > 0) {
+      const newCode = [...code];
+      newCode[index - 1] = '';
+      setCode(newCode);
+      setFocusedIndex(index - 1);
+    }
+  };
 
   const handleResendEmail = () => {
     // Simulate resending verification email
@@ -46,9 +71,26 @@ export default function VerifyEmailScreen() {
         <ThemedText style={styles.title}>Verify Your Email</ThemedText>
         <ThemedText style={styles.subtitle}>We've sent a verification email to {email}. Please check your inbox and click the verification link to continue.</ThemedText>
         
-        {/* Envelope Icon */}
-        <View style={styles.iconContainer}>
-          <ThemedText style={styles.envelopeIcon}>✉️</ThemedText>
+        {/* Code Input Fields */}
+        <View style={styles.codeContainer}>
+          {code.map((digit, index) => (
+            <TextInput
+              key={index}
+              style={[
+                styles.codeBox,
+                focusedIndex === index && styles.codeBoxFocused
+              ]}
+              value={digit}
+              onChangeText={(value) => handleCodeChange(index, value)}
+              onKeyPress={({ nativeEvent }) => handleKeyPress(index, nativeEvent.key)}
+              onFocus={() => setFocusedIndex(index)}
+              onBlur={() => setFocusedIndex(-1)}
+              keyboardType="numeric"
+              maxLength={1}
+              textAlign="center"
+              autoFocus={index === 0}
+            />
+          ))}
         </View>
         
         {/* Resend Button */}
@@ -108,19 +150,27 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     marginBottom: 60,
   },
-  iconContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#2D8A4B',
-    justifyContent: 'center',
-    alignItems: 'center',
-    alignSelf: 'center',
+  codeContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 40,
   },
-  envelopeIcon: {
-    fontSize: 40,
-    color: '#FFFFFF',
+  codeBox: {
+    width: 75,
+    height: 75,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 13,
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#1A1D2E',
+    textAlign: 'center',
+    lineHeight: 75,
+  },
+  codeBoxFocused: {
+    borderColor: '#2D8A4B',
+    borderWidth: 2,
   },
   resendButton: {
     backgroundColor: 'transparent',
