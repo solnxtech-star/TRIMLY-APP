@@ -3,8 +3,11 @@ import React from 'react';
 
 import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function ClientLayout() {
+  const colorScheme = useColorScheme();
+
   return (
     <Tabs
       screenOptions={{
@@ -12,8 +15,8 @@ export default function ClientLayout() {
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarStyle: {
-          backgroundColor: '#FFFFFF',
-          borderTopColor: '#E5E7EB',
+          backgroundColor: colorScheme === 'dark' ? '#151718' : '#FFFFFF',
+          borderTopColor: colorScheme === 'dark' ? '#9BA1A6' : '#E5E7EB',
           borderTopWidth: 1,
         },
       }}>

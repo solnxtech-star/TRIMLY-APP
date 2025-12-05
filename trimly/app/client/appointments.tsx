@@ -1,14 +1,19 @@
 import { StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { useThemeColor } from '@/hooks/use-theme-color';
 
 export default function AppointmentsScreen() {
+  // Get theme colors
+  const backgroundColor = useThemeColor({}, 'background');
+  const textColor = useThemeColor({}, 'text');
+  
   return (
-    <ThemedView style={styles.container}>
-      <ThemedText type="title">Bookings</ThemedText>
-      <ThemedText>Your upcoming bookings will appear here</ThemedText>
+    <ThemedView style={[styles.container, { backgroundColor }]}>
+      <ThemedText type="title" style={{ color: textColor }}>Bookings</ThemedText>
+      <ThemedText style={{ color: textColor }}>Your upcoming bookings will appear here</ThemedText>
       <View style={styles.separator} />
-      <ThemedText>You haven't made any bookings yet.</ThemedText>
+      <ThemedText style={{ color: textColor }}>You haven't made any bookings yet.</ThemedText>
     </ThemedView>
   );
 }

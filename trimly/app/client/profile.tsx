@@ -1,98 +1,142 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
+import { useRouter } from 'expo-router';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useThemeColor } from '@/hooks/use-theme-color';
 
 export default function ProfileScreen() {
+  const router = useRouter();
+  
+  // Get theme colors
+  const backgroundColor = useThemeColor({}, 'background');
+  const textColor = useThemeColor({}, 'text');
+  const borderColor = useThemeColor({}, 'tabIconDefault');
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Logout', style: 'destructive', onPress: () => router.replace('/onboarding/welcome') }
+      ]
+    );
+  };
+
+  const menuItems = [
+    { icon: 'person', label: 'Your profile', type: 'default' },
+    { icon: 'credit-card', label: 'Payment Methods', type: 'default' },
+    { icon: 'heart', label: 'Saved', type: 'default' },
+    { icon: 'settings', label: 'Settings', type: 'default' },
+    { icon: 'receipt', label: 'Transactions', type: 'default' },
+    { icon: 'help-circle', label: 'Help Center', type: 'default' },
+    { icon: 'lock-closed', label: 'Privacy Policy', type: 'default' },
+  ];
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#B0B0B0', dark: '#404040' }}
-      headerImage={
-        <ThemedView style={styles.headerContainer}>
-          <ThemedText type="title" style={styles.headerTitle}>Your Profile</ThemedText>
-        </ThemedView>
-      }>
-      <ThemedView style={styles.profileHeader}>
-        <ThemedView style={styles.avatar} />
-        <ThemedText type="title">Jane Doe</ThemedText>
-        <ThemedText>jane.doe@example.com</ThemedText>
-      </ThemedView>
-      
-      <ThemedView style={styles.section}>
-        <ThemedText type="subtitle">Personal Information</ThemedText>
-        <ThemedView style={styles.infoRow}>
-          <ThemedText>Phone:</ThemedText>
-          <ThemedText>(123) 456-7890</ThemedText>
-        </ThemedView>
-        <ThemedView style={styles.infoRow}>
-          <ThemedText>Date of Birth:</ThemedText>
-          <ThemedText>January 1, 1990</ThemedText>
-        </ThemedView>
-      </ThemedView>
-      
-      <ThemedView style={styles.section}>
-        <ThemedText type="subtitle">Preferences</ThemedText>
-        <ThemedView style={styles.infoRow}>
-          <ThemedText>Favorite Services:</ThemedText>
-          <ThemedText>Haircuts, Manicures</ThemedText>
-        </ThemedView>
-        <ThemedView style={styles.infoRow}>
-          <ThemedText>Notification Settings:</ThemedText>
-          <ThemedText>Enabled</ThemedText>
-        </ThemedView>
-      </ThemedView>
-      
-      <ThemedView style={styles.section}>
-        <ThemedText type="subtitle">Account Settings</ThemedText>
-        <ThemedView style={styles.button}>
-          <ThemedText>Edit Profile</ThemedText>
-        </ThemedView>
-        <ThemedView style={styles.button}>
-          <ThemedText>Change Password</ThemedText>
-        </ThemedView>
-        <ThemedView style={[styles.button, styles.logoutButton]}>
-          <ThemedText>Logout</ThemedText>
-        </ThemedView>
-      </ThemedView>
-    </ParallaxScrollView>
+    <ThemedView style={[styles.container, { backgroundColor }]}>
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* Header */}
+        <ThemedText style={[styles.header, { color: textColor }]}>Profile</ThemedText>
+        
+        {/* Menu Items */}
+        <View style={styles.menuContainer}>
+          {menuItems.map((item, index) => (
+            <TouchableOpacity key={index} style={styles.menuItem}>
+              <View style={styles.iconContainer}>
+                <IconSymbol name={item.icon} size={20} color="#2D8659" />
+              </View>
+              <ThemedText style={[styles.menuLabel, { color: textColor }]}>{item.label}</ThemedText>
+              <ThemedText style={[styles.chevron, { color: borderColor }]}>›</ThemedText>
+            </TouchableOpacity>
+          ))}
+          
+          {/* Logout Item */}
+          <TouchableOpacity style={styles.logoutItem} onPress={handleLogout}>
+            <View style={styles.logoutIconContainer}>
+              <IconSymbol name="exit" size={20} color="#FF3B30" />
+            </View>
+            <ThemedText style={styles.logoutLabel}>Log out</ThemedText>
+            <ThemedText style={[styles.chevron, { color: borderColor }]}>›</ThemedText>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  headerContainer: {
+  container: {
     flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: 24,
+    paddingTop: 60,
+    paddingBottom: 40,
+  },
+  header: {
+    fontSize: 27,
+    fontWeight: 'bold',
+    color: '#000000',
+    marginBottom: 30,
+    textAlign: 'left',
+  },
+  menuContainer: {
+    flex: 1,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  iconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#E8F5E9', // Light green background
     justifyContent: 'center',
     alignItems: 'center',
+    marginRight: 16,
   },
-  headerTitle: {
-    color: 'white',
+  menuLabel: {
+    flex: 1,
+    fontSize: 17,
+    color: '#000000',
+    fontWeight: '500',
   },
-  profileHeader: {
-    alignItems: 'center',
-    marginBottom: 24,
+  chevron: {
+    fontSize: 20,
+    color: '#8E8E93', // Gray color
   },
-  avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#ccc',
-    marginBottom: 16,
-  },
-  section: {
-    marginBottom: 24,
-  },
-  infoRow: {
+  logoutItem: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 8,
+    alignItems: 'center',
+    paddingVertical: 16,
+    marginTop: 20,
   },
-  button: {
-    padding: 16,
-    backgroundColor: 'rgba(0, 0, 0, 0.05)',
-    borderRadius: 8,
-    marginBottom: 8,
+  logoutIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FFECEB', // Light red background
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
   },
-  logoutButton: {
-    backgroundColor: '#FF3B30',
+  logoutLabel: {
+    flex: 1,
+    fontSize: 17,
+    color: '#FF3B30', // Red text
+    fontWeight: '500',
   },
 });

@@ -1,12 +1,17 @@
 import { StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { useThemeColor } from '@/hooks/use-theme-color';
 
 export default function ExploreScreen() {
+  // Get theme colors
+  const backgroundColor = useThemeColor({}, 'background');
+  const textColor = useThemeColor({}, 'text');
+  
   return (
-    <ThemedView style={styles.container}>
-      <ThemedText type="title">Explore</ThemedText>
-      <ThemedText>Discover services and vendors</ThemedText>
+    <ThemedView style={[styles.container, { backgroundColor }]}>
+      <ThemedText type="title" style={{ color: textColor }}>Explore</ThemedText>
+      <ThemedText style={{ color: textColor }}>Discover services and vendors</ThemedText>
       <View style={styles.separator} />
     </ThemedView>
   );
