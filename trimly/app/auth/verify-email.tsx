@@ -141,8 +141,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 30,
     fontWeight: 'bold',
-    color: '#1A1D2E',
-    marginBottom: 10,
+    // color: '#1A1D2E',
+      marginBottom: 10,
+    lineHeight: 40
   },
   subtitle: {
     fontSize: 15,
@@ -156,8 +157,8 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   codeBox: {
-    width: 75,
-    height: 75,
+    width: 65,
+    height: 65,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#E5E7EB',
@@ -166,7 +167,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1A1D2E',
     textAlign: 'center',
-    lineHeight: 75,
+    // lineHeight: 75,
   },
   codeBoxFocused: {
     borderColor: '#2D8A4B',
