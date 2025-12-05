@@ -15,7 +15,7 @@ export default function UpcomingBookings() {
   };
 
   const handleCancelBooking = () => {
-    router.push('/client/bookings/cancel-booking');
+    router.push('../client/bookings/cancel-booking');
   };
 
   // Mock data for bookings

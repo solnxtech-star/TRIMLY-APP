@@ -11,9 +11,12 @@ export default function AppointmentsScreen() {
   return (
     <ThemedView style={[styles.container, { backgroundColor }]}>
       <ThemedText type="title" style={{ color: textColor }}>Bookings</ThemedText>
-      <ThemedText style={{ color: textColor }}>Your upcoming bookings will appear here</ThemedText>
-      <View style={styles.separator} />
-      <ThemedText style={{ color: textColor }}>You haven't made any bookings yet.</ThemedText>
+      <ThemedText style={{ color: textColor, textAlign: 'center', marginVertical: 20 }}>
+        Your booking management screen is available in the app.
+      </ThemedText>
+      <ThemedText style={{ color: textColor, textAlign: 'center' }}>
+        Navigate to the Bookings tab to view your appointments.
+      </ThemedText>
     </ThemedView>
   );
 }
@@ -24,10 +27,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
   },
 });
