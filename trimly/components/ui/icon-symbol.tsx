@@ -19,7 +19,7 @@ const MAPPING = {
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
   'magnifyingglass': 'search',
-  'calendar': 'calendar-today',
+  'calendar': 'event',
   'person.fill': 'person',
 } as IconMapping;
 
