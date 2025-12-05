@@ -15,8 +15,22 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
-
+from django.urls import path, include, re_path
+from dj_rest_auth.registration.views import VerifyEmailView 
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 urlpatterns = [
     path('admin/', admin.site.urls),
+    # Enables: Login, Logout, Password Reset, and User Details
+    path('api/v1/auth/', include('dj_rest_auth.urls')),
+    re_path(
+    r'^api/v1/auth/registration/account-confirm-email/(?P<key>[-:\w]+)/$', 
+    VerifyEmailView.as_view(), 
+    name='account_confirm_email',
+    ),
+    path('api/v1/auth/registration/', include('dj_rest_auth.registration.urls')),
+    path('salon/', include('api.v1.Salons.urls')),
+    path('swagger/', SpectacularSwaggerView.as_view(), name="schema"),
+    path('swagger-schema/', SpectacularAPIView.as_view(), name="schema")
 ]
+
+

@@ -37,12 +37,30 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'core'
+    'api.v1.Salons',
+    'api.v1.Bookings',
+    'api.v1.Category',
+    'api.v1.Chat',
+    'api.v1.Payments',
+    'api.v1.Reviews',
+    'api.v1.Users',
+    #third party packages
+    'rest_framework',
+    'django.contrib.sites', 
+    #Authentication Packages
+    'rest_framework_simplejwt', # The token generator/validator
+    'allauth', # Core for registration/verification
+    'allauth.account', # Specific allauth module
+    'allauth.socialaccount',
+    'dj_rest_auth', # The wrapper for DRF endpoints
+    'dj_rest_auth.registration', # Registration module,
+    'drf_spectacular',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -73,12 +91,20 @@ WSGI_APPLICATION = 'trimlybackend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+import dj_database_url
+import os
+from dotenv import load_dotenv
+
+load_dotenv()  
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=os.getenv("DATABASE_URL"),
+        conn_max_age=600,
+        ssl_require=True
+    )
 }
+
 
 
 # Password validation
@@ -121,7 +147,66 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-AUTH_USER_MODEL = 'core.User'
+AUTH_USER_MODEL = 'Users.User'
 CORS_ALLOWED_ORIGINS = ["*"]                 
 
 CORS_ALLOW_CREDENTIALS = True
+
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=90),
+    'ROTATE_REFRESH_TOKENS': True,
+    'SIGNING_KEY': os.getenv("SIGNING_KEY", "key"), 
+    'AUTH_HEADER_TYPES': ('Bearer',), 
+}
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+# General Allauth Settings
+# How users can log in: only via email (not username)
+ACCOUNT_LOGIN_METHODS = ['email'] 
+
+# CRITICAL FIX: Must use 'email*', 'password', and 'password2'
+# 'email*' satisfies the mandatory verification requirement.
+# 'password' and 'password2' are the explicit fields used by the registration form.
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1', 'password2'] 
+
+
+# Mandates that the user MUST verify their email before they can log in successfully
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+
+REST_AUTH = {
+    # 1. CRITICAL: Tells dj-rest-auth to issue JWTs instead of basic tokens
+    'USE_JWT': True, 
+    'TOKEN_MODEL': None,
+    # 2. Use simplejwt's serializers to return the Access/Refresh token pair
+    'JWT_AUTH_REFRESH_COOKIE': 'refresh_token', # Optional: Use cookie for refresh token
+    'JWT_AUTH_HTTPONLY': True, # Optional security enhancement
+    'TOKEN_SERIALIZER': 'dj_rest_auth.serializers.JWTSerializer',
+
+    'REGISTER_SERIALIZER': 'api.v1.Users.serializers.CustomRegisterSerializer',
+    'USER_DETAILS_SERIALIZER': 'api.v1.Users.serializers.UserSerializer',
+    'USER_MODEL': 'Users.User',
+}
+# For development: prints emails (like verification links) to the console/terminal
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' 
+
+# In production, you would replace this with something like:
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Trimly Backend API', # Your project's title
+    'DESCRIPTION': 'API documentation for the Trimly backend services, including authentication and user management.',
+    'VERSION': '1.0.0',
+    # OTHER RECOMMENDED SETTINGS:
+    'SERVE_INCLUDE_SCHEMA': False, # Schema is served separately
+    # 'SWAGGER_UI_DIST': 'SIDECAR'
+    }
