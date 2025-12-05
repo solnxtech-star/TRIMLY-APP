@@ -1,21 +1,12 @@
 import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { useRouter } from 'expo-router';
 
-export default function Salons() {
-  const router = useRouter();
-
-  const handleSeeAll = () => {
-    // For now, we'll just log to console since we don't have routing set up
-    console.log('See all salons');
-  };
-
+export default function FeaturedVendors() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <ThemedText style={styles.title}>Salons</ThemedText>
-        <TouchableOpacity onPress={handleSeeAll}>
+        <ThemedText style={styles.title}>Featured Vendors</ThemedText>
+        <TouchableOpacity>
           <ThemedText style={styles.seeAllText}>See all</ThemedText>
         </TouchableOpacity>
       </View>
@@ -26,21 +17,19 @@ export default function Salons() {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Salon Card 1 */}
+        {/* Vendor Card 1 */}
         <View style={styles.card}>
           <View style={styles.cardBackground} />
-          <IconSymbol name="heart" size={20} color="#FFFFFF" style={styles.heartIcon} />
           <View style={styles.textOverlay}>
-            <ThemedText style={styles.salonName}>Slay Best Saloon</ThemedText>
+            <ThemedText style={styles.vendorName}>Vendor Name</ThemedText>
           </View>
         </View>
         
-        {/* Salon Card 2 */}
+        {/* Vendor Card 2 */}
         <View style={[styles.card, styles.secondCard]}>
           <View style={styles.cardBackground} />
-          <IconSymbol name="heart" size={20} color="#FFFFFF" style={styles.heartIcon} />
           <View style={styles.textOverlay}>
-            <ThemedText style={styles.salonName}>Slay Best Saloon</ThemedText>
+            <ThemedText style={styles.vendorName}>Another Vendor</ThemedText>
           </View>
         </View>
       </ScrollView>
@@ -92,17 +81,12 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: 'rgba(0,0,0,0.3)',
   },
-  heartIcon: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
-  },
   textOverlay: {
     position: 'absolute',
     bottom: 12,
     left: 12,
   },
-  salonName: {
+  vendorName: {
     fontSize: 16,
     fontWeight: '700',
     color: '#FFFFFF',

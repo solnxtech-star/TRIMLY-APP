@@ -2,20 +2,11 @@ import { StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { useRouter } from 'expo-router';
+import HomeScreen from './home';
 
 export default function DashboardScreen() {
-  // Get theme colors
-  const backgroundColor = useThemeColor({}, 'background');
-  const textColor = useThemeColor({}, 'text');
-  
-  return (
-    <ThemedView style={[styles.container, { backgroundColor }]}>
-      <ThemedText type="title" style={{ color: textColor }}>Home</ThemedText>
-      <ThemedText style={{ color: textColor }}>Welcome to your dashboard</ThemedText>
-      <View style={styles.separator} />
-      <ThemedText style={{ color: textColor }}>Upcoming appointments, recommendations, and more will appear here.</ThemedText>
-    </ThemedView>
-  );
+  return <HomeScreen />;
 }
 
 const styles = StyleSheet.create({

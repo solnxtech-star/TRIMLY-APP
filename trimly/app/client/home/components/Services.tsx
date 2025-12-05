@@ -1,11 +1,8 @@
 import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { useRouter } from 'expo-router';
 
 export default function Services() {
-  const router = useRouter();
-
   const services = [
     { id: 1, name: 'Haircut', icon: 'content-cut' },
     { id: 2, name: 'Hair Styling', icon: 'air' },
@@ -14,15 +11,11 @@ export default function Services() {
     { id: 5, name: 'Lashes & Brows', icon: 'hotel' },
   ];
 
-  const handleSeeAll = () => {
-    router.push('../client/services');
-  };
-
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <ThemedText style={styles.title}>Services</ThemedText>
-        <TouchableOpacity onPress={handleSeeAll}>
+        <TouchableOpacity>
           <ThemedText style={styles.seeAllText}>See all</ThemedText>
         </TouchableOpacity>
       </View>
@@ -36,7 +29,7 @@ export default function Services() {
         {services.map((service) => (
           <TouchableOpacity key={service.id} style={styles.serviceItem}>
             <View style={styles.iconContainer}>
-              <IconSymbol name={service.icon} size={28} color="#000000" />
+              <IconSymbol name="person" size={28} color="#000000" />
             </View>
             <ThemedText style={styles.serviceName}>{service.name}</ThemedText>
           </TouchableOpacity>

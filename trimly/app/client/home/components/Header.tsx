@@ -1,4 +1,4 @@
-import { StyleSheet, View, Image } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 
@@ -6,10 +6,7 @@ export default function Header() {
   return (
     <View style={styles.container}>
       <View style={styles.leftSection}>
-        <Image 
-          source={require('@/assets/stock/img.png')} 
-          style={styles.profileImage} 
-        />
+        <View style={styles.profilePlaceholder} />
         <View style={styles.textStack}>
           <ThemedText style={styles.welcomeText}>Welcome Back</ThemedText>
           <ThemedText style={styles.nameText}>Mr Clemz</ThemedText>
@@ -36,10 +33,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  profileImage: {
+  profilePlaceholder: {
     width: 50,
     height: 50,
     borderRadius: 25,
+    backgroundColor: '#F0F0F0',
   },
   textStack: {
     marginLeft: 12,

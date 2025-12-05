@@ -11,7 +11,6 @@ export default function SearchBar() {
         placeholder="Find barber or salon"
         placeholderTextColor="#6B6B6B"
       />
-      <IconSymbol name="settings" size={24} color="#000000" style={styles.filterIcon} />
     </View>
   );
 }
@@ -33,8 +32,5 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#000000',
     paddingLeft: 8,
-  },
-  filterIcon: {
-    marginRight: 16,
   },
 });

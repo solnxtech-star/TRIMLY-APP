@@ -1,21 +1,13 @@
 import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { useRouter } from 'expo-router';
 
-export default function Salons() {
-  const router = useRouter();
-
-  const handleSeeAll = () => {
-    // For now, we'll just log to console since we don't have routing set up
-    console.log('See all salons');
-  };
-
+export default function TopRatedSalons() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <ThemedText style={styles.title}>Salons</ThemedText>
-        <TouchableOpacity onPress={handleSeeAll}>
+        <ThemedText style={styles.title}>Top Rated salons</ThemedText>
+        <TouchableOpacity>
           <ThemedText style={styles.seeAllText}>See all</ThemedText>
         </TouchableOpacity>
       </View>
@@ -30,8 +22,12 @@ export default function Salons() {
         <View style={styles.card}>
           <View style={styles.cardBackground} />
           <IconSymbol name="heart" size={20} color="#FFFFFF" style={styles.heartIcon} />
-          <View style={styles.textOverlay}>
+          <View style={styles.bottomSection}>
             <ThemedText style={styles.salonName}>Slay Best Saloon</ThemedText>
+            <View style={styles.ratingBadge}>
+              <IconSymbol name="star" size={14} color="#000000" />
+              <ThemedText style={styles.ratingText}>4.8</ThemedText>
+            </View>
           </View>
         </View>
         
@@ -39,8 +35,12 @@ export default function Salons() {
         <View style={[styles.card, styles.secondCard]}>
           <View style={styles.cardBackground} />
           <IconSymbol name="heart" size={20} color="#FFFFFF" style={styles.heartIcon} />
-          <View style={styles.textOverlay}>
+          <View style={styles.bottomSection}>
             <ThemedText style={styles.salonName}>Slay Best Saloon</ThemedText>
+            <View style={styles.ratingBadge}>
+              <IconSymbol name="star" size={14} color="#000000" />
+              <ThemedText style={styles.ratingText}>4.8</ThemedText>
+            </View>
           </View>
         </View>
       </ScrollView>
@@ -77,8 +77,8 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   card: {
-    width: 240,
-    height: 160,
+    width: 280,
+    height: 180,
     borderRadius: 16,
     position: 'relative',
     overflow: 'hidden',
@@ -97,14 +97,32 @@ const styles = StyleSheet.create({
     top: 12,
     right: 12,
   },
-  textOverlay: {
+  bottomSection: {
     position: 'absolute',
     bottom: 12,
     left: 12,
+    right: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   salonName: {
     fontSize: 16,
     fontWeight: '700',
     color: '#FFFFFF',
+  },
+  ratingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  ratingText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#000000',
+    marginLeft: 4,
   },
 });
