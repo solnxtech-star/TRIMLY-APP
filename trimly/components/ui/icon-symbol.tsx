@@ -41,6 +41,8 @@ const MAPPING: IconMapping = {
   'star': 'star',
   'location': 'location-on',
   'whatsapp': 'question-answer',
+  'add': 'add',
+  'camera': 'camera-alt',
 };
 
 /**

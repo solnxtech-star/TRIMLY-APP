@@ -44,7 +44,7 @@ export default function PaymentMethodsScreen() {
         
         {/* Add New Button */}
         <TouchableOpacity style={styles.addButton} onPress={handleAddPaymentMethod}>
-          <IconSymbol name="person" size={24} color="#2D8659" />
+          <IconSymbol name="add" size={24} color="#2D8659" />
           <ThemedText style={styles.addButtonText}>Add New Payment Method</ThemedText>
         </TouchableOpacity>
       </ScrollView>

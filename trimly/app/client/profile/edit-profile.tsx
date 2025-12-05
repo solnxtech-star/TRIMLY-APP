@@ -37,7 +37,7 @@ export default function EditProfileScreen() {
             style={styles.profilePhoto} 
           />
           <TouchableOpacity style={styles.cameraIconContainer}>
-            <IconSymbol name="photo" size={20} color="#FFFFFF" />
+            <IconSymbol name="camera" size={20} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
         
