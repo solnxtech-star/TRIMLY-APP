@@ -3,6 +3,7 @@ import { StyleSheet, TextInput, View, TouchableOpacity, Alert, Image } from 'rea
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Link, useLocalSearchParams, router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function SignInScreen() {
   const [email, setEmail] = useState('amy@gmail.com');
@@ -73,7 +74,11 @@ export default function SignInScreen() {
             style={styles.eyeIcon}
             onPress={() => setShowPassword(!showPassword)}
           >
-            <ThemedText style={styles.eyeIconText}>{showPassword ? '👁️' : '👁️‍🗨️'}</ThemedText>
+            <Ionicons 
+              name={showPassword ? 'eye-outline' : 'eye-off-outline'} 
+              size={24} 
+              color="#1A1D2E" 
+            />
           </TouchableOpacity>
         </View>
         
@@ -157,22 +162,23 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 32,
-    paddingTop: 40,
+    paddingTop: 80,
   },
   title: {
-    fontSize: 34,
+    fontSize: 30,
     fontWeight: 'bold',
     color: '#1A1D2E',
     marginBottom: 10,
+    lineHeight: 40
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#6B7280',
-    lineHeight: 24,
+    lineHeight: 22,
     marginBottom: 30,
   },
   label: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#6B7280',
     marginBottom: 8,
   },
@@ -183,7 +189,7 @@ const styles = StyleSheet.create({
     borderColor: '#E5E7EB',
     borderRadius: 12,
     paddingHorizontal: 18,
-    fontSize: 17,
+    fontSize: 16,
     color: '#1A1D2E',
     marginBottom: 20,
   },
@@ -202,9 +208,6 @@ const styles = StyleSheet.create({
     right: 18,
     top: 20,
   },
-  eyeIconText: {
-    fontSize: 24,
-  },
   errorMessageContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -222,7 +225,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   errorMessage: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#EF4444',
   },
   forgotPasswordLink: {
@@ -230,7 +233,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   forgotPasswordText: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#2D8A4B',
     fontWeight: '500',
   },
@@ -247,7 +250,7 @@ const styles = StyleSheet.create({
   },
   loginButtonText: {
     color: '#FFFFFF',
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '500',
   },
   loadingText: {
@@ -265,39 +268,37 @@ const styles = StyleSheet.create({
     backgroundColor: '#E5E7EB',
   },
   dividerText: {
-    fontSize: 15,
+    fontSize: 14,
     color: '#1A1D2E',
     marginHorizontal: 15,
   },
   socialLoginContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     marginBottom: 50,
+    gap: 20,
   },
   socialButton: {
-    width: 52,
-    height: 52,
+    width: 40,
+    height: 40,
     backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
   },
   socialIcon: {
-    width: 32,
-    height: 32,
+    width: 24,
+    height: 24,
   },
   signUpContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
   },
   signUpText: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#6B7280',
   },
   signUpLink: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#2D8A4B',
     fontWeight: '500',
   },

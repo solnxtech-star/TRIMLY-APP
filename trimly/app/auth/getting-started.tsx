@@ -107,17 +107,17 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#FFFFFF',
-    fontSize: 34,
+    fontSize: 30,
     fontWeight: 'bold',
     lineHeight: 46,
     marginBottom: 12,
-    textAlign: 'left',
+    textAlign: 'left'
   },
   description: {
     color: 'rgba(255, 255, 255, 0.85)',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '500',
-    lineHeight: 26,
+    lineHeight: 22,
     textAlign: 'left',
     marginBottom: 40,
   },
@@ -138,12 +138,14 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
     textDecorationLine: 'none',
+    paddingTop: 15
   },
   loginButtonText: {
     color: '#FFFFFF',
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: 'bold',
-    letterSpacing: 0.8
+    letterSpacing: 0.8,
+    textAlign: 'center'
   },
   signUpButton: {
     width: '100%',
@@ -156,12 +158,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 30,
     textDecorationLine: 'none',
+    paddingTop: 15
   },
   signUpButtonText: {
     color: '#00C853', // Vibrant green text
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: 'bold',
-    letterSpacing: 0.8
+    letterSpacing: 0.8,
+    textAlign: 'center',
   },
   dividerContainer: {
     flexDirection: 'row',
@@ -174,26 +178,24 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.3)',
   },
   dividerText: {
-    fontSize: 15,
+    fontSize: 14,
     color: '#FFFFFF',
     marginHorizontal: 15,
   },
   socialLoginContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    gap: 20,
   },
   socialButton: {
-    width: 52,
-    height: 52,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-    borderRadius: 10,
+    width: 40,
+    height: 40,
+    // backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
   },
   socialIcon: {
-    width: 32,
-    height: 32,
+    width: 24,
+    height: 24,
   },
 });

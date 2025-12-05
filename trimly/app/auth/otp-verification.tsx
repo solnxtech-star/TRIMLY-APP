@@ -55,6 +55,13 @@ export default function OTPVerificationScreen() {
 
   return (
     <ThemedView style={styles.container}>
+      <TouchableOpacity 
+        style={styles.backButton}
+        onPress={() => router.replace({ pathname: '/auth/forgot-password', params: { role } })}
+      >
+        <ThemedText style={styles.backIcon}>←</ThemedText>
+      </TouchableOpacity>
+      
       <ThemedView style={styles.content}>
         {/* Page Header */}
         <ThemedText style={styles.title}>Get Your OTP</ThemedText>
@@ -107,21 +114,34 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
+  backButton: {
+    position: 'absolute',
+    top: 20,
+    left: 20,
+    width: 34,
+    height: 34,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  backIcon: {
+    fontSize: 26,
+    color: '#1A1D2E',
+  },
   content: {
     flex: 1,
     paddingHorizontal: 32,
-    paddingTop: 40,
+    paddingTop: 100,
   },
   title: {
-    fontSize: 34,
+    fontSize: 30,
     fontWeight: 'bold',
     color: '#1A1D2E',
     marginBottom: 10,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#6B7280',
-    lineHeight: 24,
+    lineHeight: 22,
     marginBottom: 60,
   },
   otpContainer: {
@@ -130,17 +150,17 @@ const styles = StyleSheet.create({
     marginBottom: 60,
   },
   otpBox: {
-    width: 75,
-    height: 75,
+    width: 55,
+    height: 55,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#E5E7EB',
     borderRadius: 13,
-    fontSize: 34,
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#1A1D2E',
     textAlign: 'center',
-    lineHeight: 75,
+    lineHeight: 1,
   },
   otpBoxFocused: {
     borderColor: '#2D8A4B',
@@ -156,7 +176,7 @@ const styles = StyleSheet.create({
   },
   verifyButtonText: {
     color: '#FFFFFF',
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '500',
   },
   signUpContainer: {
@@ -164,11 +184,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   signUpText: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#6B7280',
   },
   signUpLink: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#2D8A4B',
     fontWeight: '500',
   },

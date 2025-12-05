@@ -3,6 +3,7 @@ import { StyleSheet, TextInput, View, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Link, useLocalSearchParams, router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function ChangePasswordScreen() {
   const [password, setPassword] = useState('');
@@ -32,7 +33,10 @@ export default function ChangePasswordScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <TouchableOpacity style={styles.backButton}>
+      <TouchableOpacity 
+        style={styles.backButton}
+        onPress={() => router.replace({ pathname: '/auth/otp-verification', params: { role } })}
+      >
         <ThemedText style={styles.backIcon}>←</ThemedText>
       </TouchableOpacity>
       
@@ -55,7 +59,11 @@ export default function ChangePasswordScreen() {
             style={styles.eyeIcon}
             onPress={() => setShowPassword(!showPassword)}
           >
-            <ThemedText style={styles.eyeIconText}>{showPassword ? '👁️' : '👁️‍🗨️'}</ThemedText>
+            <Ionicons 
+              name={showPassword ? 'eye-outline' : 'eye-off-outline'} 
+              size={24} 
+              color="#1A1D2E" 
+            />
           </TouchableOpacity>
         </View>
         
@@ -73,7 +81,11 @@ export default function ChangePasswordScreen() {
             style={styles.eyeIcon}
             onPress={() => setShowConfirmPassword(!showConfirmPassword)}
           >
-            <ThemedText style={styles.eyeIconText}>{showConfirmPassword ? '👁️' : '👁️‍🗨️'}</ThemedText>
+            <Ionicons 
+              name={showConfirmPassword ? 'eye-outline' : 'eye-off-outline'} 
+              size={24} 
+              color="#1A1D2E" 
+            />
           </TouchableOpacity>
         </View>
         
@@ -110,22 +122,23 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 32,
-    paddingTop: 85,
+    paddingTop: 100,
   },
   title: {
-    fontSize: 34,
+    fontSize: 30,
     fontWeight: 'bold',
     color: '#1A1D2E',
     marginBottom: 10,
+    lineHeight: 40
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#6B7280',
-    lineHeight: 24,
+    lineHeight: 22,
     marginBottom: 50,
   },
   label: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#6B7280',
     marginBottom: 8,
   },
@@ -136,7 +149,7 @@ const styles = StyleSheet.create({
     borderColor: '#E5E7EB',
     borderRadius: 12,
     paddingHorizontal: 18,
-    fontSize: 17,
+    fontSize: 16,
     color: '#1A1D2E',
     marginBottom: 25,
   },
@@ -148,9 +161,6 @@ const styles = StyleSheet.create({
     right: 18,
     top: 20,
   },
-  eyeIconText: {
-    fontSize: 24,
-  },
   changePasswordButton: {
     backgroundColor: '#2D8A4B',
     borderRadius: 12,
@@ -161,7 +171,7 @@ const styles = StyleSheet.create({
   },
   changePasswordButtonText: {
     color: '#FFFFFF',
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '500',
   },
 });

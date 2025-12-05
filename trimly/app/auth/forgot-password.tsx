@@ -19,11 +19,8 @@ export default function ForgotPasswordScreen() {
       // Simulate API call
       setTimeout(() => {
         setIsLoading(false);
-        Alert.alert(
-          'Password Reset Email Sent',
-          'Check your email for instructions to reset your password.',
-          [{ text: 'OK', onPress: () => router.replace({ pathname: '/auth/sign-in', params: { role } }) }]
-        );
+        // Navigate to OTP verification screen
+        router.replace({ pathname: '/auth/otp-verification', params: { role } });
       }, 1000);
     } else {
       Alert.alert('Error', 'Please enter your email address');
@@ -32,6 +29,13 @@ export default function ForgotPasswordScreen() {
 
   return (
     <ThemedView style={styles.container}>
+      <TouchableOpacity 
+        style={styles.backButton}
+        onPress={() => router.replace({ pathname: '/auth/sign-in', params: { role } })}
+      >
+        <ThemedText style={styles.backIcon}>←</ThemedText>
+      </TouchableOpacity>
+      
       <ThemedView style={styles.content}>
         {/* Page Header */}
         <ThemedText style={styles.title}>Forgot Password</ThemedText>
@@ -69,21 +73,35 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
+  backButton: {
+    position: 'absolute',
+    top: 20,
+    left: 20,
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  backIcon: {
+    fontSize: 26,
+    color: '#1A1D2E',
+  },
   content: {
     flex: 1,
     paddingHorizontal: 32,
-    paddingTop: 40,
+    paddingTop: 100,
   },
   title: {
-    fontSize: 34,
+    fontSize: 30,
     fontWeight: 'bold',
     color: '#1A1D2E',
     marginBottom: 10,
+    lineHeight: 40
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#6B7280',
-    lineHeight: 24,
+    lineHeight: 22,
     marginBottom: 50,
   },
   input: {
@@ -93,7 +111,7 @@ const styles = StyleSheet.create({
     borderColor: '#E5E7EB',
     borderRadius: 12,
     paddingHorizontal: 18,
-    fontSize: 17,
+    fontSize: 16,
     color: '#1A1D2E',
     marginBottom: 140,
   },
@@ -109,7 +127,7 @@ const styles = StyleSheet.create({
   },
   nextButtonText: {
     color: '#FFFFFF',
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '500',
   },
   loadingText: {
