@@ -12,13 +12,9 @@ class UserDetailSerializer(serializers.ModelSerializer):
 class CustomRegisterSerializer(RegisterSerializer):
     first_name = serializers.CharField(required=False, allow_blank=True)
     last_name = serializers.CharField(required=False, allow_blank=True)
-    confirm_password = serializers.CharField(required=True)
     role = serializers.CharField(required=True)
     phone = serializers.CharField(required=False, allow_blank=True)
     
-    def validate(self, data):
-        if data["confirm_password"] != data["password"]:
-            raise serializers.ValidationError("passwords does not match")
     def validate_role(self, value):
         valid = [choice[0] for choice in User.ROLE_CHOICES]
         if value not in valid:
