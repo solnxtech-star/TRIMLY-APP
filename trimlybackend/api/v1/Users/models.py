@@ -32,10 +32,11 @@ class User(AbstractUser):
 
 
 
-class CustomerProfile(models.Model):
+class SalonOwnerProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    bio = models.TextField(blank=True)
+    profile_pic = models.ImageField(upload_to='owners/', blank=True)
     address = models.CharField(max_length=255)
-    name = models.CharField(max_length=255)
     date_of_birth = models.DateTimeField(auto_now_add=True)
     Gender = models.CharField(max_length=10, choices=[('male', 'male'), ('female', 'female')])
     def __str__(self):
@@ -44,11 +45,11 @@ class CustomerProfile(models.Model):
 class IndividualVendorProfile(models.Model):
     worker = models.OneToOneField(User, on_delete=models.CASCADE)
     service_category = models.ForeignKey(ServiceCategory, on_delete=models.SET_NULL, null=True)
-
+    date_of_birth = models.DateTimeField(auto_now_add=True)
     bio = models.TextField()
     profile_pic = models.ImageField(upload_to='vendors/', null=True)
     years_of_experience = models.IntegerField()
-
+    Gender = models.CharField(max_length=10, choices=[('male', 'male'), ('female', 'female')])
     total_earnings = models.BigIntegerField(default=0)
     portfolio = models.ForeignKey(Gallery, on_delete=models.SET_NULL, null=True)
 

@@ -17,21 +17,15 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include, re_path
 from dj_rest_auth.views import PasswordResetConfirmView
-from dj_rest_auth.registration.views import VerifyEmailView 
+from dj_rest_auth.registration.views import VerifyEmailView, RegisterView 
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 urlpatterns = [
     path('admin/', admin.site.urls),
     # Enables: Login, Logout, Password Reset, and User Details
+    path('api/v1/auth/users/<int:pk>/', include('api.v1.Users.urls')),
     path('api/v1/auth/', include('dj_rest_auth.urls')),
-    re_path(
-    r'^api/v1/auth/registration/account-confirm-email/(?P<key>[-:\w]+)/$', 
-    VerifyEmailView.as_view(), 
-    name='account_confirm_email',
-    ),
-    re_path(
-    r'^api/v1/auth/password/reset/confirm/(?P<uid>[-:\w]+)/(?P<token>[-:\w]+)/$',
-    PasswordResetConfirmView.as_view(),
-    name='password_reset_confirm') ,# This specific name MUST match the error message!
+    re_path(r'^api/v1/auth/registration/account-confirm-email/(?P<key>[-:\w]+)/$', VerifyEmailView.as_view(), name='account_confirm_email',),
+    re_path(r'^api/v1/auth/password/reset/confirm/(?P<uid>[-:\w]+)/(?P<token>[-:\w]+)/$',PasswordResetConfirmView.as_view(),name='password_reset_confirm') ,# This specific name MUST match the error message!
     path('api/v1/auth/registration/', include('dj_rest_auth.registration.urls')),
     path('salon/', include('api.v1.Salons.urls')),
     path('swagger/', SpectacularSwaggerView.as_view(), name="schema"),
