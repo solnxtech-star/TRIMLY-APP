@@ -195,7 +195,7 @@ REST_AUTH = {
     'TOKEN_SERIALIZER': 'dj_rest_auth.serializers.JWTSerializer',
 
     'REGISTER_SERIALIZER': 'api.v1.Users.serializers.CustomRegisterSerializer',
-    'USER_DETAILS_SERIALIZER': 'api.v1.Users.serializers.UserSerializer',
+    'USER_DETAILS_SERIALIZER': 'api.v1.Users.serializers.UserDetailSerializer',
     'USER_MODEL': 'Users.User',
 }
 # For development: prints emails (like verification links) to the console/terminal
