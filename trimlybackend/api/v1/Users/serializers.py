@@ -12,9 +12,11 @@ class UserDetailSerializer(serializers.ModelSerializer):
 class CustomRegisterSerializer(RegisterSerializer):
     first_name = serializers.CharField(required=False, allow_blank=True)
     last_name = serializers.CharField(required=False, allow_blank=True)
+
     role = serializers.CharField(required=True)
     phone = serializers.CharField(required=False, allow_blank=True)
     
+
     def validate_role(self, value):
         valid = [choice[0] for choice in User.ROLE_CHOICES]
         if value not in valid:
