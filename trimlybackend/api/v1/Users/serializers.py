@@ -1,5 +1,7 @@
 from rest_framework import serializers
-from .models import User, IndividualVendorProfile, SalonOwnerProfile
+from api.v1.Vendor.models import  IndividualVendorProfile
+from . models import User
+from api.v1.Salons.models import SalonOwnerProfile
 from dj_rest_auth.registration.serializers import RegisterSerializer
 from django.db import transaction
 
@@ -15,7 +17,7 @@ class IndividualVendorSerializer(serializers.ModelSerializer):
 
 class UserDetailSerializer(serializers.ModelSerializer):
     salon_profile = SalonOwnerSerializer(source="SalonOwnerProfile", required=False)
-    vendor_profile = IndividualVendorSerializer(source="SalonOwnerProfile", required=False)
+    vendor_profile = IndividualVendorSerializer(source="IndividualVendorProfile", required=False)
     class Meta:
         model = User
         fields = ("id", "first_name", "last_name", "email", "username", "phone_number", "role", "salon_profile", "vendor_profile" )

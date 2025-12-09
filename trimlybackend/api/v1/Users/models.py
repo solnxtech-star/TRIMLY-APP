@@ -1,11 +1,6 @@
 from django.db import models
-from api.v1.Category.models import ServiceCategory, Gallery
 from django.contrib.auth.models import AbstractUser
 from .managers import CustomUserManager
-from django.db import models
-
-from django.contrib.auth.models import AbstractUser
-from django.db import models
 
 class User(AbstractUser):
     ROLE_CHOICES = [
@@ -32,27 +27,4 @@ class User(AbstractUser):
 
 
 
-class SalonOwnerProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    bio = models.TextField(blank=True)
-    profile_pic = models.ImageField(upload_to='owners/', blank=True)
-    address = models.CharField(max_length=255)
-    date_of_birth = models.DateTimeField(auto_now_add=True)
-    Gender = models.CharField(max_length=10, choices=[('male', 'male'), ('female', 'female')])
-    def __str__(self):
-        return self.name
-    
-class IndividualVendorProfile(models.Model):
-    worker = models.OneToOneField(User, on_delete=models.CASCADE)
-    service_category = models.ForeignKey(ServiceCategory, on_delete=models.SET_NULL, null=True)
-    date_of_birth = models.DateTimeField(auto_now_add=True)
-    bio = models.TextField()
-    profile_pic = models.ImageField(upload_to='vendors/', null=True)
-    years_of_experience = models.IntegerField()
-    Gender = models.CharField(max_length=10, choices=[('male', 'male'), ('female', 'female')])
-    total_earnings = models.BigIntegerField(default=0)
-    portfolio = models.ForeignKey(Gallery, on_delete=models.SET_NULL, null=True)
-
-    def __str__(self):
-        return self.worker.email
 

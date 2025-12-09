@@ -8,4 +8,4 @@ from .permissions import IsApplicationAdmin
 class UserProfileListView(RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserDetailSerializer
-    permission_classes = [IsApplicationAdmin,]
+    permission_classes = [IsApplicationAdmin]
