@@ -1,7 +1,7 @@
 from .models import IndividualVendorProfile, VendorServices
 from .serializers import VendorSerializer, VendorServicesSerializer
 from rest_framework import generics, viewsets, permissions
-from rest_framework.permissions import IsAuthenticated, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from api.v1.Users.permissions import IsAdminVendorOrReadOnly, IsAdminOrVendorServiceObject
 
 class VendorServicesListCreateAPIView(generics.ListCreateAPIView):
@@ -24,10 +24,10 @@ class VendorViewset(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action in ["list", "retrieve"]:
-            self.permission_classes = [IsAuthenticated,]
+            permission_classes = [IsAuthenticated,]
         elif self.action == "create":
-            self.permission_classes = [IsAdminVendorOrReadOnly,]
+            permission_classes = [IsAdminVendorOrReadOnly,]
         else:
-            self.permission_classes = [IsAdminOrVendorServiceObject,]
+            permission_classes = [IsAdminOrVendorServiceObject,]
 
-        return super().get_permissions()
+        return [permission() for permission in permission_classes]

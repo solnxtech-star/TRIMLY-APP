@@ -7,6 +7,7 @@ from django.db import transaction
 
 class SalonOwnerSerializer(serializers.ModelSerializer):
     class Meta:
+        salon_service = serializers.CharField()
         model = SalonOwnerProfile
         fields = "__all__"
 

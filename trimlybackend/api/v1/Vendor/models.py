@@ -26,4 +26,5 @@ class VendorServices(models.Model):
     duration_minutes = models.PositiveIntegerField(default=10)
     categories = models.ManyToManyField(ServiceCategory)
 
-
+    def __str__(self):
+        return f"{self.vendor.email} - {self.name}"

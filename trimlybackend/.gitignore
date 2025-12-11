@@ -1,3 +1,6 @@
 *.pyc
 __pycache__/
 *.env
+salon_profiles
+vendors
+gallery

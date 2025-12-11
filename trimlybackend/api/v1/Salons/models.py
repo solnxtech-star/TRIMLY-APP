@@ -64,3 +64,5 @@ class SalonServices(models.Model):
     categories = models.ManyToManyField(ServiceCategory)
     
 
+    def __str__(self):
+        return f"{self.salon.name} - {self.name}"

@@ -5,7 +5,7 @@ class VendorSerializer(serializers.ModelSerializer):
     class Meta:
         model = IndividualVendorProfile
         fields = "__all__"
-        read_only_fields = ["worker"]
+        read_only_fields = ["worker", "total_earnings"]
         
     
 class VendorServicesSerializer(serializers.ModelSerializer):
