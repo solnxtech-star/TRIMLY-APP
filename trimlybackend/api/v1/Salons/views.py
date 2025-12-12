@@ -42,6 +42,6 @@ class SalonServicesListCreateAPIView(generics.ListCreateAPIView):
     
 class SalonServicesRetrieveUpdateDeleteAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = SalonServices.objects.all()
-    serializer_class = SalonServices
+    serializer_class = SalonServicesSerializer
     permission_classes = [permissions.IsAdminOrSalonServiceOwnerObject]
     
