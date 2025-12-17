@@ -48,6 +48,209 @@ export default function ClientLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="salons"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="services"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="bookings"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="bookings/cancel-booking"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="bookings/cancelled"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="bookings/completed"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="bookings/main"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="bookings/upcoming"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="bookings/index"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="profile/cancellation-policy"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="profile/edit-profile"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="profile/help-center"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="profile/payment-methods"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="profile/privacy-policy"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="profile/saved-salons"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="profile/settings"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="profile/terms-condition"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="profile/transactions"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="components/CategoryPills"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="components/MapView"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="components/VendorCard"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="home/index"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="home/components/SearchBar"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="home/components/FeaturedVendors"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="home/components/Salons"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="home/components/Services"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="home/components/SpecialForYou"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="home/components/TopRatedSalons"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="home/components/Header"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
     </Tabs>
   );
 }

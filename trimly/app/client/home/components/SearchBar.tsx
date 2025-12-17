@@ -19,10 +19,16 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#ffffff',
     borderRadius: 26,
     height: 52,
     marginHorizontal: 16,
+    marginTop: 20,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
   },
   searchIcon: {
     marginLeft: 16,
