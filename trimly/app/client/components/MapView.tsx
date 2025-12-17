@@ -1,5 +1,6 @@
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
+import { useRouter } from 'expo-router';
 
 interface Location {
   id: string;
@@ -9,10 +10,17 @@ interface Location {
 
 interface MapViewProps {
   locations: Location[];
-  onLocationPress: (locationId: string) => void;
 }
 
-export default function MapViewComponent({ locations, onLocationPress }: MapViewProps) {
+export default function MapViewComponent({ locations }: MapViewProps) {
+  const router = useRouter();
+  
+  const handleLocationPress = (locationId: string) => {
+    // For now, we'll navigate to a sample business
+    // In a real app, you would filter businesses by location
+    router.push(`/business/${locationId}` as any);
+  };
+  
   return (
     <View style={styles.container}>
       <ThemedText style={styles.title}>Map View</ThemedText>
@@ -23,7 +31,7 @@ export default function MapViewComponent({ locations, onLocationPress }: MapView
           <View style={styles.lagosArea}>
             <TouchableOpacity
               style={[styles.locationPin, styles.location1]}
-              onPress={() => onLocationPress(locations[0]?.id)}
+              onPress={() => handleLocationPress(locations[0]?.id)}
             >
               <View style={styles.pinIcon} />
               <ThemedText style={styles.locationName}>{locations[0]?.district}</ThemedText>
@@ -31,7 +39,7 @@ export default function MapViewComponent({ locations, onLocationPress }: MapView
             
             <TouchableOpacity
               style={[styles.locationPin, styles.location2]}
-              onPress={() => onLocationPress(locations[1]?.id)}
+              onPress={() => handleLocationPress(locations[1]?.id)}
             >
               <View style={styles.pinIcon} />
               <ThemedText style={styles.locationName}>{locations[1]?.district}</ThemedText>
@@ -39,7 +47,7 @@ export default function MapViewComponent({ locations, onLocationPress }: MapView
             
             <TouchableOpacity
               style={[styles.locationPin, styles.location3]}
-              onPress={() => onLocationPress(locations[2]?.id)}
+              onPress={() => handleLocationPress(locations[2]?.id)}
             >
               <View style={styles.pinIcon} />
               <ThemedText style={styles.locationName}>{locations[2]?.district}</ThemedText>
@@ -47,7 +55,7 @@ export default function MapViewComponent({ locations, onLocationPress }: MapView
             
             <TouchableOpacity
               style={[styles.locationPin, styles.location4]}
-              onPress={() => onLocationPress(locations[3]?.id)}
+              onPress={() => handleLocationPress(locations[3]?.id)}
             >
               <View style={styles.pinIcon} />
               <ThemedText style={styles.locationName}>{locations[3]?.district}</ThemedText>

@@ -22,7 +22,7 @@ export default function VendorCard({ vendor }: VendorCardProps) {
   const router = useRouter();
   
   const handlePress = () => {
-    router.push(`../business/${vendor.id}`);
+    router.push(`/business/${vendor.id}` as any);
   };
   
   return (

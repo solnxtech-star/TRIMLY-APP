@@ -113,7 +113,6 @@ export default function ExploreScreen() {
         {/* Map View */}
         <MapViewComponent 
           locations={locations} 
-          onLocationPress={handleLocationPress} 
         />
       </ScrollView>
     </ThemedView>
