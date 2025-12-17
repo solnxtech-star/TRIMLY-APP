@@ -17,23 +17,18 @@ export default function SignInScreen() {
   const role = params.role || 'customer';
 
   const handleSignIn = () => {
-    // Here you would typically call your authentication API
+    // Temporary implementation: any login attempt works since we don't have the API yet
     if (email && password) {
       setIsLoading(true);
       // Simulate API call
       setTimeout(() => {
         setIsLoading(false);
-        // For demo purposes, let's simulate an error
-        if (password !== 'correctpassword') {
-          setHasError(true);
+        // Navigate to the appropriate dashboard based on the selected role
+        if (role === 'vendor') {
+          router.replace('/business/dashboard');
         } else {
-          // Navigate to the appropriate dashboard based on the selected role
-          if (role === 'vendor') {
-            router.replace('/business/dashboard');
-          } else {
-            // Default to client dashboard for customer role or any other case
-            router.replace('/client/dashboard');
-          }
+          // Default to client dashboard for customer role or any other case
+          router.replace('/client/dashboard');
         }
       }, 1000);
     } else {
