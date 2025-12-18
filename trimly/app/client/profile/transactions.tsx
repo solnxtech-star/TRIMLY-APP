@@ -1,8 +1,16 @@
 import { StyleSheet, View, ScrollView } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { useThemeColor } from '@/hooks/use-theme-color';
 
 export default function TransactionsScreen() {
+  // Get theme colors
+  const backgroundColor = useThemeColor({}, 'background');
+  const textColor = useThemeColor({}, 'text');
+  const iconColor = useThemeColor({ light: '#8E8E93', dark: '#8E8E93' }, 'icon');
+  const greenColor = useThemeColor({ light: '#2D8659', dark: '#2D8659' }, 'tint');
+  const cardBackgroundColor = useThemeColor({ light: '#FFFFFF', dark: '#1d1d1d' }, 'background');
+
   // Transaction data grouped by date
   const transactionsData = [
     {
@@ -40,26 +48,26 @@ export default function TransactionsScreen() {
   ];
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={[styles.container, { backgroundColor }]}>
       <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
       >
         {/* Header */}
-        <ThemedText style={styles.header}>Your transactions</ThemedText>
+        <ThemedText style={[styles.header, { color: textColor }]}>Your transactions</ThemedText>
         
         {/* Transactions */}
         <View style={styles.transactionsContainer}>
           {transactionsData.map((dateGroup, index) => (
             <View key={index} style={styles.dateGroup}>
-              <ThemedText style={styles.dateLabel}>{dateGroup.date}</ThemedText>
+              <ThemedText style={[styles.dateLabel, { color: iconColor }]}>{dateGroup.date}</ThemedText>
               {dateGroup.transactions.map((transaction, transIndex) => (
-                <View key={transIndex} style={styles.transactionCard}>
+                <View key={transIndex} style={[styles.transactionCard, { backgroundColor: cardBackgroundColor }]}>
                   <View style={styles.transactionInfo}>
-                    <ThemedText style={styles.serviceName}>{transaction.service}</ThemedText>
-                    <ThemedText style={styles.dateTime}>{transaction.dateTime}</ThemedText>
+                    <ThemedText style={[styles.serviceName, { color: textColor }]}>{transaction.service}</ThemedText>
+                    <ThemedText style={[styles.dateTime, { color: iconColor }]}>{transaction.dateTime}</ThemedText>
                   </View>
-                  <ThemedText style={styles.amount}>{transaction.amount}</ThemedText>
+                  <ThemedText style={[styles.amount, { color: greenColor }]}>{transaction.amount}</ThemedText>
                 </View>
               ))}
             </View>
@@ -73,7 +81,6 @@ export default function TransactionsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
   },
   scrollView: {
     flex: 1,
@@ -86,7 +93,6 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 27,
     fontWeight: 'bold',
-    color: '#000000',
     marginBottom: 30,
     textAlign: 'center',
   },
@@ -98,7 +104,6 @@ const styles = StyleSheet.create({
   },
   dateLabel: {
     fontSize: 17,
-    color: '#8E8E93',
     fontWeight: '600',
     marginBottom: 15,
   },
@@ -106,7 +111,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
     borderRadius: 10,
     padding: 15,
     marginBottom: 10,
@@ -121,17 +125,14 @@ const styles = StyleSheet.create({
   },
   serviceName: {
     fontSize: 17,
-    color: '#000000',
     fontWeight: '600',
     marginBottom: 5,
   },
   dateTime: {
     fontSize: 15,
-    color: '#8E8E93',
   },
   amount: {
     fontSize: 17,
-    color: '#2D8659', // Green color
     fontWeight: '600',
   },
 });

@@ -3,9 +3,16 @@ import { StyleSheet, View, TouchableOpacity, ScrollView, Image } from 'react-nat
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useThemeColor } from '@/hooks/use-theme-color';
 
 export default function SavedSalonsScreen() {
   const [activeFilter, setActiveFilter] = useState('All');
+  
+  // Get theme colors
+  const backgroundColor = useThemeColor({}, 'background');
+  const textColor = useThemeColor({}, 'text');
+  const borderColor = useThemeColor({}, 'border');
+  const cardBackgroundColor = useThemeColor({ light: '#FFFFFF', dark: '#2a2a2a' }, 'background');
 
   const filters = ['All', 'Haircuts', 'Make Up', 'Massage'];
 
@@ -18,13 +25,13 @@ export default function SavedSalonsScreen() {
   ];
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={[styles.container, { backgroundColor }]}>
       <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
       >
         {/* Header */}
-        <ThemedText style={styles.header}>Saved</ThemedText>
+        <ThemedText style={[styles.header, { color: textColor }]}>Saved</ThemedText>
         
         {/* Filters */}
         <View style={styles.filtersContainer}>
@@ -39,6 +46,7 @@ export default function SavedSalonsScreen() {
             >
               <ThemedText style={[
                 styles.filterText,
+                { color: textColor },
                 activeFilter === filter && styles.activeFilterText
               ]}>
                 {filter}
@@ -50,20 +58,20 @@ export default function SavedSalonsScreen() {
         {/* Salon Cards */}
         <View style={styles.salonsContainer}>
           {salons.map((salon, index) => (
-            <View key={index} style={styles.salonCard}>
+            <View key={index} style={[styles.salonCard, { backgroundColor: cardBackgroundColor }]}>
               <Image 
                 source={require('@/assets/stock/img.png')} 
                 style={styles.salonImage} 
               />
               <View style={styles.salonInfo}>
-                <ThemedText style={styles.salonName}>{salon.name}</ThemedText>
+                <ThemedText style={[styles.salonName, { color: textColor }]}>{salon.name}</ThemedText>
                 <View style={styles.locationContainer}>
                   <IconSymbol name="location" size={16} color="#8E8E93" />
-                  <ThemedText style={styles.address}>{salon.address}</ThemedText>
+                  <ThemedText style={[styles.address, { color: textColor }]}>{salon.address}</ThemedText>
                 </View>
                 <View style={styles.ratingContainer}>
                   <IconSymbol name="star" size={16} color="#FFD700" />
-                  <ThemedText style={styles.rating}>{salon.rating}</ThemedText>
+                  <ThemedText style={[styles.rating, { color: textColor }]}>{salon.rating}</ThemedText>
                 </View>
               </View>
             </View>
@@ -77,7 +85,6 @@ export default function SavedSalonsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
   },
   scrollView: {
     flex: 1,
@@ -90,7 +97,6 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 27,
     fontWeight: 'bold',
-    color: '#000000',
     marginBottom: 20,
     textAlign: 'center',
   },
@@ -102,7 +108,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 20,
-    backgroundColor: '#F0F0F0',
     marginRight: 10,
   },
   activeFilterPill: {
@@ -110,7 +115,6 @@ const styles = StyleSheet.create({
   },
   filterText: {
     fontSize: 15,
-    color: '#000000',
   },
   activeFilterText: {
     color: '#FFFFFF', // White text
@@ -120,7 +124,6 @@ const styles = StyleSheet.create({
   },
   salonCard: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
     borderRadius: 10,
     marginBottom: 15,
     shadowColor: '#000',
@@ -131,7 +134,7 @@ const styles = StyleSheet.create({
   },
   salonImage: {
     width: 100,
-    height: 100,
+    height: 110,
     borderTopLeftRadius: 10,
     borderBottomLeftRadius: 10,
   },
@@ -141,7 +144,6 @@ const styles = StyleSheet.create({
   },
   salonName: {
     fontSize: 17,
-    color: '#000000',
     fontWeight: '600',
     marginBottom: 5,
   },
@@ -152,7 +154,6 @@ const styles = StyleSheet.create({
   },
   address: {
     fontSize: 15,
-    color: '#8E8E93',
     marginLeft: 5,
   },
   ratingContainer: {
@@ -161,7 +162,6 @@ const styles = StyleSheet.create({
   },
   rating: {
     fontSize: 15,
-    color: '#000000',
     marginLeft: 5,
   },
 });

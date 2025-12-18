@@ -1,25 +1,33 @@
 import { StyleSheet, View, TouchableOpacity, ScrollView } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { useThemeColor } from '@/hooks/use-theme-color';
 
 export default function PrivacyPolicyScreen() {
+  // Get theme colors
+  const backgroundColor = useThemeColor({}, 'background');
+  const textColor = useThemeColor({}, 'text');
+  const borderColor = useThemeColor({}, 'icon');
+  const greenColor = useThemeColor({ light: '#2D8659', dark: '#2D8659' }, 'tint');
+  const cardBackgroundColor = useThemeColor({ light: '#FFFFFF', dark: '#1d1d1d' }, 'background');
+
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={[styles.container, { backgroundColor }]}>
       <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
       >
         {/* Header */}
-        <ThemedText style={styles.header}>Privacy Policy</ThemedText>
+        <ThemedText style={[styles.header, { color: textColor }]}>Privacy Policy</ThemedText>
         
         {/* Policy Items */}
         <View style={styles.policyContainer}>
-          <TouchableOpacity style={styles.policyItem}>
-            <ThemedText style={styles.policyLabel}>Cancellation Policy</ThemedText>
+          <TouchableOpacity style={[styles.policyItem, { borderBottomColor: borderColor }]}>
+            <ThemedText style={[styles.policyLabel, { color: greenColor }]}>Cancellation Policy</ThemedText>
           </TouchableOpacity>
           
-          <TouchableOpacity style={styles.policyItem}>
-            <ThemedText style={styles.policyLabel}>Terms & Condition</ThemedText>
+          <TouchableOpacity style={[styles.policyItem, { borderBottomColor: borderColor }]}>
+            <ThemedText style={[styles.policyLabel, { color: greenColor }]}>Terms & Condition</ThemedText>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -30,7 +38,6 @@ export default function PrivacyPolicyScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
   },
   scrollView: {
     flex: 1,
@@ -43,7 +50,6 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 27,
     fontWeight: 'bold',
-    color: '#000000',
     marginBottom: 30,
     textAlign: 'center',
   },
@@ -54,11 +60,9 @@ const styles = StyleSheet.create({
   policyItem: {
     paddingVertical: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
   },
   policyLabel: {
     fontSize: 17,
-    color: '#2D8659', // Green color
     fontWeight: '500',
   },
 });

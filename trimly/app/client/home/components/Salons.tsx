@@ -7,8 +7,7 @@ export default function Salons() {
   const router = useRouter();
 
   const handleSeeAll = () => {
-    // For now, we'll just log to console since we don't have routing set up
-    console.log('See all salons');
+    router.push('/client/salons');
   };
 
   return (

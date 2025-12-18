@@ -4,9 +4,20 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Collapsible } from '@/components/ui/collapsible';
+import { useThemeColor } from '@/hooks/use-theme-color';
 
 export default function HelpCenterScreen() {
   const [activeTab, setActiveTab] = useState<'faq' | 'contact'>('faq');
+
+  // Get theme colors
+  const backgroundColor = useThemeColor({}, 'background');
+  const textColor = useThemeColor({}, 'text');
+  const borderColor = useThemeColor({}, 'icon');
+  const inputBackgroundColor = useThemeColor({ light: '#F2F2F7', dark: '#2a2a2a' }, 'background');
+  const cardBackgroundColor = useThemeColor({ light: '#FFFFFF', dark: '#1d1d1d' }, 'background');
+  const iconColor = useThemeColor({ light: '#8E8E93', dark: '#8E8E93' }, 'icon');
+  const greenColor = useThemeColor({ light: '#2D8659', dark: '#2D8659' }, 'tint');
+  const contactIconBackground = useThemeColor({ light: '#E8F5E9', dark: '#2a2a2a' }, 'background');
 
   // FAQ data
   const faqData = [
@@ -30,21 +41,21 @@ export default function HelpCenterScreen() {
   ];
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={[styles.container, { backgroundColor }]}>
       <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
       >
         {/* Header */}
-        <ThemedText style={styles.header}>Help Center</ThemedText>
+        <ThemedText style={[styles.header, { color: textColor }]}>Help Center</ThemedText>
         
         {/* Search Bar */}
-        <View style={styles.searchContainer}>
-          <IconSymbol name="magnifyingglass" size={20} color="#8E8E93" />
+        <View style={[styles.searchContainer, { backgroundColor: inputBackgroundColor }]}>
+          <IconSymbol name="magnifyingglass" size={20} color={iconColor} />
           <TextInput
-            style={styles.searchInput}
+            style={[styles.searchInput, { color: textColor }]}
             placeholder="Search"
-            placeholderTextColor="#8E8E93"
+            placeholderTextColor={iconColor}
           />
         </View>
         
@@ -54,20 +65,20 @@ export default function HelpCenterScreen() {
             style={[styles.tab, activeTab === 'faq' && styles.activeTab]}
             onPress={() => setActiveTab('faq')}
           >
-            <ThemedText style={[styles.tabText, activeTab === 'faq' && styles.activeTabText]}>
+            <ThemedText style={[styles.tabText, activeTab === 'faq' && styles.activeTabText, { color: activeTab === 'faq' ? textColor : iconColor }]}>
               FAQ
             </ThemedText>
-            {activeTab === 'faq' && <View style={styles.tabIndicator} />}
+            {activeTab === 'faq' && <View style={[styles.tabIndicator, { backgroundColor: greenColor }]} />}
           </TouchableOpacity>
           
           <TouchableOpacity 
             style={[styles.tab, activeTab === 'contact' && styles.activeTab]}
             onPress={() => setActiveTab('contact')}
           >
-            <ThemedText style={[styles.tabText, activeTab === 'contact' && styles.activeTabText]}>
+            <ThemedText style={[styles.tabText, activeTab === 'contact' && styles.activeTabText, { color: activeTab === 'contact' ? textColor : iconColor }]}>
               Contact Us
             </ThemedText>
-            {activeTab === 'contact' && <View style={styles.tabIndicator} />}
+            {activeTab === 'contact' && <View style={[styles.tabIndicator, { backgroundColor: greenColor }]} />}
           </TouchableOpacity>
         </View>
         
@@ -83,12 +94,12 @@ export default function HelpCenterScreen() {
         ) : (
           <View style={styles.contentContainer}>
             {contactData.map((item, index) => (
-              <TouchableOpacity key={index} style={styles.contactItem}>
-                <View style={styles.contactIconContainer}>
-                  <IconSymbol name={item.icon} size={20} color="#2D8659" />
+              <TouchableOpacity key={index} style={[styles.contactItem, { borderColor, backgroundColor: cardBackgroundColor }]}>
+                <View style={[styles.contactIconContainer, { backgroundColor: contactIconBackground }]}>
+                  <IconSymbol name={item.icon} size={20} color={greenColor} />
                 </View>
-                <ThemedText style={styles.contactLabel}>{item.label}</ThemedText>
-                <IconSymbol name="chevron.right" size={20} color="#8E8E93" />
+                <ThemedText style={[styles.contactLabel, { color: textColor }]}>{item.label}</ThemedText>
+                <IconSymbol name="chevron.right" size={20} color={iconColor} />
               </TouchableOpacity>
             ))}
           </View>
@@ -101,7 +112,6 @@ export default function HelpCenterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
   },
   scrollView: {
     flex: 1,
@@ -112,26 +122,27 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   header: {
-    fontSize: 27,
+    fontSize: 20,
     fontWeight: 'bold',
-    color: '#000000',
     marginBottom: 20,
     textAlign: 'center',
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F2F2F7',
     borderRadius: 10,
     paddingHorizontal: 15,
-    paddingVertical: 12,
+    paddingVertical: 4,
     marginBottom: 20,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4
   },
   searchInput: {
     flex: 1,
     marginLeft: 10,
     fontSize: 17,
-    color: '#000000',
   },
   tabsContainer: {
     flexDirection: 'row',
@@ -147,11 +158,9 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 17,
-    color: '#8E8E93',
-    fontWeight: '500',
+    // fontWeight: '500',
   },
   activeTabText: {
-    color: '#000000',
     fontWeight: '600',
   },
   tabIndicator: {
@@ -159,7 +168,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: '100%',
     height: 3,
-    backgroundColor: '#2D8659',
     borderRadius: 2,
   },
   contentContainer: {
@@ -171,7 +179,6 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 15,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
     borderRadius: 10,
     marginBottom: 10,
   },
@@ -179,7 +186,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#E8F5E9',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 15,
@@ -187,6 +193,5 @@ const styles = StyleSheet.create({
   contactLabel: {
     flex: 1,
     fontSize: 17,
-    color: '#000000',
   },
 });

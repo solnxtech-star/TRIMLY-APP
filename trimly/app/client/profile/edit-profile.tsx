@@ -3,6 +3,7 @@ import { StyleSheet, View, TextInput, TouchableOpacity, ScrollView, Image, Alert
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useThemeColor } from '@/hooks/use-theme-color';
 
 export default function EditProfileScreen() {
   const [name, setName] = useState('Alex Briggs');
@@ -10,6 +11,12 @@ export default function EditProfileScreen() {
   const [phone, setPhone] = useState('+2348165234875');
   const [dob, setDob] = useState('01/05/98');
   const [gender, setGender] = useState('Female');
+  
+  // Get theme colors
+  const backgroundColor = useThemeColor({}, 'background');
+  const textColor = useThemeColor({}, 'text');
+  const borderColor = useThemeColor({}, 'border');
+  const inputBackgroundColor = useThemeColor({ light: '#FFFFFF', dark: '#2a2a2a' }, 'background');
 
   const genders = ['Male', 'Female', 'Other'];
 
@@ -22,13 +29,13 @@ export default function EditProfileScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={[styles.container, { backgroundColor }]}>
       <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
       >
         {/* Header */}
-        <ThemedText style={styles.header}>Your Profile</ThemedText>
+        <ThemedText style={[styles.header, { color: textColor }]}>Your Profile</ThemedText>
         
         {/* Profile Photo */}
         <View style={styles.photoContainer}>
@@ -44,18 +51,18 @@ export default function EditProfileScreen() {
         {/* Form Fields */}
         <View style={styles.formContainer}>
           <View style={styles.inputGroup}>
-            <ThemedText style={styles.label}>Name</ThemedText>
+            <ThemedText style={[styles.label, { color: textColor }]}>Name</ThemedText>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { color: textColor, backgroundColor: inputBackgroundColor, borderColor }]}
               value={name}
               onChangeText={setName}
             />
           </View>
           
           <View style={styles.inputGroup}>
-            <ThemedText style={styles.label}>Email</ThemedText>
+            <ThemedText style={[styles.label, { color: textColor }]}>Email</ThemedText>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { color: textColor, backgroundColor: inputBackgroundColor, borderColor }]}
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
@@ -63,9 +70,9 @@ export default function EditProfileScreen() {
           </View>
           
           <View style={styles.inputGroup}>
-            <ThemedText style={styles.label}>Phone Number</ThemedText>
+            <ThemedText style={[styles.label, { color: textColor }]}>Phone Number</ThemedText>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { color: textColor, backgroundColor: inputBackgroundColor, borderColor }]}
               value={phone}
               onChangeText={setPhone}
               keyboardType="phone-pad"
@@ -73,18 +80,18 @@ export default function EditProfileScreen() {
           </View>
           
           <View style={styles.inputGroup}>
-            <ThemedText style={styles.label}>DOB</ThemedText>
+            <ThemedText style={[styles.label, { color: textColor }]}>DOB</ThemedText>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { color: textColor, backgroundColor: inputBackgroundColor, borderColor }]}
               value={dob}
               onChangeText={setDob}
             />
           </View>
           
           <View style={styles.inputGroup}>
-            <ThemedText style={styles.label}>Gender</ThemedText>
+            <ThemedText style={[styles.label, { color: textColor }]}>Gender</ThemedText>
             <View style={styles.dropdownContainer}>
-              <ThemedText style={styles.dropdownText}>{gender}</ThemedText>
+              <ThemedText style={[styles.dropdownText, { color: textColor }]}>{gender}</ThemedText>
               <IconSymbol name="chevron.down" size={20} color="#8E8E93" />
             </View>
             
@@ -98,6 +105,7 @@ export default function EditProfileScreen() {
                 >
                   <ThemedText style={[
                     styles.genderText,
+                    { color: textColor },
                     gender === option && styles.selectedGender
                   ]}>
                     {option}
@@ -120,7 +128,6 @@ export default function EditProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
   },
   scrollView: {
     flex: 1,
@@ -133,7 +140,6 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 27,
     fontWeight: 'bold',
-    color: '#000000',
     marginBottom: 30,
     textAlign: 'center',
   },
@@ -166,16 +172,13 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 15,
-    color: '#8E8E93',
     marginBottom: 8,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#E0E0E0',
     borderRadius: 10,
     padding: 15,
     fontSize: 17,
-    color: '#000000',
   },
   dropdownContainer: {
     flexDirection: 'row',
@@ -188,7 +191,6 @@ const styles = StyleSheet.create({
   },
   dropdownText: {
     fontSize: 17,
-    color: '#000000',
   },
   genderOptions: {
     flexDirection: 'row',
@@ -200,7 +202,6 @@ const styles = StyleSheet.create({
   },
   genderText: {
     fontSize: 15,
-    color: '#8E8E93',
   },
   selectedGender: {
     color: '#2D8659',

@@ -2,6 +2,7 @@ import { StyleSheet, View, TouchableOpacity, ScrollView, Alert } from 'react-nat
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useThemeColor } from '@/hooks/use-theme-color';
 
 export default function SettingsScreen() {
   const settingsItems = [
@@ -9,6 +10,11 @@ export default function SettingsScreen() {
     { icon: "key", label: "Password Manager" },
     { icon: "trash", label: "Delete Account" },
   ];
+  
+  // Get theme colors
+  const backgroundColor = useThemeColor({}, 'background');
+  const textColor = useThemeColor({}, 'text');
+  const borderColor = useThemeColor({}, 'border');
 
   const handleSettingPress = (label: string) => {
     Alert.alert(
@@ -19,13 +25,13 @@ export default function SettingsScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={[styles.container, { backgroundColor }]}>
       <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
       >
         {/* Header */}
-        <ThemedText style={styles.header}>Settings</ThemedText>
+        <ThemedText style={[styles.header, { color: textColor }]}>Settings</ThemedText>
         
         {/* Settings Items */}
         <View style={styles.settingsContainer}>
@@ -38,7 +44,7 @@ export default function SettingsScreen() {
               <View style={styles.iconContainer}>
                 <IconSymbol name={item.icon} size={20} color="#2D8659" />
               </View>
-              <ThemedText style={styles.settingLabel}>{item.label}</ThemedText>
+              <ThemedText style={[styles.settingLabel, { color: textColor }]}>{item.label}</ThemedText>
               <IconSymbol name="chevron.right" size={20} color="#8E8E93" />
             </TouchableOpacity>
           ))}
@@ -51,7 +57,6 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
   },
   scrollView: {
     flex: 1,
@@ -64,7 +69,6 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 27,
     fontWeight: 'bold',
-    color: '#000000',
     marginBottom: 30,
     textAlign: 'center',
   },
@@ -76,7 +80,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
   },
   iconContainer: {
     width: 40,
@@ -90,7 +93,6 @@ const styles = StyleSheet.create({
   settingLabel: {
     flex: 1,
     fontSize: 17,
-    color: '#000000',
     fontWeight: '500',
   },
 });

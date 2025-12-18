@@ -1,12 +1,19 @@
 import { StyleSheet, View, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
+import { useRouter } from 'expo-router';
 
 export default function FeaturedVendors() {
+  const router = useRouter();
+  
+  const handleSeeAll = () => {
+    router.push('/client/salons');
+  };
+  
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <ThemedText style={styles.title}>Featured Vendors</ThemedText>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={handleSeeAll}>
           <ThemedText style={styles.seeAllText}>See all</ThemedText>
         </TouchableOpacity>
       </View>
@@ -18,7 +25,7 @@ export default function FeaturedVendors() {
         contentContainerStyle={styles.scrollContent}
       >
         {/* Vendor Card 1 */}
-        <View style={styles.card}>
+        <TouchableOpacity style={styles.card} onPress={() => router.push('/business/1')}>
           <Image 
             source={require('@/assets/stock/img.png')} 
             style={styles.cardBackground}
@@ -27,10 +34,10 @@ export default function FeaturedVendors() {
           <View style={styles.textOverlay}>
             <ThemedText style={styles.vendorName}>Vendor Name</ThemedText>
           </View>
-        </View>
+        </TouchableOpacity>
         
         {/* Vendor Card 2 */}
-        <View style={[styles.card, styles.secondCard]}>
+        <TouchableOpacity style={[styles.card, styles.secondCard]} onPress={() => router.push('/business/2')}>
           <Image 
             source={require('@/assets/stock/special.jpg')} 
             style={styles.cardBackground}
@@ -39,7 +46,7 @@ export default function FeaturedVendors() {
           <View style={styles.textOverlay}>
             <ThemedText style={styles.vendorName}>Another Vendor</ThemedText>
           </View>
-        </View>
+        </TouchableOpacity>
       </ScrollView>
     </View>
   );
@@ -78,10 +85,8 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     position: 'relative',
     overflow: 'hidden',
-    backgroundColor: '#2D8659',
   },
   secondCard: {
-    backgroundColor: '#6B6B6B',
   },
   cardBackground: {
     width: '100%',

@@ -6,8 +6,7 @@ export default function SpecialForYou() {
   const router = useRouter();
 
   const handleSeeAll = () => {
-    // Navigate to special offers screen
-    console.log('Navigate to special offers');
+    router.push('/client/salons');
   };
 
   return (
