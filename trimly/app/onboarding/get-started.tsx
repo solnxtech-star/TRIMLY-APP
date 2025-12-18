@@ -115,10 +115,9 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     borderWidth: 2,
     borderColor: '#00C853', // Vibrant green border
-    backgroundColor: '#00C853', // Green background
+    backgroundColor: '#00C853', // White background
     justifyContent: 'center',
     alignItems: 'center',
-    transform: [{ translateY: -28 }], // Half of the height to center perfectly
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -129,12 +128,10 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   getStartedButtonText: {
-    color: '#FFFFFF', // White arrow
+    color: '#ffffff', // Vibrant green arrow
     fontSize: 32, // Bigger arrow
     fontWeight: 'bold',
     textAlign: 'center',
     lineHeight: 40, 
-    alignItems: 'center',
-    justifyContent: 'center'
   },
 });
