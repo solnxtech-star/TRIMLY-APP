@@ -1,11 +1,21 @@
 import { StyleSheet, View, ScrollView, Image, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { CustomSafeAreaView } from '@/components/custom-safe-area-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useRouter } from 'expo-router';
+import { useThemeColor } from '@/hooks/use-theme-color';
 
 export default function SalonsScreen() {
   const router = useRouter();
+  
+  // Get theme colors
+  const backgroundColor = useThemeColor({}, 'background');
+  const textColor = useThemeColor({}, 'text');
+  const iconColor = useThemeColor({}, 'text');
+  const borderColor = useThemeColor({}, 'border');
+  const cardBackgroundColor = useThemeColor({ light: '#f5f5f5', dark: '#1a1a1a' }, 'background');
+  const featuredCardBackgroundColor = useThemeColor({ light: '#f0f0f0', dark: '#2a2a2a' }, 'background');
 
   const salons = [
     {
@@ -71,15 +81,15 @@ export default function SalonsScreen() {
   ];
 
   return (
-    <ThemedView style={styles.container}>
+    <CustomSafeAreaView edges="top" style={[styles.container, { backgroundColor }]}>
       <View style={styles.header}>
         <TouchableOpacity 
           style={styles.backButton}
           onPress={() => router.back()}
         >
-          <IconSymbol name="chevron.left" size={20} color="#000000" />
+          <IconSymbol name="chevron.left" size={20} color={iconColor} />
         </TouchableOpacity>
-        <ThemedText style={styles.title}>Salon</ThemedText>
+        <ThemedText style={[styles.title, { color: textColor }]}>Salon</ThemedText>
         <View style={styles.placeholder} />
       </View>
       
@@ -91,33 +101,35 @@ export default function SalonsScreen() {
           <TouchableOpacity 
             key={salon.id} 
             style={[
+              {backgroundColor: salon.isFeatured ? featuredCardBackgroundColor : cardBackgroundColor},
               styles.salonCard, 
               salon.isFeatured && styles.featuredCard
             ]}
+            onPress={() => router.push(`/client/business-details/${salon.id}`)}
           >
             <View style={styles.cardContent}>
               <Image source={salon.image} style={styles.salonImage} />
               <View style={styles.infoSection}>
                 <View style={styles.nameRow}>
-                  <ThemedText style={styles.salonName}>{salon.name}</ThemedText>
+                  <ThemedText style={[styles.salonName, { color: textColor }]}>{salon.name}</ThemedText>
                   <View style={styles.statusBadge}>
-                    <ThemedText style={styles.statusText}>{salon.status}</ThemedText>
+                    <ThemedText style={[styles.statusText, { color: '#2D8659' }]}>{salon.status}</ThemedText>
                   </View>
                 </View>
                 
                 <View style={styles.ratingRow}>
                   <IconSymbol name="star" size={16} color="#FFC107" />
-                  <ThemedText style={styles.ratingText}>{salon.rating}</ThemedText>
-                  <ThemedText style={styles.reviewText}>({salon.reviews} Reviews)</ThemedText>
+                  <ThemedText style={[styles.ratingText, { color: textColor }]}>{salon.rating}</ThemedText>
+                  <ThemedText style={[styles.reviewText, { color: textColor }]}>({salon.reviews} Reviews)</ThemedText>
                 </View>
                 
-                <ThemedText style={styles.servicesText}>{salon.services}</ThemedText>
+                <ThemedText style={[styles.servicesText, { color: textColor }]}>{salon.services}</ThemedText>
                 
                 <View style={styles.bottomRow}>
-                  <ThemedText style={styles.priceText}>{salon.price}</ThemedText>
+                  <ThemedText style={[styles.priceText, { color: '#2D8659' }]}>{salon.price}</ThemedText>
                   <View style={styles.locationRow}>
-                    <IconSymbol name="location" size={14} color="#6B6B6B" />
-                    <ThemedText style={styles.distanceText}>{salon.distance}</ThemedText>
+                    <IconSymbol name="location" size={14} color={iconColor} />
+                    <ThemedText style={[styles.distanceText, { color: textColor }]}>{salon.distance}</ThemedText>
                   </View>
                 </View>
               </View>
@@ -125,14 +137,13 @@ export default function SalonsScreen() {
           </TouchableOpacity>
         ))}
       </ScrollView>
-    </ThemedView>
+    </CustomSafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
   },
   header: {
     flexDirection: 'row',
@@ -151,7 +162,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#000000',
   },
   placeholder: {
     width: 44,
@@ -164,14 +174,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   salonCard: {
-    backgroundColor: '#F8F8F8',
     borderRadius: 16,
     padding: 12,
     marginBottom: 12,
   },
   featuredCard: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 3,
+    borderWidth: 1.5,
     borderColor: '#2D8659',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -183,8 +191,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   salonImage: {
-    width: 120,
-    height: 120,
+    width: 90,
+    height: 90,
     borderRadius: 12,
     marginRight: 12,
   },
@@ -195,16 +203,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 0,
   },
   salonName: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#000000',
+    fontSize: 16,
+    fontWeight: '600',
   },
   statusBadge: {
     width: 60,
-    height: 28,
+    height: 25,
     borderRadius: 16,
     borderWidth: 1.5,
     borderColor: '#2D8659',
@@ -213,32 +220,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statusText: {
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: '600',
     color: '#2D8659',
   },
   ratingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 0,
   },
   ratingText: {
-    fontSize: 15,
+    fontSize: 12,
     fontWeight: '700',
-    color: '#000000',
     marginLeft: 4,
     marginRight: 4,
   },
   reviewText: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '400',
     color: '#6B6B6B',
   },
   servicesText: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '400',
     color: '#6B6B6B',
-    marginBottom: 8,
+    marginBottom: 0,
   },
   bottomRow: {
     flexDirection: 'row',
@@ -246,7 +252,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   priceText: {
-    fontSize: 15,
+    fontSize: 12,
     fontWeight: '700',
     color: '#2D8659',
   },
@@ -255,7 +261,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   distanceText: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '400',
     color: '#6B6B6B',
     marginLeft: 8,

@@ -244,6 +244,13 @@ export default function ClientLayout() {
           // tabBarButton: () => null,
         }}
       />
+      <Tabs.Screen
+        name="business-details/[id]"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
     </Tabs>
   );
 }
