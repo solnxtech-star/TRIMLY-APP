@@ -265,7 +265,7 @@ export default function BusinessDetailsScreen() {
                       <ThemedText style={styles.specialistName}>{specialist.name}</ThemedText>
                       <View style={styles.specialistRating}>
                         <IconSymbol name="star" size={16} color="#FFD700" />
-                        <ThemedText style={styles.specialistRatingText}>{specialist.rating} <ThemedText style={{fontSize: 11, color: 'black'}}>(49 Reviews)</ThemedText></ThemedText>
+                        <ThemedText style={styles.specialistRatingText}>{specialist.rating} <ThemedText style={{fontSize: 11}}>(49 Reviews)</ThemedText></ThemedText>
                       </View>
                     </View>
                   </View>
@@ -372,7 +372,6 @@ export default function BusinessDetailsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
   },
   content: {
     flex: 1,
@@ -431,7 +430,6 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     borderTopLeftRadius: 40,
     borderTopRightRadius: 40,
-    backgroundColor: '#FFFFFF',
     paddingHorizontal: 16,
     zIndex: 2
   },
@@ -446,12 +444,10 @@ const styles = StyleSheet.create({
   businessName: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#000000',
     marginBottom: 8,
   },
   businessDescription: {
     fontSize: 14,
-    color: '#000000',
     marginBottom: 12,
     lineHeight: 20,
   },
@@ -462,7 +458,6 @@ const styles = StyleSheet.create({
   },
   locationText: {
     fontSize: 14,
-    color: '#000000',
     marginLeft: 8,
     fontWeight: 'bold'
   },
@@ -473,7 +468,6 @@ const styles = StyleSheet.create({
   },
   hoursText: {
     fontSize: 14,
-    color: '#000000',
     marginLeft: 8,
     fontWeight: 'bold'
   },
@@ -498,7 +492,6 @@ const styles = StyleSheet.create({
   },
   actionButtonText: {
     fontSize: 12,
-    color: '#000000',
     marginTop: 4,
   },
   componentNavigator: {
@@ -519,7 +512,6 @@ const styles = StyleSheet.create({
   },
   navTabText: {
     fontSize: 16,
-    color: '#666666',
   },
   activeTabText: {
     color: '#2D8A47',
@@ -536,7 +528,9 @@ const styles = StyleSheet.create({
     // padding: 12,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#E5E5E5'
+    borderColor: '#E5E5E5',
+    zIndex: 2,
+    overflow: 'hidden',
   },
   specialistImage: {
     width: '100%',
@@ -546,7 +540,6 @@ const styles = StyleSheet.create({
   specialistName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#000000',
     marginBottom: 4,
   },
   specialistRating: {
@@ -555,7 +548,6 @@ const styles = StyleSheet.create({
   },
   specialistRatingText: {
     fontSize: 14,
-    color: '#666666',
     marginLeft: 4,
   },
   specialistInfo: {
@@ -563,12 +555,11 @@ const styles = StyleSheet.create({
   },
   packageCard: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 12,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#E5E5E5',
+    borderColor: '#E5E5E5'
   },
   packageImage: {
     width: 100,
@@ -582,12 +573,10 @@ const styles = StyleSheet.create({
   packageTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#000000',
     marginBottom: 4,
   },
   packageDescription: {
     fontSize: 14,
-    color: '#666666',
     marginBottom: 8,
   },
   packageServices: {
@@ -597,13 +586,11 @@ const styles = StyleSheet.create({
   },
   packageService: {
     fontSize: 12,
-    color: '#2D8A47',
-    backgroundColor: '#E8F5E9',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
     marginRight: 4,
-    marginBottom: 4,
+    marginBottom: 4
   },
   packageBottomRow: {
     flexDirection: 'row',
@@ -617,17 +604,14 @@ const styles = StyleSheet.create({
   packagePrice: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#2D8A47',
     marginRight: 8,
   },
   packageOriginalPrice: {
     fontSize: 14,
-    color: '#999999',
     textDecorationLine: 'line-through',
   },
   packageDuration: {
     fontSize: 14,
-    color: '#666666',
     marginLeft: 4,
   },
   packageMetaRow: {
@@ -644,7 +628,6 @@ const styles = StyleSheet.create({
   },
   packageStaffName: {
     fontSize: 14,
-    color: '#000000',
     fontWeight: '600',
   },
   packageStaffRating: {
@@ -653,7 +636,6 @@ const styles = StyleSheet.create({
   },
   packageStaffRatingText: {
     fontSize: 12,
-    color: '#666666',
     marginLeft: 4,
   },
   bookNowButton: {
@@ -675,6 +657,7 @@ const styles = StyleSheet.create({
   galleryImageContainer: {
     width: '48%',
     marginBottom: 12,
+    borderWidth: 1,
   },
   galleryImage: {
     width: '100%',
@@ -682,16 +665,14 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   reviewCard: {
-    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#E5E5E5',
+    borderColor: '#E5E5E5'
   },
   reviewDate: {
     fontSize: 12,
-    color: '#666666',
     textAlign: 'right',
   },
   reviewUserInfo: {
@@ -710,7 +691,6 @@ const styles = StyleSheet.create({
   reviewUserName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#000000',
     marginBottom: 4,
   },
   reviewRating: {
@@ -719,12 +699,10 @@ const styles = StyleSheet.create({
   },
   reviewRatingText: {
     fontSize: 14,
-    color: '#666666',
     marginLeft: 4,
   },
   reviewText: {
     fontSize: 14,
-    color: '#000000',
     lineHeight: 20,
   },
   tabContent: {
@@ -733,7 +711,6 @@ const styles = StyleSheet.create({
   tabTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#000000',
     marginBottom: 16,
   },
   serviceItem: {
@@ -742,13 +719,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 14,
     borderWidth: 1,
-    borderColor: '#E5E5E5',
     borderRadius: 15,
     marginBottom: 12,
+    borderColor: "#E5E5E5"
   },
   serviceName: {
     fontSize: 18,
-    color: '#000000',
   },
   bookButton: {
     backgroundColor: '#2D8A47',
