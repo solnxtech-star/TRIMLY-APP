@@ -26,7 +26,7 @@ export default function SpecialForYou() {
         contentContainerStyle={styles.scrollContent}
       >
         {/* Card 1 - Visible */}
-        <View style={styles.card}>
+        <TouchableOpacity style={styles.card} onPress={() => router.push('/client/salons')}>
           <Image 
             source={require('@/assets/stock/special.jpg')} 
             style={styles.cardBackground}
@@ -48,10 +48,10 @@ export default function SpecialForYou() {
           <TouchableOpacity style={styles.claimButton}>
             <ThemedText style={styles.claimText}>Claim</ThemedText>
           </TouchableOpacity>
-        </View>
+        </TouchableOpacity>
         
         {/* Card 2 - Partially Visible */}
-        <View style={[styles.card, styles.secondCard]}>
+        <TouchableOpacity style={[styles.card, styles.secondCard]} onPress={() => router.push('/client/salons')}>
           <Image 
             source={require('@/assets/stock/img.png')} 
             style={styles.cardBackground}
@@ -68,7 +68,7 @@ export default function SpecialForYou() {
           <View style={styles.cardContent}>
             <ThemedText style={styles.termsText}>All saloons available | T&C applied</ThemedText>
           </View>
-        </View>
+        </TouchableOpacity>
       </ScrollView>
     </View>
   );
@@ -117,7 +117,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   secondCard: {
-    backgroundColor: '#6B6B6B',
   },
   badge: {
     position: 'absolute',

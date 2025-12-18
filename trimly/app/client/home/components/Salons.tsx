@@ -27,7 +27,7 @@ export default function Salons() {
         contentContainerStyle={styles.scrollContent}
       >
         {/* Salon Card 1 */}
-        <View style={styles.card}>
+        <TouchableOpacity style={styles.card} onPress={() => router.push('/client/salons')}>
           <Image 
             source={require('@/assets/stock/service.jpg')} 
             style={styles.cardBackground}
@@ -39,10 +39,10 @@ export default function Salons() {
           <View style={styles.textOverlay}>
             <ThemedText style={styles.salonName}>Slay Best Saloon</ThemedText>
           </View>
-        </View>
+        </TouchableOpacity>
         
         {/* Salon Card 2 */}
-        <View style={[styles.card, styles.secondCard]}>
+        <TouchableOpacity style={[styles.card, styles.secondCard]} onPress={() => router.push('/client/salons')}>
           <Image 
             source={require('@/assets/stock/rated.png')} 
             style={styles.cardBackground}
@@ -54,7 +54,7 @@ export default function Salons() {
           <View style={styles.textOverlay}>
             <ThemedText style={styles.salonName}>Slay Best Saloon</ThemedText>
           </View>
-        </View>
+        </TouchableOpacity>
       </ScrollView>
     </View>
   );
@@ -93,7 +93,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     position: 'relative',
     overflow: 'hidden',
-    backgroundColor: '#2D8659',
   },
   secondCard: {
     backgroundColor: '#6B6B6B',
