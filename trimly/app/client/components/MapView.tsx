@@ -50,7 +50,7 @@ export default function MapViewComponent({ locations, stores }: MapViewProps) {
   };
   
   const handleStoreItemPress = (storeId: number) => {
-    router.push(`/client/business-details/${storeId}`);
+    router.push(`/client/business-details/${storeId}` as `${string}/${number}`);
   };
   
   const handleExploreAllPress = () => {

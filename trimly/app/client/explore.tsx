@@ -70,7 +70,7 @@ export default function ExploreScreen() {
   ];
   
   const handleExploreAllPress = () => {
-    router.push('/client/map');
+    router.push('/client/components/map');
   };
   
   const handleLocationPress = (storeId: number) => {
@@ -82,7 +82,7 @@ export default function ExploreScreen() {
   };
   
   const handleStoreItemPress = (storeId: number) => {
-    router.push(`/client/business-details/${storeId}`);
+    router.push(`/client/business-details/${storeId}` as `${string}/${number}`);
   };
   
   const closeStoreItem = () => {

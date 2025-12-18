@@ -25,7 +25,7 @@ export default function FeaturedVendors() {
         contentContainerStyle={styles.scrollContent}
       >
         {/* Vendor Card 1 */}
-        <TouchableOpacity style={styles.card} onPress={() => router.push('/business/1')}>
+        <TouchableOpacity style={styles.card} onPress={() => router.push('/client/business-details/2')}>
           <Image 
             source={require('@/assets/stock/img.png')} 
             style={styles.cardBackground}

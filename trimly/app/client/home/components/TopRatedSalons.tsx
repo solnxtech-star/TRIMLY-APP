@@ -26,7 +26,7 @@ export default function TopRatedSalons() {
         contentContainerStyle={styles.scrollContent}
       >
         {/* Salon Card 1 */}
-        <TouchableOpacity style={styles.card} onPress={() => router.push('/business/1')}>
+        <TouchableOpacity style={styles.card} onPress={() => router.push('/client/business-details/1')}>
           <Image 
             source={require('@/assets/stock/rated.png')} 
             style={styles.cardBackground}

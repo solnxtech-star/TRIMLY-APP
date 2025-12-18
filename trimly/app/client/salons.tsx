@@ -105,7 +105,7 @@ export default function SalonsScreen() {
               styles.salonCard, 
               salon.isFeatured && styles.featuredCard
             ]}
-            onPress={() => router.push(`/client/business-details/${salon.id}`)}
+            onPress={() => router.push(`/client/business-details/${salon.id}` as `${string}/${number}`)}
           >
             <View style={styles.cardContent}>
               <Image source={salon.image} style={styles.salonImage} />

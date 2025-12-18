@@ -1,4 +1,5 @@
-import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
+import { useState } from 'react';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Image, Platform } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -7,8 +8,22 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 export default function BusinessDetailsScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
+  const [isFavorite, setIsFavorite] = useState(false);
 
   // Sample business data - in a real app this would come from an API
+  const businessImages = [
+    require('@/assets/stock/img.png'),
+    require('@/assets/stock/rated.png'),
+    require('@/assets/stock/service.jpg'),
+    require('@/assets/stock/special.jpg'),
+  ];
+  
+  // Select image based on business ID
+  const getImageForBusiness = (businessId: string) => {
+    const index = parseInt(businessId) % businessImages.length;
+    return businessImages[index];
+  };
+  
   const business = {
     id: id || '1',
     name: 'Glamour Haven',
@@ -17,6 +32,7 @@ export default function BusinessDetailsScreen() {
     hours: 'Mon - Sun | 11am - 11pm',
     rating: 4.8,
     reviewCount: 120,
+    image: getImageForBusiness(id as string || '1'),
   };
 
   const services = [
@@ -42,17 +58,25 @@ export default function BusinessDetailsScreen() {
       <ScrollView style={styles.content}>
         {/* Hero Image Area */}
         <View style={styles.heroContainer}>
-          <View style={styles.heroImage} />
+          <Image 
+            source={business.image} 
+            style={styles.heroImage} 
+            resizeMode="cover"
+          />
+          <View style={styles.heroOverlay} />
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
             <IconSymbol name="chevron.left" size={24} color="#FFFFFF" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.favoriteButton}>
-            <IconSymbol name="heart" size={24} color="#FFFFFF" />
+          <TouchableOpacity style={styles.favoriteButton} onPress={() => setIsFavorite(!isFavorite)}>
+            <IconSymbol name={isFavorite ? "heart.fill" : "heart"} size={24} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
 
         {/* Business Info */}
         <View style={styles.infoContainer}>
+          {/* iOS-style indicator */}
+          <View style={styles.indicator} />
+          
           <ThemedText style={styles.businessName}>{business.name}</ThemedText>
           <ThemedText style={styles.businessDescription}>{business.description}</ThemedText>
           
@@ -65,32 +89,40 @@ export default function BusinessDetailsScreen() {
             <IconSymbol name="clock" size={16} color="#666666" />
             <ThemedText style={styles.hoursText}>{business.hours}</ThemedText>
           </View>
-          
-          <View style={styles.ratingContainer}>
-            <IconSymbol name="star.fill" size={16} color="#FFD700" />
-            <ThemedText style={styles.ratingText}>
-              {business.rating} ({business.reviewCount} reviews)
-            </ThemedText>
-          </View>
         </View>
 
         {/* Action Buttons */}
         <View style={styles.actionButtonsRow}>
-          <TouchableOpacity style={styles.actionButton}>
-            <IconSymbol name="globe" size={24} color="#000000" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
-            <IconSymbol name="message" size={24} color="#000000" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
-            <IconSymbol name="phone" size={24} color="#000000" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
-            <IconSymbol name="location" size={24} color="#000000" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
-            <IconSymbol name="square.and.arrow.up" size={24} color="#000000" />
-          </TouchableOpacity>
+          <View style={styles.actionButtonItem}>
+            <TouchableOpacity style={styles.actionButton}>
+              <IconSymbol name="globe" size={24} color="#000000" />
+            </TouchableOpacity>
+            <ThemedText style={styles.actionButtonText}>Website</ThemedText>
+          </View>
+          <View style={styles.actionButtonItem}>
+            <TouchableOpacity style={styles.actionButton}>
+              <IconSymbol name="mark-unread-chat-alt" size={24} color="#000000" />
+            </TouchableOpacity>
+            <ThemedText style={styles.actionButtonText}>Chat</ThemedText>
+          </View>
+          <View style={styles.actionButtonItem}>
+            <TouchableOpacity style={styles.actionButton}>
+              <IconSymbol name="phone" size={24} color="#000000" />
+            </TouchableOpacity>
+            <ThemedText style={styles.actionButtonText}>Call</ThemedText>
+          </View>
+          <View style={styles.actionButtonItem}>
+            <TouchableOpacity style={styles.actionButton}>
+              <IconSymbol name="location" size={24} color="#000000" />
+            </TouchableOpacity>
+            <ThemedText style={styles.actionButtonText}>Map</ThemedText>
+          </View>
+          <View style={styles.actionButtonItem}>
+            <TouchableOpacity style={styles.actionButton}>
+              <IconSymbol name="share" size={24} color="#000000" />
+            </TouchableOpacity>
+            <ThemedText style={styles.actionButtonText}>Share</ThemedText>
+          </View>
         </View>
 
         {/* Services Tab Content */}
@@ -130,11 +162,15 @@ const styles = StyleSheet.create({
   heroContainer: {
     height: 200,
     position: 'relative',
+    zIndex: 1,
   },
   heroImage: {
     width: '100%',
-    height: '100%',
-    backgroundColor: '#2D8A47',
+    height: '105%',
+  },
+  heroOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0)',
   },
   backButton: {
     position: 'absolute',
@@ -143,9 +179,16 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: 'rgba(0,0,0,0.6)',
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
   },
   favoriteButton: {
     position: 'absolute',
@@ -154,28 +197,50 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: 'rgba(0,0,0,0.6)',
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
   },
   infoContainer: {
-    padding: 16,
+    marginTop: -20,
+    paddingTop: 20,
+    borderTopLeftRadius: 40,
+    borderTopRightRadius: 40,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
+    zIndex: 2
+  },
+  indicator: {
+    width: 60,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: '#C7C7CC',
+    alignSelf: 'center',
+    marginBottom: 25,
   },
   businessName: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '700',
     color: '#000000',
     marginBottom: 8,
   },
   businessDescription: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#666666',
     marginBottom: 12,
+    lineHeight: 20,
   },
   locationContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    // marginBottom: 8,
   },
   locationText: {
     fontSize: 16,
@@ -185,18 +250,8 @@ const styles = StyleSheet.create({
   hoursContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
   },
   hoursText: {
-    fontSize: 16,
-    color: '#666666',
-    marginLeft: 8,
-  },
-  ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  ratingText: {
     fontSize: 16,
     color: '#666666',
     marginLeft: 8,
@@ -208,6 +263,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5E5',
   },
+  actionButtonItem: {
+    alignItems: 'center',
+  },
   actionButton: {
     width: 50,
     height: 50,
@@ -215,6 +273,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5',
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 8,
+  },
+  actionButtonText: {
+    fontSize: 12,
+    color: '#666666',
+    marginTop: 4,
   },
   tabContent: {
     padding: 16,
