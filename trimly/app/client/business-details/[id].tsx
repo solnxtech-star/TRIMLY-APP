@@ -10,6 +10,7 @@ export default function BusinessDetailsScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const [isFavorite, setIsFavorite] = useState(false);
+  const [activeTab, setActiveTab] = useState('Services');
 
   // Sample business data - in a real app this would come from an API
   const businessImages = [
@@ -126,21 +127,65 @@ export default function BusinessDetailsScreen() {
           </View>
         </View>
 
-        {/* Services Tab Content */}
-        <View style={styles.tabContent}>
-          <ThemedText style={styles.tabTitle}>Services</ThemedText>
-          {services.map((service) => (
+        {/* Component Navigator */}
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          style={styles.componentNavigator}
+          contentContainerStyle={styles.componentNavigatorContent}
+        >
+          {['Services', 'Specialist', 'Package', 'Gallery', 'Review'].map((tab) => (
             <TouchableOpacity 
-              key={service.id} 
-              style={styles.serviceItem}
-              onPress={() => handleServicePress(service.id)}
+              key={tab}
+              style={[styles.navTab, activeTab === tab && styles.activeTab]}
+              onPress={() => setActiveTab(tab)}
             >
-              <ThemedText style={styles.serviceName}>{service.name}</ThemedText>
-              {service.chevron && (
-                <IconSymbol name="chevron.right" size={20} color="#666666" />
-              )}
+              <ThemedText style={[styles.navTabText, activeTab === tab && styles.activeTabText]}>
+                {tab}
+              </ThemedText>
             </TouchableOpacity>
           ))}
+        </ScrollView>
+
+        {/* Tab Content */}
+        <View style={styles.tabContent}>
+          {activeTab === 'Services' && (
+            <>
+              <ThemedText style={styles.tabTitle}>Services</ThemedText>
+              {services.map((service) => (
+                <TouchableOpacity 
+                  key={service.id} 
+                  style={styles.serviceItem}
+                  onPress={() => handleServicePress(service.id)}
+                >
+                  <ThemedText style={styles.serviceName}>{service.name}</ThemedText>
+                  {service.chevron && (
+                    <IconSymbol name="chevron.right" size={20} color="#666666" />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </>
+          )}
+          
+          {activeTab === 'Specialist' && (
+            <ThemedText style={styles.tabTitle}>Specialists</ThemedText>
+            // Specialist content would go here
+          )}
+          
+          {activeTab === 'Package' && (
+            <ThemedText style={styles.tabTitle}>Packages</ThemedText>
+            // Package content would go here
+          )}
+          
+          {activeTab === 'Gallery' && (
+            <ThemedText style={styles.tabTitle}>Gallery</ThemedText>
+            // Gallery content would go here
+          )}
+          
+          {activeTab === 'Review' && (
+            <ThemedText style={styles.tabTitle}>Reviews</ThemedText>
+            // Review content would go here
+          )}
         </View>
       </ScrollView>
 
@@ -284,6 +329,30 @@ const styles = StyleSheet.create({
     color: '#000000',
     marginTop: 4,
   },
+  componentNavigator: {
+    paddingVertical: 16
+  },
+  componentNavigatorContent: {
+    flexDirection: 'row',
+    paddingHorizontal: 10,
+  },
+  navTab: {
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    marginRight: 20,
+  },
+  activeTab: {
+    borderBottomWidth: 2,
+    borderBottomColor: '#2D8A47',
+  },
+  navTabText: {
+    fontSize: 16,
+    color: '#666666',
+  },
+  activeTabText: {
+    color: '#2D8A47',
+    fontWeight: '600',
+  },
   tabContent: {
     padding: 16,
   },
@@ -297,9 +366,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#E5E5E5',
+    borderRadius: 15,
+    marginBottom: 12,
   },
   serviceName: {
     fontSize: 18,
