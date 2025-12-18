@@ -1,4 +1,4 @@
-import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 
@@ -20,12 +20,16 @@ export default function TopRatedSalons() {
       >
         {/* Salon Card 1 */}
         <View style={styles.card}>
-          <View style={styles.cardBackground} />
+          <Image 
+            source={require('@/assets/stock/rated.png')} 
+            style={styles.cardBackground}
+            resizeMode="cover"
+          />
           <IconSymbol name="heart" size={20} color="#FFFFFF" style={styles.heartIcon} />
           <View style={styles.bottomSection}>
             <ThemedText style={styles.salonName}>Slay Best Saloon</ThemedText>
             <View style={styles.ratingBadge}>
-              <IconSymbol name="star" size={14} color="#000000" />
+              <IconSymbol name="star" size={14} color="#FFD700" />
               <ThemedText style={styles.ratingText}>4.8</ThemedText>
             </View>
           </View>
@@ -33,12 +37,16 @@ export default function TopRatedSalons() {
         
         {/* Salon Card 2 */}
         <View style={[styles.card, styles.secondCard]}>
-          <View style={styles.cardBackground} />
+          <Image 
+            source={require('@/assets/stock/service.jpg')} 
+            style={styles.cardBackground}
+            resizeMode="cover"
+          />
           <IconSymbol name="heart" size={20} color="#FFFFFF" style={styles.heartIcon} />
           <View style={styles.bottomSection}>
             <ThemedText style={styles.salonName}>Slay Best Saloon</ThemedText>
             <View style={styles.ratingBadge}>
-              <IconSymbol name="star" size={14} color="#000000" />
+              <IconSymbol name="star" size={14} color="#FFD700" />
               <ThemedText style={styles.ratingText}>4.8</ThemedText>
             </View>
           </View>
@@ -62,7 +70,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#000000',
   },
   seeAllText: {
     fontSize: 14,
@@ -90,7 +97,7 @@ const styles = StyleSheet.create({
   cardBackground: {
     width: '100%',
     height: '100%',
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    borderRadius: 16,
   },
   heartIcon: {
     position: 'absolute',

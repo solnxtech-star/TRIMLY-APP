@@ -63,13 +63,6 @@ export default function ClientLayout() {
         }}
       />
       <Tabs.Screen
-        name="bookings"
-        options={{
-          href: null,
-          // tabBarButton: () => null,
-        }}
-      />
-      <Tabs.Screen
         name="bookings/cancel-booking"
         options={{
           href: null,

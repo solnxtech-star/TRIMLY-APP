@@ -43,6 +43,11 @@ const MAPPING: IconMapping = {
   'whatsapp': 'question-answer',
   'add': 'add',
   'camera': 'camera-alt',
+  'content-cut': 'content-cut',
+  'brush': 'brush',
+  'spa': 'spa',
+  'face': 'face',
+  'visibility': 'visibility',
 };
 
 /**

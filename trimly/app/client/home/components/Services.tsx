@@ -1,21 +1,32 @@
 import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useRouter } from 'expo-router';
 
 export default function Services() {
+  const router = useRouter();
+  
   const services = [
     { id: 1, name: 'Haircut', icon: 'content-cut' },
-    { id: 2, name: 'Hair Styling', icon: 'air' },
-    { id: 3, name: 'Nails', icon: 'gesture' },
+    { id: 2, name: 'Hair Styling', icon: 'brush' },
+    { id: 3, name: 'Nails', icon: 'spa' },
     { id: 4, name: 'Facials & Skincare', icon: 'face' },
-    { id: 5, name: 'Lashes & Brows', icon: 'hotel' },
+    { id: 5, name: 'Lashes & Brows', icon: 'visibility' },
   ];
+  
+  const handleSeeAll = () => {
+    router.push('/client/services');
+  };
+  
+  const handleServicePress = (serviceId: number) => {
+    router.push('/client/services');
+  };
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <ThemedText style={styles.title}>Services</ThemedText>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={handleSeeAll}>
           <ThemedText style={styles.seeAllText}>See all</ThemedText>
         </TouchableOpacity>
       </View>
@@ -27,9 +38,9 @@ export default function Services() {
         contentContainerStyle={styles.scrollContent}
       >
         {services.map((service) => (
-          <TouchableOpacity key={service.id} style={styles.serviceItem}>
+          <TouchableOpacity key={service.id} style={styles.serviceItem} onPress={() => handleServicePress(service.id)}>
             <View style={styles.iconContainer}>
-              <IconSymbol name="person" size={28} color="#000000" />
+              <IconSymbol name={service.icon} size={28} color="#000000" />
             </View>
             <ThemedText style={styles.serviceName}>{service.name}</ThemedText>
           </TouchableOpacity>
@@ -53,7 +64,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#000000',
   },
   seeAllText: {
     fontSize: 14,
@@ -83,7 +93,6 @@ const styles = StyleSheet.create({
   serviceName: {
     fontSize: 13,
     fontWeight: '500',
-    color: '#000000',
     textAlign: 'center',
   },
 });

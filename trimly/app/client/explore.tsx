@@ -1,6 +1,7 @@
 import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { CustomSafeAreaView } from '@/components/custom-safe-area-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import CategoryPills from '@/app/client/components/CategoryPills';
@@ -73,7 +74,7 @@ export default function ExploreScreen() {
   };
   
   return (
-    <ThemedView style={[styles.container, { backgroundColor }]}>
+    <CustomSafeAreaView edges="top" style={[styles.container, { backgroundColor }]}>
       {/* Header with Search and Filter */}
       <View style={styles.header}>
         <ThemedText type="title" style={[styles.title, { color: textColor }]}>Explore</ThemedText>
@@ -115,7 +116,7 @@ export default function ExploreScreen() {
           locations={locations} 
         />
       </ScrollView>
-    </ThemedView>
+    </CustomSafeAreaView>
   );
 }
 

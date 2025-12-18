@@ -1,4 +1,4 @@
-import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { useRouter } from 'expo-router';
 
@@ -27,13 +27,21 @@ export default function SpecialForYou() {
       >
         {/* Card 1 - Visible */}
         <View style={styles.card}>
+          <Image 
+            source={require('@/assets/stock/special.jpg')} 
+            style={styles.cardBackground}
+            resizeMode="cover"
+          />
           <View style={styles.badge}>
             <ThemedText style={styles.badgeText}>Limited Time!</ThemedText>
           </View>
+
+          <View style={{ position: 'absolute', top: 60, left: 12,}}>
+          <ThemedText style={styles.discountText}>Get Special Discount</ThemedText>
+            <ThemedText style={styles.percentageText}>Up to <ThemedText style={styles.largePercentage}>10%</ThemedText></ThemedText>
+          </View>
           
           <View style={styles.cardContent}>
-            <ThemedText style={styles.discountText}>Get Special Discount</ThemedText>
-            <ThemedText style={styles.percentageText}>Up to <ThemedText style={styles.largePercentage}>10%</ThemedText></ThemedText>
             <ThemedText style={styles.termsText}>All saloons available | T&C applied</ThemedText>
           </View>
           
@@ -44,13 +52,21 @@ export default function SpecialForYou() {
         
         {/* Card 2 - Partially Visible */}
         <View style={[styles.card, styles.secondCard]}>
+          <Image 
+            source={require('@/assets/stock/img.png')} 
+            style={styles.cardBackground}
+            resizeMode="cover"
+          />
           <View style={[styles.badge, styles.comingSoonBadge]}>
             <ThemedText style={styles.badgeText}>Coming Soon!</ThemedText>
           </View>
           
+          <View style={{ position: 'absolute', top: 60, left: 12,}}>
+          <ThemedText style={styles.discountText}>Tatoo</ThemedText>
+          </View>
+          
           <View style={styles.cardContent}>
-            <ThemedText style={styles.discountText}>Tattoo</ThemedText>
-            {/* More content would go here */}
+            <ThemedText style={styles.termsText}>All saloons available | T&C applied</ThemedText>
           </View>
         </View>
       </ScrollView>
@@ -72,7 +88,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#000000',
   },
   seeAllText: {
     fontSize: 14,
@@ -90,9 +105,16 @@ const styles = StyleSheet.create({
     width: 280,
     height: 180,
     borderRadius: 16,
-    backgroundColor: '#2D8659',
     position: 'relative',
     overflow: 'hidden',
+  },
+  cardBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    borderRadius: 16,
   },
   secondCard: {
     backgroundColor: '#6B6B6B',
@@ -104,9 +126,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
     paddingHorizontal: 8,
-    paddingVertical: 4,
-    height: 20,
+    height: 25,
     justifyContent: 'center',
+    zIndex: 1,
   },
   comingSoonBadge: {
     backgroundColor: '#FFFFFF',
@@ -120,28 +142,41 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 12,
     left: 12,
+    zIndex: 1,
   },
   discountText: {
     fontSize: 18,
     fontWeight: '700',
     color: '#FFFFFF',
     marginBottom: 4,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
   percentageText: {
     fontSize: 12,
     fontWeight: '400',
     color: '#FFFFFF',
     marginBottom: 4,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
   largePercentage: {
     fontSize: 24,
     fontWeight: '700',
     color: '#FFFFFF',
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
   termsText: {
     fontSize: 12,
     fontWeight: '400',
     color: '#FFFFFF',
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
   claimButton: {
     position: 'absolute',
@@ -153,10 +188,14 @@ const styles = StyleSheet.create({
     height: 36,
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 1,
   },
   claimText: {
     fontSize: 14,
     fontWeight: '600',
     color: '#FFFFFF',
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
 });

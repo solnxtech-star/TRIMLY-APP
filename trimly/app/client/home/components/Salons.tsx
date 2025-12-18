@@ -1,4 +1,4 @@
-import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useRouter } from 'expo-router';
@@ -28,8 +28,14 @@ export default function Salons() {
       >
         {/* Salon Card 1 */}
         <View style={styles.card}>
-          <View style={styles.cardBackground} />
-          <IconSymbol name="heart" size={20} color="#FFFFFF" style={styles.heartIcon} />
+          <Image 
+            source={require('@/assets/stock/service.jpg')} 
+            style={styles.cardBackground}
+            resizeMode="cover"
+          />
+          <View style={styles.heartIconBackground}>
+            <IconSymbol name="heart" size={20} color="#FFFFFF" style={styles.heartIcon} />
+          </View>
           <View style={styles.textOverlay}>
             <ThemedText style={styles.salonName}>Slay Best Saloon</ThemedText>
           </View>
@@ -37,8 +43,14 @@ export default function Salons() {
         
         {/* Salon Card 2 */}
         <View style={[styles.card, styles.secondCard]}>
-          <View style={styles.cardBackground} />
-          <IconSymbol name="heart" size={20} color="#FFFFFF" style={styles.heartIcon} />
+          <Image 
+            source={require('@/assets/stock/rated.png')} 
+            style={styles.cardBackground}
+            resizeMode="cover"
+          />
+          <View style={styles.heartIconBackground}>
+            <IconSymbol name="heart" size={20} color="#FFFFFF" style={styles.heartIcon} />
+          </View>
           <View style={styles.textOverlay}>
             <ThemedText style={styles.salonName}>Slay Best Saloon</ThemedText>
           </View>
@@ -62,7 +74,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#000000',
   },
   seeAllText: {
     fontSize: 14,
@@ -90,12 +101,21 @@ const styles = StyleSheet.create({
   cardBackground: {
     width: '100%',
     height: '100%',
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    borderRadius: 16,
   },
-  heartIcon: {
+  heartIconBackground: {
     position: 'absolute',
     top: 12,
     right: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: 15,
+    width: 30,
+    height: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  heartIcon: {
+    // Positioning handled by parent container
   },
   textOverlay: {
     position: 'absolute',

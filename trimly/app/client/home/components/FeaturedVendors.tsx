@@ -1,4 +1,4 @@
-import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 
 export default function FeaturedVendors() {
@@ -19,7 +19,11 @@ export default function FeaturedVendors() {
       >
         {/* Vendor Card 1 */}
         <View style={styles.card}>
-          <View style={styles.cardBackground} />
+          <Image 
+            source={require('@/assets/stock/img.png')} 
+            style={styles.cardBackground}
+            resizeMode="cover"
+          />
           <View style={styles.textOverlay}>
             <ThemedText style={styles.vendorName}>Vendor Name</ThemedText>
           </View>
@@ -27,7 +31,11 @@ export default function FeaturedVendors() {
         
         {/* Vendor Card 2 */}
         <View style={[styles.card, styles.secondCard]}>
-          <View style={styles.cardBackground} />
+          <Image 
+            source={require('@/assets/stock/special.jpg')} 
+            style={styles.cardBackground}
+            resizeMode="cover"
+          />
           <View style={styles.textOverlay}>
             <ThemedText style={styles.vendorName}>Another Vendor</ThemedText>
           </View>
@@ -51,7 +59,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#000000',
   },
   seeAllText: {
     fontSize: 14,
@@ -79,7 +86,7 @@ const styles = StyleSheet.create({
   cardBackground: {
     width: '100%',
     height: '100%',
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    borderRadius: 16,
   },
   textOverlay: {
     position: 'absolute',
