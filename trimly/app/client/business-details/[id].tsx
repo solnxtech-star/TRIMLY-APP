@@ -130,6 +130,7 @@ export default function BusinessDetailsScreen() {
   const handleServicePress = (serviceId: string) => {
     console.log('Selected service:', serviceId);
     // Navigate to service options screen
+    router.push(`/client/service-options?id=${serviceId}`);
   };
 
   const handleBookAppointment = () => {

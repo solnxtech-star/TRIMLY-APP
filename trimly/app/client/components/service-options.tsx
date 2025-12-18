@@ -41,7 +41,7 @@ export default function ServiceOptionsScreen() {
   const handleBookNow = (optionId: string) => {
     console.log('Booking option:', optionId);
     // Navigate to date/time selection screen
-    router.push('/business/select-date-time');
+    // router.push();
   };
 
   return (
