@@ -93,6 +93,40 @@ export default function BusinessDetailsScreen() {
     { id: '6', image: require('@/assets/stock/rated.png') },
   ];
 
+  // Sample reviews data
+  const reviews = [
+    {
+      id: '1',
+      user: {
+        name: 'Alice Johnson',
+        image: require('@/assets/stock/img.png'),
+      },
+      rating: 4.8,
+      text: 'Amazing service! The staff was very professional and the results exceeded my expectations. Will definitely come back.',
+      date: '2023-10-15',
+    },
+    {
+      id: '2',
+      user: {
+        name: 'Michael Brown',
+        image: require('@/assets/stock/rated.png'),
+      },
+      rating: 4.5,
+      text: 'Great experience overall. The salon was clean and the stylist was very skilled. Highly recommend!',
+      date: '2023-10-10',
+    },
+    {
+      id: '3',
+      user: {
+        name: 'Sarah Williams',
+        image: require('@/assets/stock/service.jpg'),
+      },
+      rating: 5.0,
+      text: 'Best salon I\'ve ever been to! The attention to detail and customer service was outstanding.',
+      date: '2023-10-05',
+    },
+  ];
+
   const handleServicePress = (serviceId: string) => {
     console.log('Selected service:', serviceId);
     // Navigate to service options screen
@@ -271,7 +305,7 @@ export default function BusinessDetailsScreen() {
                     <View style={styles.packageBottomRow}>
                       <View style={styles.packagePriceContainer}>
                         <ThemedText style={styles.packagePrice}>{pkg.price}</ThemedText>
-                        <ThemedText style={styles.packageOriginalPrice}>{pkg.originalPrice}</ThemedText>
+                        {/* <ThemedText style={styles.packageOriginalPrice}>{pkg.originalPrice}</ThemedText> */}
                       </View>
                       <TouchableOpacity style={styles.bookNowButton} onPress={() => handleBookPackage(pkg.id)}>
                         <ThemedText style={styles.bookNowButtonText}>Book Now</ThemedText>
@@ -298,8 +332,30 @@ export default function BusinessDetailsScreen() {
           
           {activeTab === 'Review' && (
             <>
-              <ThemedText style={styles.tabTitle}>Reviews (0)</ThemedText>
-              <ThemedText>No reviews available at this time.</ThemedText>
+              <ThemedText style={styles.tabTitle}>Reviews ({reviews.length})</ThemedText>
+              {reviews.map((review) => (
+                <View key={review.id} style={styles.reviewCard}>
+                  <ThemedText style={styles.reviewDate}>{review.date}</ThemedText>
+                  <View style={styles.reviewUserInfo}>
+                    <Image source={review.user.image} style={styles.reviewUserImage} />
+                    <View style={styles.reviewUserNameRating}>
+                      <ThemedText style={styles.reviewUserName}>{review.user.name}</ThemedText>
+                      <View style={styles.reviewRating}>
+                        {[...Array(5)].map((_, i) => (
+                          <IconSymbol 
+                            key={i} 
+                            name="star" 
+                            size={16} 
+                            color={i < Math.floor(review.rating) ? '#FFD700' : '#E0E0E0'} 
+                          />
+                        ))}
+                        <ThemedText style={styles.reviewRatingText}>{review.rating}</ThemedText>
+                      </View>
+                    </View>
+                  </View>
+                  <ThemedText style={styles.reviewText}>{review.text}</ThemedText>
+                </View>
+              ))}
             </>
           )}
         </View>
@@ -624,6 +680,52 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 120,
     borderRadius: 12,
+  },
+  reviewCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E5E5E5',
+  },
+  reviewDate: {
+    fontSize: 12,
+    color: '#666666',
+    textAlign: 'right',
+  },
+  reviewUserInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  reviewUserImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+  },
+  reviewUserNameRating: {
+    marginLeft: 12,
+  },
+  reviewUserName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000000',
+    marginBottom: 4,
+  },
+  reviewRating: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  reviewRatingText: {
+    fontSize: 14,
+    color: '#666666',
+    marginLeft: 4,
+  },
+  reviewText: {
+    fontSize: 14,
+    color: '#000000',
+    lineHeight: 20,
   },
   tabContent: {
     padding: 16,
