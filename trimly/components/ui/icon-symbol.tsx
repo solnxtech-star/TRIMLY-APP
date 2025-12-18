@@ -1,11 +1,12 @@
 // Fallback for using MaterialIcons on Android and web.
 
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import AntDesign from '@expo/vector-icons/AntDesign';
 import { SymbolWeight, SymbolViewProps } from 'expo-symbols';
 import { ComponentProps } from 'react';
 import { OpaqueColorValue, type StyleProp, type TextStyle } from 'react-native';
 
-type IconMapping = Record<string, ComponentProps<typeof MaterialIcons>['name']>;
+type IconMapping = Record<string, ComponentProps<typeof MaterialIcons>['name'] | ComponentProps<typeof AntDesign>['name']>;
 type IconSymbolName = string;
 
 /**
@@ -48,6 +49,12 @@ const MAPPING: IconMapping = {
   'spa': 'spa',
   'face': 'face',
   'visibility': 'visibility',
+  'clock': 'schedule',
+  // AntDesign icons
+  'arrowleft': 'arrowleft',
+  'message1': 'message1',
+  'clockcircleo': 'clockcircleo',
+  'sharealt': 'sharealt',
 };
 
 /**
@@ -67,5 +74,12 @@ export function IconSymbol({
   style?: StyleProp<TextStyle>;
   weight?: SymbolWeight;
 }) {
+  // Define AntDesign icons
+  const antDesignIcons = ['arrowleft', 'message1', 'clockcircleo', 'sharealt'];
+  
+  if (antDesignIcons.includes(name)) {
+    return <AntDesign color={color} size={size} name={MAPPING[name]} style={style} />;
+  }
+  
   return <MaterialIcons color={color} size={size} name={MAPPING[name]} style={style} />;
 }

@@ -4,6 +4,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { AntDesign } from '@expo/vector-icons';
 
 export default function BusinessDetailsScreen() {
   const router = useRouter();
@@ -65,7 +66,7 @@ export default function BusinessDetailsScreen() {
           />
           <View style={styles.heroOverlay} />
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <IconSymbol name="chevron.left" size={24} color="#FFFFFF" />
+            <AntDesign name="arrow-left" size={20} color="#FFFFFF" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.favoriteButton} onPress={() => setIsFavorite(!isFavorite)}>
             <IconSymbol name={isFavorite ? "heart.fill" : "heart"} size={24} color="#FFFFFF" />
@@ -81,12 +82,12 @@ export default function BusinessDetailsScreen() {
           <ThemedText style={styles.businessDescription}>{business.description}</ThemedText>
           
           <View style={styles.locationContainer}>
-            <IconSymbol name="location" size={16} color="#666666" />
+            <IconSymbol name="location" size={20} color="#666666" />
             <ThemedText style={styles.locationText}>{business.location}</ThemedText>
           </View>
           
           <View style={styles.hoursContainer}>
-            <IconSymbol name="clock" size={16} color="#666666" />
+            <AntDesign name="clock-circle" size={16} color="#666666" />
             <ThemedText style={styles.hoursText}>{business.hours}</ThemedText>
           </View>
         </View>
@@ -101,7 +102,7 @@ export default function BusinessDetailsScreen() {
           </View>
           <View style={styles.actionButtonItem}>
             <TouchableOpacity style={styles.actionButton}>
-              <IconSymbol name="mark-unread-chat-alt" size={24} color="#000000" />
+              <AntDesign name="message" size={24} color="#000000" />
             </TouchableOpacity>
             <ThemedText style={styles.actionButtonText}>Chat</ThemedText>
           </View>
@@ -119,7 +120,7 @@ export default function BusinessDetailsScreen() {
           </View>
           <View style={styles.actionButtonItem}>
             <TouchableOpacity style={styles.actionButton}>
-              <IconSymbol name="share" size={24} color="#000000" />
+              <AntDesign name="share-alt" size={24} color="#000000" />
             </TouchableOpacity>
             <ThemedText style={styles.actionButtonText}>Share</ThemedText>
           </View>
@@ -166,7 +167,7 @@ const styles = StyleSheet.create({
   },
   heroImage: {
     width: '100%',
-    height: '105%',
+    height: 230,
   },
   heroOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -174,7 +175,7 @@ const styles = StyleSheet.create({
   },
   backButton: {
     position: 'absolute',
-    top: 16,
+    top: 36,
     left: 16,
     width: 40,
     height: 40,
@@ -192,7 +193,7 @@ const styles = StyleSheet.create({
   },
   favoriteButton: {
     position: 'absolute',
-    top: 16,
+    top: 36,
     right: 16,
     width: 40,
     height: 40,
@@ -209,7 +210,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.2)',
   },
   infoContainer: {
-    marginTop: -20,
+    marginTop: 0,
     paddingTop: 20,
     borderTopLeftRadius: 40,
     borderTopRightRadius: 40,
@@ -233,7 +234,7 @@ const styles = StyleSheet.create({
   },
   businessDescription: {
     fontSize: 14,
-    color: '#666666',
+    color: '#000000',
     marginBottom: 12,
     lineHeight: 20,
   },
@@ -243,25 +244,28 @@ const styles = StyleSheet.create({
     // marginBottom: 8,
   },
   locationText: {
-    fontSize: 16,
-    color: '#666666',
+    fontSize: 14,
+    color: '#000000',
     marginLeft: 8,
+    fontWeight: 'bold'
   },
   hoursContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingLeft: 4,
   },
   hoursText: {
-    fontSize: 16,
-    color: '#666666',
+    fontSize: 14,
+    color: '#000000',
     marginLeft: 8,
+    fontWeight: 'bold'
   },
   actionButtonsRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
+    // borderBottomWidth: 1,
+    // borderBottomColor: '#E5E5E5',
   },
   actionButtonItem: {
     alignItems: 'center',
@@ -277,7 +281,7 @@ const styles = StyleSheet.create({
   },
   actionButtonText: {
     fontSize: 12,
-    color: '#666666',
+    color: '#000000',
     marginTop: 4,
   },
   tabContent: {
