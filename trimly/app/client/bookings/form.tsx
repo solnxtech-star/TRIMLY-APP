@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -18,10 +18,10 @@ export default function BookingFormScreen() {
   const [selectedTime, setSelectedTime] = useState<number | null>(null);
 
   // Theme colors
-  const backgroundColor = useThemeColor({}, 'background');
-  const textColor = useThemeColor({}, 'text');
-  const borderColor = useThemeColor({}, 'border');
-  const cardBackgroundColor = useThemeColor({}, 'cardBackground');
+  const backgroundColor = useThemeColor({ light: '#ffffff', dark: '#000000' }, 'background');
+  const textColor = useThemeColor({ light: '#000000', dark: '#ffffff' }, 'text');
+  const borderColor = useThemeColor({ light: '#E5E5E5', dark: '#424242' }, 'border');
+  const cardBackgroundColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'cardBackground');
 
   // Helper function to generate time slots
   const getTimeFromIndex = (index: number) => {
@@ -50,7 +50,11 @@ export default function BookingFormScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor }]}> 
+    <KeyboardAvoidingView 
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <SafeAreaView style={[styles.container, { backgroundColor }]}> 
       <ScrollView style={styles.content}>
         {/* Header with Back Button */}
         <View style={[styles.header, { backgroundColor: 'transparent' }]}> 
@@ -130,6 +134,7 @@ export default function BookingFormScreen() {
         <ThemedText style={styles.confirmButtonText}>Book Appointment</ThemedText>
       </TouchableOpacity>
     </SafeAreaView>
+  </KeyboardAvoidingView>
   );
 }
 
@@ -199,13 +204,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginVertical: 8,
+    gap: 15
   },
   dateItem: {
     alignItems: 'center',
     padding: 12,
     borderRadius: 12,
     minWidth: 60,
-    borderWidth: 1,
+    borderWidth: 1
   },
   dayText: {
     fontSize: 14,
