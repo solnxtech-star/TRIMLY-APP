@@ -129,13 +129,14 @@ export default function BusinessDetailsScreen() {
 
   const handleServicePress = (serviceId: string) => {
     console.log('Selected service:', serviceId);
-    // Navigate to service options screen
-    router.push(`/client/service-options?id=${serviceId}`);
+    // Navigate to service options screen in components folder
+    router.push(`/client/components/service-options?serviceId=${serviceId}`);
   };
 
   const handleBookAppointment = () => {
     console.log('Book appointment pressed');
-    // Navigate to service selection screen
+    // Navigate to service options screen in components folder with source parameter
+    router.push(`/client/components/service-options?source=appointment`);
   };
 
   const handleBookPackage = (packageId: string) => {

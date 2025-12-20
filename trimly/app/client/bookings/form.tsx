@@ -81,6 +81,7 @@ export default function BookingFormScreen() {
               onChangeText={setNotes}
               multiline
               numberOfLines={4}
+              placeholderTextColor={'#8E8E93'}
             />
           </View>
         </View>

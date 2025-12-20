@@ -258,6 +258,13 @@ export default function ClientLayout() {
           // tabBarButton: () => null,
         }}
       />
+      <Tabs.Screen
+        name="components/service-options"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
     </Tabs>
   );
 }

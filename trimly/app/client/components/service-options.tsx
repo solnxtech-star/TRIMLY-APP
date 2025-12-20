@@ -1,18 +1,40 @@
+import { useState } from 'react';
 import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { AntDesign } from '@expo/vector-icons';
+import { useThemeColor } from '@/hooks/use-theme-color';
 
 export default function ServiceOptionsScreen() {
   const router = useRouter();
-  const { serviceId } = useLocalSearchParams();
+  const { serviceId, source } = useLocalSearchParams();
+  const [selectedFilter, setSelectedFilter] = useState('All');
 
-  // Sample service data - in a real app this would come from an API
-  const service = {
-    id: serviceId || '1',
-    name: 'Haircut',
-  };
+  // Theme colors
+  const backgroundColor = useThemeColor({}, 'background');
+  const textColor = useThemeColor({}, 'text');
+  const borderColor = useThemeColor({ light: '#ffffff', dark: '#424242' }, 'border');
+  const cardBackgroundColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'cardBackground');
+  const filterBackgroundColor = useThemeColor({ light: '#F0F0F0', dark: '#2D2D2D' }, 'filterBackground');
+  const filterTextColor = useThemeColor({ light: '#424242', dark: '#ffffff' }, 'filterText');
+
+  // Sample services data - in a real app this would come from an API
+  const services = [
+    { id: '1', name: 'Haircut' },
+    { id: '2', name: 'Braiding' },
+    { id: '3', name: 'Treatment' },
+    { id: '4', name: 'Massage' },
+    { id: '5', name: 'Nails' },
+  ];
+  
+  // Find the selected service based on serviceId
+  const service = services.find(s => s.id === serviceId) || services[0];
+
+  // Filter categories
+  const filters = ['All', 'Haircuts', 'Makeup', 'Massage', 'Skincare', 'Nails'];
 
   const options = [
     {
@@ -41,51 +63,79 @@ export default function ServiceOptionsScreen() {
   const handleBookNow = (optionId: string) => {
     console.log('Booking option:', optionId);
     // Navigate to date/time selection screen
-    // router.push();
+    router.push(`/client/bookings/form?optionId=${optionId}`);
   };
 
   return (
-    <ThemedView style={styles.container}>
-      <ScrollView style={styles.content}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <IconSymbol name="chevron.left" size={24} color="#000000" />
-          </TouchableOpacity>
-          <ThemedText style={styles.title}>{service.name}</ThemedText>
-          <View style={styles.placeholder} />
+    <SafeAreaView style={[styles.container, { backgroundColor }]}> 
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <AntDesign name="left" size={17} color={textColor} />
+        </TouchableOpacity>
+        <ThemedText style={[styles.title, { color: textColor }]}>{service.name}</ThemedText>
+        <View style={styles.placeholder} />
+      </View>
+      
+      {/* Filter Section - only show if coming from Book Appointment button */}
+      {source === 'appointment' && (
+        <View style={[styles.filterContainer, { borderBottomColor: borderColor }]}> 
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll}>
+            {filters.map((filter) => (
+              <TouchableOpacity
+                key={filter}
+                style={[
+                  styles.filterButton,
+                  { backgroundColor: filterBackgroundColor },
+                  selectedFilter === filter && styles.selectedFilterButton
+                ]}
+                onPress={() => setSelectedFilter(filter)}
+              >
+                <ThemedText 
+                  style={[
+                    styles.filterText,
+                    { color: filterTextColor },
+                    selectedFilter === filter && styles.selectedFilterText
+                  ]}
+                >
+                  {filter}
+                </ThemedText>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
         </View>
-
+      )}
+      
+      <ScrollView style={styles.content}>
         {/* Service Options */}
         <View style={styles.optionsContainer}>
           {options.map((option) => (
-            <View key={option.id} style={styles.optionCard}>
-              <View style={styles.optionInfo}>
-                <ThemedText style={styles.optionName}>{option.name}</ThemedText>
-                <ThemedText style={styles.optionDescription}>{option.description}</ThemedText>
-                <View style={styles.optionDetails}>
-                  <ThemedText style={styles.price}>{option.price}</ThemedText>
-                  <ThemedText style={styles.duration}>{option.duration}</ThemedText>
-                </View>
+            <View key={option.id} style={[styles.optionCard, { backgroundColor: cardBackgroundColor, borderColor }]}> 
+              <View style={styles.optionHeader}>
+                <ThemedText style={[styles.optionName, { color: textColor }]}>{option.name}</ThemedText>
+                <TouchableOpacity 
+                  style={styles.bookButton} 
+                  onPress={() => handleBookNow(option.id)}
+                >
+                  <ThemedText style={[styles.bookButtonText, { color: '#ffffff' }]}>Book Now</ThemedText>
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity 
-                style={styles.bookButton} 
-                onPress={() => handleBookNow(option.id)}
-              >
-                <ThemedText style={styles.bookButtonText}>Book Now</ThemedText>
-              </TouchableOpacity>
+              <ThemedText style={[styles.optionDescription, { color: textColor }]}>{option.description}</ThemedText>
+              <View style={styles.optionDetails}>
+                <ThemedText style={[styles.price, { color: textColor }]}>{option.price}</ThemedText>
+                <ThemedText style={[styles.duration, { color: textColor }]}>{option.duration}</ThemedText>
+              </View>
             </View>
           ))}
         </View>
       </ScrollView>
-    </ThemedView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
   },
   content: {
     flex: 1,
@@ -94,26 +144,45 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
+    padding: 16
   },
   backButton: {
-    padding: 8,
+    padding: 6,
+    borderWidth: 0.5,
+    borderRadius: 50,
   },
   title: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#000000',
   },
   placeholder: {
     width: 40,
+  },
+  filterContainer: {
+    paddingVertical: 12
+  },
+  filterScroll: {
+    paddingHorizontal: 16,
+  },
+  filterButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginRight: 8,
+    borderRadius: 20,
+  },
+  selectedFilterButton: {
+    backgroundColor: '#2D8A47',
+  },
+  filterText: {
+    fontSize: 14,
+  },
+  selectedFilterText: {
+    fontWeight: '600',
   },
   optionsContainer: {
     padding: 16,
   },
   optionCard: {
-    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
@@ -126,26 +195,26 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
     borderWidth: 1,
-    borderColor: '#E5E5E5',
   },
-  optionInfo: {
-    marginBottom: 16,
+  optionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
   },
   optionName: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#000000',
     marginBottom: 4,
   },
   optionDescription: {
     fontSize: 16,
-    color: '#666666',
     marginBottom: 12,
   },
   optionDetails: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    gap: 16,
   },
   price: {
     fontSize: 20,
@@ -154,17 +223,16 @@ const styles = StyleSheet.create({
   },
   duration: {
     fontSize: 16,
-    color: '#666666',
   },
   bookButton: {
     backgroundColor: '#2D8A47',
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 20,
     alignItems: 'center',
   },
   bookButtonText: {
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: '600',
-    color: '#FFFFFF',
   },
 });
