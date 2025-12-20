@@ -1,8 +1,17 @@
 import { StyleSheet, View, TouchableOpacity, Image } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { useThemeColor } from '@/hooks/use-theme-color';
 
 export default function CompletedBookings() {
+  // Theme colors
+  const backgroundColor = useThemeColor({}, 'background');
+  const cardBackgroundColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'cardBackground');
+  const textColor = useThemeColor({}, 'text');
+  const secondaryTextColor = useThemeColor({ light: '#6B6B6B', dark: '#A0A0A0' }, 'secondaryText');
+  const borderColor = useThemeColor({ light: '#E5E5E5', dark: '#333333' }, 'border');
+  const primaryColor = useThemeColor({ light: '#2D8659', dark: '#2D8A47' }, 'tint');
+  
   // Mock data for bookings
   const bookings = [
     {
@@ -37,32 +46,32 @@ export default function CompletedBookings() {
   return (
     <View style={styles.container}>
       {bookings.map((booking) => (
-        <View key={booking.id} style={styles.cardContainer}>
+        <View key={booking.id} style={[styles.cardContainer, { backgroundColor: cardBackgroundColor }]}> 
           {/* Date/Time Header */}
-          <ThemedText style={styles.dateTimeText}>
+          <ThemedText style={[styles.dateTimeText, { color: textColor }]}> 
             {booking.date} - {booking.time}
           </ThemedText>
           
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: borderColor }]} />
           
           {/* Salon Information */}
           <View style={styles.salonInfoContainer}>
             <Image source={booking.image} style={styles.salonImage} />
             <View style={styles.salonDetails}>
-              <ThemedText style={styles.salonName}>{booking.salonName}</ThemedText>
+              <ThemedText style={[styles.salonName, { color: textColor }]}>{booking.salonName}</ThemedText>
               <View style={styles.infoRow}>
-                <ThemedText style={styles.infoText}>📍 {booking.address}</ThemedText>
+                <ThemedText style={[styles.infoText, { color: secondaryTextColor }]}>📍 {booking.address}</ThemedText>
               </View>
               <View style={styles.infoRow}>
-                <ThemedText style={styles.infoText}>📄 Service ID : {booking.serviceId}</ThemedText>
+                <ThemedText style={[styles.infoText, { color: secondaryTextColor }]}>📄 Service ID : {booking.serviceId}</ThemedText>
               </View>
             </View>
           </View>
           
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: borderColor }]} />
           
           {/* Action Button */}
-          <TouchableOpacity style={styles.receiptButton}>
+          <TouchableOpacity style={[styles.receiptButton, { backgroundColor: primaryColor }]}> 
             <ThemedText style={styles.receiptButtonText}>View E - Receipt</ThemedText>
           </TouchableOpacity>
         </View>
@@ -76,44 +85,40 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cardContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   dateTimeText: {
-    fontSize: 17,
-    fontWeight: 'bold',
-    color: '#000000',
+    fontSize: 14,
+    fontWeight: '600',
   },
   divider: {
     height: 1,
-    backgroundColor: '#E5E5E5',
-    marginVertical: 12,
+    marginVertical: 8,
   },
   salonInfoContainer: {
     flexDirection: 'row',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   salonImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
-    marginRight: 12,
+    width: 60,
+    height: 60,
+    borderRadius: 6,
+    marginRight: 10,
   },
   salonDetails: {
     flex: 1,
   },
   salonName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#000000',
-    marginBottom: 8,
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 6,
   },
   infoRow: {
     flexDirection: 'row',
@@ -121,19 +126,17 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   infoText: {
-    fontSize: 14,
-    color: '#6B6B6B',
+    fontSize: 12,
   },
   receiptButton: {
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#2D8659',
+    height: 40,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 12,
+    marginTop: 8,
   },
   receiptButtonText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     color: '#FFFFFF',
   },

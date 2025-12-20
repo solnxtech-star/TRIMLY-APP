@@ -4,11 +4,23 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useRouter } from 'expo-router';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { AntDesign } from '@expo/vector-icons';
+import { useThemeColor } from '@/hooks/use-theme-color';
 
 export default function CancelBookingScreen() {
   const router = useRouter();
   const [selectedReason, setSelectedReason] = useState('Schedule Change');
   const [otherReason, setOtherReason] = useState('');
+  
+  // Theme colors
+  const backgroundColor = useThemeColor({ light: '#FFFFFF', dark: '#000000' }, 'background');
+  const textColor = useThemeColor({}, 'text');
+  const secondaryTextColor = useThemeColor({ light: '#000000', dark: '#FFFFFF' }, 'secondaryText');
+  const borderColor = useThemeColor({ light: '#E5E5E5', dark: '#333333' }, 'border');
+  const cardBackgroundColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'cardBackground');
+  const primaryColor = useThemeColor({ light: '#2D8659', dark: '#2D8A47' }, 'tint');
+  const placeholderTextColor = useThemeColor({ light: '#8E8E93', dark: '#8E8E93' }, 'placeholderText');
+  const backButtonColor = useThemeColor({ light: '#F2F2F7', dark: '#2C2C2E' }, 'backButton');
 
   const reasons = [
     "Schedule Change",
@@ -26,7 +38,7 @@ export default function CancelBookingScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={[styles.container, { backgroundColor }]}> 
       <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -34,17 +46,17 @@ export default function CancelBookingScreen() {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity 
-            style={styles.backButton}
+            style={[styles.backButton, { backgroundColor: backButtonColor }]}
             onPress={() => router.back()}
           >
-            <IconSymbol name="chevron.left" size={24} color="#000000" />
+            <AntDesign name="left" size={24} color={secondaryTextColor} />
           </TouchableOpacity>
-          <ThemedText style={styles.title}>Cancel Booking</ThemedText>
+          <ThemedText style={[styles.title, { color: textColor }]}>Cancel Booking</ThemedText>
           <View style={styles.placeholder} />
         </View>
         
         {/* Content */}
-        <ThemedText style={styles.instructionText}>
+        <ThemedText style={[styles.instructionText, { color: textColor }]}> 
           Please select the reason for cancellation
         </ThemedText>
         
@@ -56,24 +68,28 @@ export default function CancelBookingScreen() {
               style={styles.radioItem}
               onPress={() => setSelectedReason(reason)}
             >
-              <View style={styles.radioCircle}>
-                {selectedReason === reason && <View style={styles.selectedDot} />}
+              <View style={[styles.radioCircle, { borderColor: borderColor }]}> 
+                {selectedReason === reason && <View style={[styles.selectedDot, { backgroundColor: primaryColor }]} />}
               </View>
-              <ThemedText style={styles.radioLabel}>{reason}</ThemedText>
+              <ThemedText style={[styles.radioLabel, { color: textColor }]}>{reason}</ThemedText>
             </TouchableOpacity>
           ))}
         </View>
         
-        <View style={styles.divider} />
+        <View style={[styles.divider, { backgroundColor: borderColor }]} />
         
         {/* Other Text Input Section */}
         {selectedReason === 'Other' && (
           <View style={styles.otherSection}>
-            <ThemedText style={styles.otherLabel}>Other</ThemedText>
+            <ThemedText style={[styles.otherLabel, { color: textColor }]}>Other</ThemedText>
             <TextInput
-              style={styles.textArea}
+              style={[styles.textArea, { 
+                backgroundColor: cardBackgroundColor, 
+                borderColor: borderColor, 
+                color: textColor 
+              }]}
               placeholder="Enter you reasons"
-              placeholderTextColor="#8E8E93"
+              placeholderTextColor={placeholderTextColor}
               multiline
               numberOfLines={6}
               value={otherReason}
@@ -84,7 +100,7 @@ export default function CancelBookingScreen() {
       </ScrollView>
       
       {/* Bottom Button */}
-      <TouchableOpacity style={styles.cancelButton} onPress={handleCancelBooking}>
+      <TouchableOpacity style={[styles.cancelButton, { backgroundColor: primaryColor }]} onPress={handleCancelBooking}>
         <ThemedText style={styles.cancelButtonText}>Cancel Booking</ThemedText>
       </TouchableOpacity>
     </ThemedView>
@@ -94,7 +110,6 @@ export default function CancelBookingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
   },
   scrollView: {
     flex: 1,
@@ -114,21 +129,18 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#F2F2F7',
     justifyContent: 'center',
     alignItems: 'center',
   },
   title: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#000000',
   },
   placeholder: {
     width: 40,
   },
   instructionText: {
     fontSize: 16,
-    color: '#000000',
     marginBottom: 24,
   },
   radioList: {
@@ -144,7 +156,6 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#8E8E93',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -153,15 +164,12 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: '#2D8659',
   },
   radioLabel: {
     fontSize: 16,
-    color: '#000000',
   },
   divider: {
     height: 1,
-    backgroundColor: '#E5E5E5',
     marginBottom: 24,
   },
   otherSection: {
@@ -170,16 +178,13 @@ const styles = StyleSheet.create({
   otherLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#000000',
     marginBottom: 12,
   },
   textArea: {
     height: 220,
     borderWidth: 1,
-    borderColor: '#E5E5E5',
     borderRadius: 12,
     padding: 16,
-    backgroundColor: '#FFFFFF',
     textAlignVertical: 'top',
   },
   cancelButton: {
@@ -188,7 +193,6 @@ const styles = StyleSheet.create({
     left: 20,
     right: 20,
     height: 56,
-    backgroundColor: '#2D8659',
     borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
@@ -196,6 +200,5 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#FFFFFF',
   },
 });

@@ -10,7 +10,6 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 
 export default function BookingFormScreen() {
   const router = useRouter();
-  
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [notes, setNotes] = useState('');
@@ -45,8 +44,8 @@ export default function BookingFormScreen() {
 
   const handleConfirmBooking = () => {
     console.log('Booking confirmed with:', { date, time, notes });
-    // Navigate to confirmation screen or back to bookings
-    router.push('/client/bookings');
+    // Navigate to confirmation screen
+    router.push('/client/bookings/confirmation');
   };
 
   return (

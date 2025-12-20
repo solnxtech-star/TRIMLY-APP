@@ -3,10 +3,19 @@ import { StyleSheet, View, TouchableOpacity, Switch, Image } from 'react-native'
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useRouter } from 'expo-router';
+import { useThemeColor } from '@/hooks/use-theme-color';
 
 export default function UpcomingBookings() {
   const router = useRouter();
   const [toggleStates, setToggleStates] = useState([false, true, false]);
+  
+  // Theme colors
+  const backgroundColor = useThemeColor({}, 'background');
+  const cardBackgroundColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'cardBackground');
+  const textColor = useThemeColor({}, 'text');
+  const secondaryTextColor = useThemeColor({ light: '#6B6B6B', dark: '#A0A0A0' }, 'secondaryText');
+  const borderColor = useThemeColor({ light: '#E5E5E5', dark: '#333333' }, 'border');
+  const primaryColor = useThemeColor({ light: '#2D8659', dark: '#2D8A47' }, 'tint');
 
   const toggleSwitch = (index: number) => {
     const newStates = [...toggleStates];
@@ -52,16 +61,16 @@ export default function UpcomingBookings() {
   return (
     <View style={styles.container}>
       {bookings.map((booking, index) => (
-        <View key={booking.id} style={styles.cardContainer}>
+        <View key={booking.id} style={[styles.cardContainer, { backgroundColor: cardBackgroundColor }]}> 
           {/* Card Header */}
           <View style={styles.cardHeader}>
-            <ThemedText style={styles.dateTimeText}>
+            <ThemedText style={[styles.dateTimeText, { color: textColor }]}> 
               {booking.date} - {booking.time}
             </ThemedText>
             <View style={styles.reminderContainer}>
-              <ThemedText style={styles.reminderText}>Remind me</ThemedText>
+              <ThemedText style={[styles.reminderText, { color: textColor }]}>Remind me</ThemedText>
               <Switch
-                trackColor={{ false: '#767577', true: '#2D8659' }}
+                trackColor={{ false: '#767577', true: primaryColor }}
                 thumbColor={toggleStates[index] ? '#FFFFFF' : '#FFFFFF'}
                 ios_backgroundColor="#3e3e3e"
                 onValueChange={() => toggleSwitch(index)}
@@ -70,30 +79,30 @@ export default function UpcomingBookings() {
             </View>
           </View>
           
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: borderColor }]} />
           
           {/* Salon Information */}
           <View style={styles.salonInfoContainer}>
             <Image source={booking.image} style={styles.salonImage} />
             <View style={styles.salonDetails}>
-              <ThemedText style={styles.salonName}>{booking.salonName}</ThemedText>
+              <ThemedText style={[styles.salonName, { color: textColor }]}>{booking.salonName}</ThemedText>
               <View style={styles.infoRow}>
-                <ThemedText style={styles.infoText}>📍 {booking.address}</ThemedText>
+                <ThemedText style={[styles.infoText, { color: secondaryTextColor }]}>📍 {booking.address}</ThemedText>
               </View>
               <View style={styles.infoRow}>
-                <ThemedText style={styles.infoText}>📄 Service ID : {booking.serviceId}</ThemedText>
+                <ThemedText style={[styles.infoText, { color: secondaryTextColor }]}>📄 Service ID : {booking.serviceId}</ThemedText>
               </View>
             </View>
           </View>
           
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: borderColor }]} />
           
           {/* Action Buttons */}
           <View style={styles.buttonRow}>
-            <TouchableOpacity style={styles.cancelButton} onPress={handleCancelBooking}>
-              <ThemedText style={styles.cancelButtonText}>Cancel</ThemedText>
+            <TouchableOpacity style={[styles.cancelButton, { borderColor: primaryColor }]} onPress={handleCancelBooking}>
+              <ThemedText style={[styles.cancelButtonText, { color: primaryColor }]}>Cancel</ThemedText>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.receiptButton}>
+            <TouchableOpacity style={[styles.receiptButton, { backgroundColor: primaryColor }]}> 
               <ThemedText style={styles.receiptButtonText}>View E - Receipt</ThemedText>
             </TouchableOpacity>
           </View>
@@ -108,59 +117,54 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cardContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   dateTimeText: {
-    fontSize: 17,
-    fontWeight: 'bold',
-    color: '#000000',
+    fontSize: 14,
+    fontWeight: '600',
   },
   reminderContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   reminderText: {
-    fontSize: 15,
-    color: '#000000',
+    fontSize: 13,
     marginRight: 8,
   },
   divider: {
     height: 1,
-    backgroundColor: '#E5E5E5',
-    marginVertical: 12,
+    marginVertical: 8,
   },
   salonInfoContainer: {
     flexDirection: 'row',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   salonImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
-    marginRight: 12,
+    width: 60,
+    height: 60,
+    borderRadius: 6,
+    marginRight: 10,
   },
   salonDetails: {
     flex: 1,
   },
   salonName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#000000',
-    marginBottom: 8,
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 6,
   },
   infoRow: {
     flexDirection: 'row',
@@ -168,39 +172,35 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   infoText: {
-    fontSize: 14,
-    color: '#6B6B6B',
+    fontSize: 12,
   },
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 12,
+    marginTop: 8,
   },
   cancelButton: {
     width: '45%',
     height: 48,
     borderRadius: 24,
     borderWidth: 2,
-    borderColor: '#2D8659',
     backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
   },
   cancelButtonText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
-    color: '#2D8659',
   },
   receiptButton: {
     width: '45%',
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#2D8659',
     justifyContent: 'center',
     alignItems: 'center',
   },
   receiptButtonText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     color: '#FFFFFF',
   },
