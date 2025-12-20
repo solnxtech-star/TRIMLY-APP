@@ -6,6 +6,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useRouter } from 'expo-router';
 import { AntDesign } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useThemeColor } from '@/hooks/use-theme-color';
 
 export default function BookingFormScreen() {
   const router = useRouter();
@@ -13,6 +14,14 @@ export default function BookingFormScreen() {
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [notes, setNotes] = useState('');
+  const [selectedDate, setSelectedDate] = useState<number | null>(null);
+  const [selectedTime, setSelectedTime] = useState<number | null>(null);
+
+  // Theme colors
+  const backgroundColor = useThemeColor({}, 'background');
+  const textColor = useThemeColor({}, 'text');
+  const borderColor = useThemeColor({}, 'border');
+  const cardBackgroundColor = useThemeColor({}, 'cardBackground');
 
   // Helper function to generate time slots
   const getTimeFromIndex = (index: number) => {
@@ -23,6 +32,17 @@ export default function BookingFormScreen() {
     return `${displayHours}:${minutes}${period}`;
   };
 
+  // Sample dates for the next week
+  const dates = [
+    { day: 'Mon', date: '1' },
+    { day: 'Tue', date: '2' },
+    { day: 'Wed', date: '3' },
+    { day: 'Thu', date: '4' },
+    { day: 'Fri', date: '5' },
+    { day: 'Sat', date: '6' },
+    { day: 'Sun', date: '7' },
+  ];
+
   const handleConfirmBooking = () => {
     console.log('Booking confirmed with:', { date, time, notes });
     // Navigate to confirmation screen or back to bookings
@@ -30,20 +50,20 @@ export default function BookingFormScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor }]}> 
       <ScrollView style={styles.content}>
         {/* Header with Back Button */}
         <View style={[styles.header, { backgroundColor: 'transparent' }]}> 
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <AntDesign name="left" size={20} color="#000000" />
+            <AntDesign name="left" size={20} color={textColor} />
           </TouchableOpacity>
-          <ThemedText style={styles.headerTitle}>Book Appointment</ThemedText>
+          <ThemedText style={[styles.headerTitle, { color: textColor }]}>Book Appointment</ThemedText>
         </View>
 
         {/* Header Texts */}
         <View style={styles.headerTexts}>
-          <ThemedText style={styles.mainHeader}>Select Date & Time</ThemedText>
-          <ThemedText style={styles.subHeader}>Choose your Preferred appointment</ThemedText>
+          <ThemedText style={[styles.mainHeader, { color: textColor }]}>Select Date & Time</ThemedText>
+          <ThemedText style={[styles.subHeader, { color: textColor }]}>Choose your Preferred appointment</ThemedText>
         </View>
 
         {/* Date Selection */}
@@ -55,15 +75,34 @@ export default function BookingFormScreen() {
               <IconSymbol name="chevron.down" size={16} color="#666666" />
             </View>
           </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View style={styles.dateContainer}>
+              {dates.map((item, index) => (
+                <TouchableOpacity 
+                  key={index} 
+                  style={[styles.dateItem, { backgroundColor: selectedDate === index ? '#2D8A47' : cardBackgroundColor, borderColor: borderColor }]}
+                  onPress={() => setSelectedDate(index)}
+                >
+                  <ThemedText style={[styles.dayText, { color: selectedDate === index ? '#FFFFFF' : textColor }]}>{item.day}</ThemedText>
+                  <ThemedText style={[styles.dateText, { color: selectedDate === index ? '#FFFFFF' : textColor }]}>{item.date}</ThemedText>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </ScrollView>
+        </View>
 
         {/* Time Selection */}
         <View style={styles.formSection}>
           <ThemedText style={styles.sectionTitle}>Select Time</ThemedText>
           <View style={styles.timeGrid}>
             {[...Array(9)].map((_, index) => (
-              <TouchableOpacity key={index} style={styles.timeSlot}>
-                <IconSymbol name="clock" size={16} color="#666666" />
-                <ThemedText style={styles.timeText}>{getTimeFromIndex(index)}</ThemedText>
+              <TouchableOpacity 
+                key={index} 
+                style={[styles.timeSlot, { backgroundColor: selectedTime === index ? '#2D8A47' : cardBackgroundColor, borderColor: borderColor }]}
+                onPress={() => setSelectedTime(index)}
+              >
+                <IconSymbol name="clock" size={16} color={selectedTime === index ? '#FFFFFF' : '#666666'} />
+                <ThemedText style={[styles.timeText, { color: selectedTime === index ? '#FFFFFF' : textColor }]}>{getTimeFromIndex(index)}</ThemedText>
               </TouchableOpacity>
             ))}
           </View>
@@ -71,7 +110,18 @@ export default function BookingFormScreen() {
 
         {/* Notes */}
         <View style={styles.formSection}>
-          <ThemedText style={styles.sectionTitle}>Additional Notes <ThemedText style={styles.optionalText}>(Optional)</ThemedText></ThemedText>
+          <ThemedText style={[styles.sectionTitle, { color: textColor }]}>Additional Notes <ThemedText style={styles.optionalText}>(Optional)</ThemedText></ThemedText>
+          <View style={[styles.textAreaContainer, { borderColor, backgroundColor: cardBackgroundColor }]}> 
+            <TextInput
+              style={[styles.textArea, { color: textColor }]}
+              placeholder="Any special requests or notes..."
+              value={notes}
+              onChangeText={setNotes}
+              multiline
+              numberOfLines={4}
+              placeholderTextColor={'#8E8E93'}
+            />
+          </View>
         </View>
       </ScrollView>
 
@@ -79,7 +129,7 @@ export default function BookingFormScreen() {
       <TouchableOpacity style={styles.confirmButton} onPress={handleConfirmBooking}>
         <ThemedText style={styles.confirmButtonText}>Book Appointment</ThemedText>
       </TouchableOpacity>
-    </ThemedView>
+    </SafeAreaView>
   );
 }
 
@@ -94,7 +144,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
-    backgroundColor: '#2D8A47',
   },
   backButton: {
     width: 40,
@@ -107,63 +156,88 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#FFFFFF',
     marginLeft: 16,
   },
-  bookingInfo: {
-    padding: 20,
-    backgroundColor: '#F8F8F8',
-    margin: 16,
-    borderRadius: 12,
+  headerTexts: {
+    padding: 16,
   },
-  serviceName: {
-    fontSize: 20,
+  mainHeader: {
+    fontSize: 24,
     fontWeight: '700',
-    marginBottom: 4,
+    marginBottom: 8,
   },
-  optionName: {
+  subHeader: {
     fontSize: 16,
-    color: '#666666',
-    marginBottom: 12,
-  },
-  priceContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  priceLabel: {
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  price: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#2D8A47',
   },
   formSection: {
     padding: 16,
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    marginBottom: 12,
   },
-  inputContainer: {
+  optionalText: {
+    fontSize: 14,
+    fontWeight: 'normal',
+  },
+  monthYearContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
   },
-  input: {
-    flex: 1,
+  monthYearText: {
     fontSize: 16,
+    marginRight: 4,
+  },
+  dateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginVertical: 8,
+  },
+  dateItem: {
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 12,
+    minWidth: 60,
+    borderWidth: 1,
+  },
+  dayText: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  dateText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  timeGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  timeSlot: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '30%',
+    padding: 12,
+    marginVertical: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  timeText: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 8,
   },
   textAreaContainer: {
     borderWidth: 1,
-    borderColor: '#E5E5E5',
     borderRadius: 12,
   },
   textArea: {
@@ -178,7 +252,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#E5E5E5',
     borderRadius: 12,
     padding: 16,
   },
@@ -190,7 +263,6 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#E5E5E5',
     marginRight: 12,
   },
   specialistName: {
@@ -204,7 +276,6 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     fontSize: 14,
-    color: '#666666',
     marginLeft: 4,
   },
   confirmButton: {
