@@ -5,6 +5,7 @@ import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useRouter } from 'expo-router';
 import { AntDesign } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function BookingFormScreen() {
   const router = useRouter();
@@ -13,6 +14,15 @@ export default function BookingFormScreen() {
   const [time, setTime] = useState('');
   const [notes, setNotes] = useState('');
 
+  // Helper function to generate time slots
+  const getTimeFromIndex = (index: number) => {
+    const hours = Math.floor(index / 2) + 9; // Starting from 9 AM
+    const minutes = index % 2 === 0 ? '00' : '30';
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours > 12 ? hours - 12 : hours === 0 ? 12 : hours;
+    return `${displayHours}:${minutes}${period}`;
+  };
+
   const handleConfirmBooking = () => {
     console.log('Booking confirmed with:', { date, time, notes });
     // Navigate to confirmation screen or back to bookings
@@ -20,94 +30,54 @@ export default function BookingFormScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <ScrollView style={styles.content}>
         {/* Header with Back Button */}
-        <View style={styles.header}>
+        <View style={[styles.header, { backgroundColor: 'transparent' }]}> 
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
             <AntDesign name="left" size={20} color="#000000" />
           </TouchableOpacity>
-          <ThemedText style={styles.headerTitle}>Confirm Booking</ThemedText>
+          <ThemedText style={styles.headerTitle}>Book Appointment</ThemedText>
         </View>
 
-        {/* Booking Info */}
-        <View style={styles.bookingInfo}>
-          <ThemedText style={styles.serviceName}>Haircut</ThemedText>
-          <ThemedText style={styles.optionName}>Deluxe Cut</ThemedText>
-          <View style={styles.priceContainer}>
-            <ThemedText style={styles.priceLabel}>Total:</ThemedText>
-            <ThemedText style={styles.price}>₦7,000</ThemedText>
-          </View>
+        {/* Header Texts */}
+        <View style={styles.headerTexts}>
+          <ThemedText style={styles.mainHeader}>Select Date & Time</ThemedText>
+          <ThemedText style={styles.subHeader}>Choose your Preferred appointment</ThemedText>
         </View>
 
         {/* Date Selection */}
         <View style={styles.formSection}>
-          <ThemedText style={styles.sectionTitle}>Select Date</ThemedText>
-          <TouchableOpacity style={styles.inputContainer} onPress={() => console.log('Open date picker')}>
-            <TextInput
-              style={styles.input}
-              placeholder="Select date"
-              value={date}
-              onChangeText={setDate}
-              editable={false}
-            />
-            <IconSymbol name="calendar" size={20} color="#666666" />
-          </TouchableOpacity>
-        </View>
+          <View style={styles.sectionHeader}>
+            <ThemedText style={styles.sectionTitle}>Select Date</ThemedText>
+            <View style={styles.monthYearContainer}>
+              <ThemedText style={styles.monthYearText}>December 2023</ThemedText>
+              <IconSymbol name="chevron.down" size={16} color="#666666" />
+            </View>
+          </View>
 
         {/* Time Selection */}
         <View style={styles.formSection}>
           <ThemedText style={styles.sectionTitle}>Select Time</ThemedText>
-          <TouchableOpacity style={styles.inputContainer} onPress={() => console.log('Open time picker')}>
-            <TextInput
-              style={styles.input}
-              placeholder="Select time"
-              value={time}
-              onChangeText={setTime}
-              editable={false}
-            />
-            <IconSymbol name="clock" size={20} color="#666666" />
-          </TouchableOpacity>
+          <View style={styles.timeGrid}>
+            {[...Array(9)].map((_, index) => (
+              <TouchableOpacity key={index} style={styles.timeSlot}>
+                <IconSymbol name="clock" size={16} color="#666666" />
+                <ThemedText style={styles.timeText}>{getTimeFromIndex(index)}</ThemedText>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
 
         {/* Notes */}
         <View style={styles.formSection}>
-          <ThemedText style={styles.sectionTitle}>Additional Notes</ThemedText>
-          <View style={styles.textAreaContainer}>
-            <TextInput
-              style={styles.textArea}
-              placeholder="Any special requests or notes..."
-              value={notes}
-              onChangeText={setNotes}
-              multiline
-              numberOfLines={4}
-              placeholderTextColor={'#8E8E93'}
-            />
-          </View>
-        </View>
-
-        {/* Specialist Selection */}
-        <View style={styles.formSection}>
-          <ThemedText style={styles.sectionTitle}>Preferred Specialist</ThemedText>
-          <TouchableOpacity style={styles.specialistCard}>
-            <View style={styles.specialistInfo}>
-              <View style={styles.specialistAvatar} />
-              <View>
-                <ThemedText style={styles.specialistName}>John Doe</ThemedText>
-                <View style={styles.ratingContainer}>
-                  <IconSymbol name="star.fill" size={16} color="#FFD700" />
-                  <ThemedText style={styles.ratingText}>4.8</ThemedText>
-                </View>
-              </View>
-            </View>
-            <IconSymbol name="chevron.right" size={20} color="#666666" />
-          </TouchableOpacity>
+          <ThemedText style={styles.sectionTitle}>Additional Notes <ThemedText style={styles.optionalText}>(Optional)</ThemedText></ThemedText>
         </View>
       </ScrollView>
 
       {/* Confirm Button */}
       <TouchableOpacity style={styles.confirmButton} onPress={handleConfirmBooking}>
-        <ThemedText style={styles.confirmButtonText}>Confirm Booking</ThemedText>
+        <ThemedText style={styles.confirmButtonText}>Book Appointment</ThemedText>
       </TouchableOpacity>
     </ThemedView>
   );
