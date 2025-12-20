@@ -265,6 +265,34 @@ export default function ClientLayout() {
           // tabBarButton: () => null,
         }}
       />
+      <Tabs.Screen
+        name="bookings/form"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="bookings/confirmation"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="bookings/checkout"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="service-options"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
     </Tabs>
   );
 }
