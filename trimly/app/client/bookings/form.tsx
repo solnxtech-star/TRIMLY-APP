@@ -25,7 +25,7 @@ export default function BookingFormScreen() {
         {/* Header with Back Button */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <AntDesign name="arrow-left" size={20} color="#FFFFFF" />
+            <AntDesign name="left" size={20} color="#000000" />
           </TouchableOpacity>
           <ThemedText style={styles.headerTitle}>Confirm Booking</ThemedText>
         </View>
