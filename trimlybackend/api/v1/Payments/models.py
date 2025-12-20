@@ -1,9 +1,10 @@
 from django.db import models
-
+import uuid
 from api.v1.Users.models import User
 from api.v1.Bookings.models import Booking
 
 class Payment(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
 

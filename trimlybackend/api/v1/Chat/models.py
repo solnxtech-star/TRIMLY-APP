@@ -1,8 +1,9 @@
 from django.db import models
-
+import uuid
 from api.v1.Users.models import User
 
 class Conversation(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     customer = models.ForeignKey(User, related_name="customer_conversations", on_delete=models.CASCADE)
     vendor = models.ForeignKey(User, related_name="vendor_conversations", on_delete=models.CASCADE)
 
@@ -10,6 +11,7 @@ class Conversation(models.Model):
     last_message_at = models.DateTimeField(auto_now=True)
 
 class Message(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE)
     sender = models.ForeignKey(User, on_delete=models.CASCADE)
 

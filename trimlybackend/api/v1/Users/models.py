@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from .managers import CustomUserManager
-
+import uuid
 class User(AbstractUser):
     ROLE_CHOICES = [
         ('customer', 'Customer'),
@@ -9,7 +9,7 @@ class User(AbstractUser):
         ('salon_owner', 'Salon Owner'),
         ('admin', 'admin')
     ]
-
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     role = models.CharField(max_length=30, choices=ROLE_CHOICES, default="customer")
     phone_number = models.CharField(max_length=20, null=True, blank=True)
     otp = models.DecimalField(max_digits=6, decimal_places=0, null=True, blank=True)

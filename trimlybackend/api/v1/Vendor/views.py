@@ -1,24 +1,43 @@
+from datetime import datetime
+from django.shortcuts import get_object_or_404
+from api.v1.Category.models import Availability, AvailabilityException, Gallery
+from api.v1.Category.serializers import AvailabilityExceptionSerializer, AvailaibilitySerializer, GallerySerializer
 from .models import IndividualVendorProfile, VendorServices
 from .serializers import VendorSerializer, VendorServicesSerializer
 from rest_framework import generics, viewsets, permissions
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from api.v1.Users.permissions import IsAdminVendorOrReadOnly, IsAdminOrVendorServiceObject
+from api.v1.Users.permissions import IsAdminVendorOrReadOnly, IsAdminOrVendorServiceObject, IsVendorAvailabilityOwner, IsOwnerOfTargetProvider
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from api.v1.Bookings.utils import get_available_slots
 
 class VendorServicesListCreateAPIView(generics.ListCreateAPIView):
+    """
+    Instantiates and Return vendor Services
+    """
     serializer_class = VendorServicesSerializer
     permission_classes = [IsAdminVendorOrReadOnly]
     def get_queryset(self):
         vendor_id = self.kwargs["id"]
-        return VendorServices.objects.filter(worker__id=vendor_id)
+        return VendorServices.objects.filter(worker_id=vendor_id)
     def perform_create(self, serializer):
         return serializer.save(vendor=self.request.user)
 
 class VendorServicesRetrieveUpdateDeleteAPIView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = VendorServices.objects.all()
+    """
+   Retrieves vendor Services objects(Id)
+    """
     serializer_class = VendorServicesSerializer
     permission_classes = [IsAdminOrVendorServiceObject]
+    def get_queryset(self):
+        qs = VendorServices.objects.filter(vendor_id = self.kwargs["vendor_id"])
+
+        return qs
 
 class VendorViewset(viewsets.ModelViewSet):
+    """"
+    A viewset for viewing and editing vendor instances.
+    """
     queryset = IndividualVendorProfile.objects.all()
     serializer_class = VendorSerializer
 
@@ -31,3 +50,119 @@ class VendorViewset(viewsets.ModelViewSet):
             permission_classes = [IsAdminOrVendorServiceObject,]
 
         return [permission() for permission in permission_classes]
+    
+
+    
+class VendorGalleryUploadAPIView(generics.ListCreateAPIView):
+    """
+    Handle vendor Gallery and Portfolio
+    """
+    serializer_class = GallerySerializer
+
+    def get_queryset(self):
+        return Gallery.objects.filter(vendor_id=self.kwargs["id"])
+
+    def perform_create(self, serializer):
+        vendor = get_object_or_404(Gallery, vendor_id=self.kwargs["id"])
+        serializer.save(
+            vendor=vendor
+        )
+    def get_permissions(self):
+        if self.request.method == "GET":
+            permission_classes = [IsAuthenticated]
+        else :
+            permission_classes = [IsAdminVendorOrReadOnly]
+        
+        return [permission() for permission in permission_classes]
+    
+class VendorAvailabilityListCreateAPIView(generics.ListCreateAPIView):
+    """
+    Instantiates and Returns vendor Avalaibility
+    """
+    serializer_class = AvailaibilitySerializer
+
+    def get_queryset(self):
+        return Availability.objects.filter(
+            vendor_id=self.kwargs["vendor_id"]
+        )
+
+    def perform_create(self, serializer):
+        vendor = get_object_or_404(IndividualVendorProfile, id = self.kwargs["vendor_id"])
+        serializer.save(vendor = vendor)
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            permission_classes = [IsAuthenticated]
+        else:
+            permission_classes = [IsAdminVendorOrReadOnly]
+        return [p() for p in permission_classes]
+    
+
+
+class VendorAvailabilityRetrieveUpdateDeleteAPIView(
+    generics.RetrieveUpdateDestroyAPIView
+):
+    """
+    Instantiates and Returns vendor Avalaibility objects(Id)
+    """
+   
+    serializer_class = AvailaibilitySerializer
+    permission_classes = [IsAdminOrVendorServiceObject]
+    def get_queryset(self):
+        qs = Availability.objects.filter(vendor_id = self.kwargs["vendor_id"])
+        return qs
+
+class VendorAvailabilityExceptionListCreateAPIView(generics.ListCreateAPIView):
+    """
+    Instantiates and Returns vendor Avalaibility Exception
+    """
+    serializer_class = AvailabilityExceptionSerializer
+    permission_classes = [IsOwnerOfTargetProvider]
+
+    def get_queryset(self):
+        return AvailabilityException.objects.filter(
+            vendor_id=self.kwargs["vendor_id"]
+        )
+
+    def perform_create(self, serializer):
+        vendor = get_object_or_404(IndividualVendorProfile, id = self.kwargs["id"])
+        serializer.save(vendor = vendor)
+
+
+class VendorAvailabilityExceptionRetrieveAPIView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    Instantiates and Returns Vendor Avalaibility Exception object (id)
+    """    
+    serializer_class = AvailabilityExceptionSerializer
+    permission_classes = [IsVendorAvailabilityOwner]
+
+    def get_queryset(self):
+        return AvailabilityException.objects.filter(
+            vendor_id=self.kwargs["vendor_id"]
+        )
+
+
+
+class VendorSlotsAPIView(APIView):
+    """
+    Handles returning Available slots to the user
+    """
+    permission_classes = [AllowAny] # Customers don't need to be logged in to browse
+
+    def get(self, request, vendor_id):
+        date_str = request.query_params.get('date')
+        duration = int(request.query_params.get('duration', 60)) # Default 60 mins
+        
+        if not date_str:
+            return Response({"error": "Date is required"}, status=400)
+            
+        date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        vendor = get_object_or_404(IndividualVendorProfile, id=vendor_id)
+        
+        slots = get_available_slots(vendor, date, duration)
+        
+        return Response({
+            "vendor_id": vendor_id,
+            "date": date_str,
+            "slots": slots
+        })

@@ -1,9 +1,10 @@
 from django.db import models
 from api.v1.Category.models import ServiceCategory, Gallery
 from api.v1.Users.models import User
-
+import uuid
 
 class SalonProfile(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     owner = models.OneToOneField(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
 
@@ -16,9 +17,6 @@ class SalonProfile(models.Model):
 
     profile_pic = models.ImageField(upload_to='salon_profiles/', null=True, blank=True)
 
-    
-    portfolio = models.ManyToManyField(Gallery, blank=True)
-
     links = models.CharField(max_length=255, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     is_open = models.BooleanField(default=True)
@@ -27,6 +25,7 @@ class SalonProfile(models.Model):
         return self.name
 
 class SalonOwnerProfile(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.TextField(blank=True)
     profile_pic = models.ImageField(upload_to='owners/', blank=True)
@@ -38,6 +37,7 @@ class SalonOwnerProfile(models.Model):
     
 
 class SalonStaff(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     name = models.CharField(max_length=255)
     service_category = models.ForeignKey(ServiceCategory, on_delete=models.SET_NULL, null=True)
     salon = models.ForeignKey(SalonProfile, on_delete=models.CASCADE, related_name='salon_staff')
@@ -51,7 +51,7 @@ class SalonStaff(models.Model):
 
 
 class SalonServices(models.Model):
-
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     salon = models.ForeignKey(
         SalonProfile,
         on_delete=models.CASCADE,

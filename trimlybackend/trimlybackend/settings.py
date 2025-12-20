@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'dj_rest_auth', # The wrapper for DRF endpoints
     'dj_rest_auth.registration', # Registration module,
     'drf_spectacular',
+    'django_filters'
 ]
 SITE_ID = 1 
 MIDDLEWARE = [
@@ -165,6 +166,7 @@ SIMPLE_JWT = {
 }
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
