@@ -1,147 +1,158 @@
+import random
+from datetime import time, date, timedelta
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from django.contrib.auth import get_user_model
-# Import your specific models from their respective apps
-# For example:
-from api.v1.Category.models import ServiceCategory
-from api.v1.Salons.models import SalonProfile, SalonServices, SalonPackages
-# Replace with your actual model imports:
-# class ServiceCategory: # Placeholder class
-#     def __init__(self, name):
-#         self.name = name
-#     def save(self):
-#         print(f"  -> Category saved: {self.name}")
 
-# class Salon: # Placeholder class
-#     def __init__(self, name, owner):
-#         self.name = name
-#         self.owner = owner
-#     def save(self):
-#         print(f"  -> Salon saved: {self.name}")
-        
-# class Service: # Placeholder class
-#     def __init__(self, name, salon, price):
-#         self.name = name
-#         self.salon = salon
-#         self.price = price
-#     def save(self):
-#         print(f"  -> Service saved: {self.name}")
-
-
-User = get_user_model() # Assumes you are using a custom User model
+# Import your models based on your architecture
+from api.v1.Users.models import User
+from api.v1.Category.models import ServiceCategory, Availability, AvailabilityException
+from api.v1.Salons.models import SalonProfile, SalonServices
+from api.v1.Vendor.models import IndividualVendorProfile, VendorServices
 
 class Command(BaseCommand):
-    help = 'Populates the database with initial user, salon, and service data.'
+    help = 'Seeds the database with 2 customers, 3 salons, and 3 vendors with services and exceptions'
 
-    def handle(self, *args, **options):
-        self.stdout.write("Starting database seeding...")
+    def handle(self, *args, **kwargs):
+        self.stdout.write(self.style.SUCCESS("🚀 Starting Atomic Mega Seed..."))
 
         try:
             with transaction.atomic():
-                # --- 1. Create Users (Admin, Owner, Customer) ---
-                self.stdout.write(self.style.MIGRATE_HEADING("Creating Users..."))
-
-                # Admin User (RLS-bypass user for maintenance)
-                admin_user, created = User.objects.get_or_create(
-                    email='admin@trimly.com',
-                    defaults={
-                        'first_name': 'Trimly',
-                        'role': 'admin',
-                        'is_staff': True,
-                        'is_superuser': True
-                    }
-                )
-                if created:
-                    admin_user.set_password('adminsecure123') # **CHANGE THIS IMMEDIATELY**
-                    admin_user.save()
-                    self.stdout.write(self.style.SUCCESS('Admin user created.'))
-                
-                # Salon Owner User
-                owner_user, created = User.objects.get_or_create(
-                    email='owner@salonx.com',
-                    defaults={
-                        'first_name': 'Sarah',
-                        'last_name': 'Connor',
-                        'role': 'owner',
-                    }
-                )
-                if created:
-                    owner_user.set_password('ownerpass123') # **CHANGE THIS**
-                    owner_user.save()
-                    self.stdout.write(self.style.SUCCESS('Owner user created.'))
-                
-                # Customer User
-                customer_user, created = User.objects.get_or_create(
-                    email='customer@example.com',
-                    defaults={
-                        'first_name': 'John',
-                        'last_name': 'Doe',
-                        'role': 'customer',
-                    }
-                )
-                if created:
-                    customer_user.set_password('customerpass123') # **CHANGE THIS**
-                    customer_user.save()
-                    self.stdout.write(self.style.SUCCESS('Customer user created.'))
-
-
-                # --- 2. Create Global Categories (Admin Responsibility) ---
-                self.stdout.write(self.style.MIGRATE_HEADING("\nCreating Categories..."))
-                
-                categories_list = [
-                    'Haircut & Styling', 
-                    'Manicure & Pedicure', 
-                    'Waxing', 
-                    'Facials & Skincare',
-                    'Massage'
-                ]
-                
-                for name in categories_list:
-                    ServiceCategory.objects.get_or_create(name=name)
-                haircut_category = ServiceCategory.objects.get(name='Haircut & Styling')    
-                self.stdout.write(self.style.SUCCESS(f'{len(categories_list)} categories seeded.'))
-
-
-                # --- 3. Create Salon ---
-                self.stdout.write(self.style.MIGRATE_HEADING("\nCreating Salon Profile..."))
-                
-                salon_x, created = SalonProfile.objects.get_or_create(
-                    owner=owner_user,
-                    defaults={
-                        'name': 'The Cutting Edge Salon X',
-                        'address': '123 Main St, Anytown',
-                        'about': 'A premium salon experience.',
-                        # ... other required fields ...
-                    }
-                )
-                if created:
-                    self.stdout.write(self.style.SUCCESS(f'Salon "{salon_x.name}" created for {owner_user.email}'))
-
-
-                # --- 4. Create Services for the Salon ---
-                self.stdout.write(self.style.MIGRATE_HEADING("\nCreating Services..."))
-                
-                SalonServices.objects.get_or_create(
-                    salon=salon_x, 
-                    name='Men\'s Standard Cut', 
-                    defaults={'price': 25.00, 'category': haircut_category}
-                )
-                SalonServices.objects.get_or_create(
-                    salon=salon_x, 
-                    name='Luxury Manicure', 
-                    defaults={'price': 45.00, 'category': haircut_category}
-                )
-                SalonServices.objects.get_or_create(
-                    salon=salon_x, 
-                    name='Deep Tissue Massage (60 min)', 
-                    defaults={'price': 70.00, 'category': haircut_category}
-                )
-                
-                self.stdout.write(self.style.SUCCESS('Services seeded successfully.'))
-
-
+                self.run_seed()
+                self.stdout.write(self.style.SUCCESS("\n" + "="*40))
+                self.stdout.write(self.style.SUCCESS("🔥 SUCCESS: Database seeded successfully!"))
+                self.stdout.write(self.style.SUCCESS("="*40))
         except Exception as e:
-            self.stdout.write(self.style.ERROR(f"Seeding failed due to an error: {e}"))
-            # Note: A transaction.atomic block will automatically rollback on exception
+            self.stdout.write(self.style.ERROR(f"❌ ERROR DURING SEEDING: {str(e)}"))
 
-        self.stdout.write(self.style.SUCCESS("\nDatabase seeding completed."))
+    def run_seed(self):
+        # --- 1. CREATE CATEGORIES ---
+        cat_names = ["Hair Styling", "Nail Art", "Massage Therapy", "Skin Care"]
+        cats = [ServiceCategory.objects.get_or_create(name=name)[0] for name in cat_names]
+        self.stdout.write(f"✅ Created {len(cats)} Categories.")
+
+        # --- 2. CREATE CUSTOMERS (2 Users) ---
+        for i in range(1, 3):
+            email = f"customer{i}@trimly.com"
+            u, created = User.objects.get_or_create(
+                email=email,
+                defaults={
+                    'username': f"customer_{i}", 
+                    'role': 'customer', 
+                    'phone_number': f"+234800000000{i}",
+                    'first_name': f"Customer",
+                    'last_name': str(i)
+                }
+            )
+            if created:
+                u.set_password("password123")
+                u.save()
+        self.stdout.write("✅ Created 2 Customer Accounts.")
+
+        today = date.today()
+
+        # --- 3. CREATE 3 SALONS (Profile has 'name' field) ---
+        salon_data = [
+            {"name": "The Golden Shears", "email": "owner0@salon.com"},
+            {"name": "Luxe Glow Salon", "email": "owner1@salon.com"},
+            {"name": "Ivory Wellness", "email": "owner2@salon.com"}
+        ]
+        
+        for i, s_info in enumerate(salon_data):
+            owner = User.objects.create_user(
+                email=s_info["email"], 
+                username=f"salon_owner_{i}", 
+                password="password123", 
+                role="salon_owner",
+                first_name="Owner",
+                last_name=str(i)
+            )
+            
+            salon = SalonProfile.objects.create(
+                owner=owner,
+                name=s_info["name"],
+                category=random.choice(cats),
+                address=f"{i+100} Victoria Island, Lagos",
+                latitude="6.4281",
+                longitude="3.4398",
+                is_open=True
+            )
+            
+            # 3 Services per Salon
+            for j in range(1, 4):
+                service = SalonServices.objects.create(
+                    salon=salon,
+                    name=f"{s_info['name']} Srv {j}",
+                    price=random.randint(8000, 25000),
+                    duration_minutes=random.choice([30, 60, 90])
+                )
+                service.categories.add(random.choice(cats))
+            
+            # 7 Days Availability
+            for d in range(7):
+                Availability.objects.create(
+                    salon=salon,
+                    date=today + timedelta(days=d),
+                    start_time=time(9, 0),
+                    end_time=time(18, 0)
+                )
+
+            # Holiday Exception (Closed in 3 days)
+            AvailabilityException.objects.create(
+                salon=salon,
+                date=today + timedelta(days=3),
+                is_available=False
+            )
+            self.stdout.write(f"🏠 Created Salon: {s_info['name']}")
+
+        # --- 4. CREATE 3 INDIVIDUAL VENDORS (Profile uses 'worker' User for name) ---
+        vendor_data = [
+            {"first": "Bode", "last": "The Barber", "email": "vendor0@trimly.com"},
+            {"first": "Amaka", "last": "Braids", "email": "vendor1@trimly.com"},
+            {"first": "Tunde", "last": "Massage", "email": "vendor2@trimly.com"}
+        ]
+
+        for i, v_info in enumerate(vendor_data):
+            worker = User.objects.create_user(
+                email=v_info["email"], 
+                username=f"vendor_user_{i}", 
+                password="password123", 
+                role="individual_vendor",
+                first_name=v_info["first"],
+                last_name=v_info["last"]
+            )
+            
+            vendor = IndividualVendorProfile.objects.create(
+                worker=worker,
+                service_category=random.choice(cats),
+                years_of_experience=random.randint(3, 15),
+               
+            )
+            
+            # 3 Services per Vendor
+            full_name = f"{v_info['first']} {v_info['last']}"
+            for j in range(1, 4):
+                VendorServices.objects.create(
+                    vendor=vendor,
+                    name=f"{full_name} Custom Srv {j}",
+                    price=random.randint(3000, 12000),
+                    duration_minutes=random.choice([30, 45, 60])
+                )
+            
+            # 7 Days Availability
+            for d in range(7):
+                Availability.objects.create(
+                    vendor=vendor,
+                    date=today + timedelta(days=d),
+                    start_time=time(10, 0),
+                    end_time=time(19, 0)
+                )
+
+            # Partial Day Exception (Tomorrow)
+            AvailabilityException.objects.create(
+                vendor=vendor,
+                date=today + timedelta(days=1),
+                is_available=True,
+                start_time=time(12, 0),
+                end_time=time(15, 0)
+            )
+            self.stdout.write(f"✂️ Created Vendor: {full_name}")

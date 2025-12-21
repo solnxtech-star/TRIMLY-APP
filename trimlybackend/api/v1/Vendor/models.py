@@ -20,7 +20,7 @@ class IndividualVendorProfile(models.Model):
 
 class VendorServices(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    vendor = models.ForeignKey(User, on_delete=models.CASCADE, related_name="vendor_services")
+    vendor = models.ForeignKey(IndividualVendorProfile, on_delete=models.CASCADE, related_name="vendor_services")
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
