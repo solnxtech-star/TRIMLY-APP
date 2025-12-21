@@ -24,7 +24,7 @@ class SalonViewset(viewsets.ModelViewSet):
         Instantiates and returns the list of permissions that this view requires.
         """
         if self.action in ["list", "retrieve"]:
-            permission_classes = [IsAuthenticated]
+            permission_classes = [AllowAny]
         elif self.action == 'create':
             permission_classes = [permissions.IsAdminOrSalonOwner]
         else:
@@ -105,7 +105,7 @@ class SalonAvailabilityListCreateAPIView(generics.ListCreateAPIView):
 
     def get_permissions(self):
         if self.request.method == "GET":
-            permission_classes = [IsAuthenticated]
+            permission_classes = [AllowAny]
         else:
             permission_classes = [permissions.IsAdminOrSalonOwnerObject]
         return [p() for p in permission_classes]
@@ -165,7 +165,7 @@ class SalonSlotsAPIView(APIView):
             return Response({"error": "Date is required"}, status=400)
             
         date = datetime.strptime(date_str, '%Y-%m-%d').date()
-        salon = get_object_or_404(salon, id=vendor_id)
+        salon = get_object_or_404(salon, id=self.kwargs["salon_id"])
         
         slots = get_available_slots(salon, date, duration)
         
