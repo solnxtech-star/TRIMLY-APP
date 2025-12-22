@@ -13,6 +13,7 @@ class IndividualVendorProfile(models.Model):
     years_of_experience = models.IntegerField()
     Gender = models.CharField(max_length=10, choices=[('male', 'male'), ('female', 'female')], default='male')
     total_earnings = models.BigIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
 
 
     def __str__(self):

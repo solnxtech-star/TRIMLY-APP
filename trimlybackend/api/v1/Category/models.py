@@ -3,6 +3,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 
 class ServiceCategory(models.Model):
+    
     name = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -29,68 +30,31 @@ class Gallery(models.Model):
 
 
 class Availability(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    salon = models.ForeignKey(
-        "Salons.SalonProfile",
-        null=True,
-        blank=True,
-        on_delete=models.CASCADE,
-        related_name="availabilities"
-    )
-    vendor = models.ForeignKey(
-        "Vendor.IndividualVendorProfile",
-        null=True,
-        blank=True,
-        on_delete=models.CASCADE,
-        related_name="availabilities"
-    )
-
-    date = models.DateField()
+    DAY_CHOICES = [
+        (0, 'Monday'),
+        (1, 'Tuesday'),
+        (2, 'Wednesday'),
+        (3, 'Thursday'),
+        (4, 'Friday'),
+        (5, 'Saturday'),
+        (6, 'Sunday'),
+    ]
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    salon = models.ForeignKey('Salons.SalonProfile', on_delete=models.CASCADE, null=True, blank=True, related_name="availabilities")
+    vendor = models.ForeignKey('Vendor.IndividualVendorProfile', on_delete=models.CASCADE, null=True, blank=True, related_name = "availabilities")
+    day_of_week = models.IntegerField(choices=DAY_CHOICES, default=0)
     start_time = models.TimeField()
     end_time = models.TimeField()
 
-    created_at = models.DateTimeField(auto_now_add=True)
-
     class Meta:
-        indexes = [
-            models.Index(fields=["date"]),
-        ]
+        # This ensures a salon/vendor doesn't have two overlapping "Monday" schedules
+        verbose_name_plural = "Availabilities"
 
-    def clean(self):
-        # 1️⃣ Must have exactly one provider
-        if not self.salon and not self.vendor:
-            raise ValidationError("Availability must belong to a salon or a vendor.")
-
-        if self.salon and self.vendor:
-            raise ValidationError("Availability cannot belong to both salon and vendor.")
-
-        # 2️⃣ Time logic
-        if self.start_time >= self.end_time:
-            raise ValidationError("Start time must be before end time.")
-
-        # 3️⃣ Overlap detection
-        qs = Availability.objects.filter(date=self.date)
-
-        if self.salon:
-            qs = qs.filter(salon=self.salon)
-        else:
-            qs = qs.filter(vendor=self.vendor)
-
-        if self.pk:
-            qs = qs.exclude(pk=self.pk)
-
-        overlap_exists = qs.filter(
-            start_time__lt=self.end_time,
-            end_time__gt=self.start_time,
-        ).exists()
-
-        if overlap_exists:
-            raise ValidationError("This availability overlaps with an existing one.")
-
-    def save(self, *args, **kwargs):
-        self.full_clean()  # 🔒 enforces clean()
-        super().save(*args, **kwargs)
-
+    def __str__(self):
+        days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+        day_name = days[self.day_of_week] if 0 <= self.day_of_week <= 6 else self.day_of_week
+        entity = self.salon.name if self.salon else self.vendor.worker.get_full_name()
+        return f"{entity} | {day_name}"
         
 
 class AvailabilityException(models.Model):
@@ -124,15 +88,7 @@ class AvailabilityException(models.Model):
             ("vendor", "date"),
         )
 
-    def clean(self):
-        if self.salon and self.vendor:
-            raise ValidationError("Exception cannot belong to both salon and vendor.")
-
-        if not self.salon and not self.vendor:
-            raise ValidationError("Exception must belong to salon or vendor.")
-
-        if self.is_available:
-            if not self.start_time or not self.end_time:
-                raise ValidationError("Start and end time required when available.")
-            if self.start_time >= self.end_time:
-                raise ValidationError("Invalid time range.")
+    def __str__(self):
+        entity = self.salon if self.salon else self.vendor
+        status = "Available" if self.is_available else "Closed"
+        return f"EXCEPTION: {entity} | {self.date} | {status}"
