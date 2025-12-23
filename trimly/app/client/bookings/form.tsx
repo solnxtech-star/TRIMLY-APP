@@ -7,6 +7,7 @@ import { useRouter } from 'expo-router';
 import { AntDesign } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { FontSizes } from '@/constants/theme';
 
 export default function BookingFormScreen() {
   const router = useRouter();
@@ -19,8 +20,8 @@ export default function BookingFormScreen() {
   // Theme colors
   const backgroundColor = useThemeColor({ light: '#ffffff', dark: '#000000' }, 'background');
   const textColor = useThemeColor({ light: '#000000', dark: '#ffffff' }, 'text');
-  const borderColor = useThemeColor({ light: '#E5E5E5', dark: '#424242' }, 'border');
-  const cardBackgroundColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'cardBackground');
+  const borderColor = useThemeColor({ light: '#E5E5E5', dark: '#424242' }, 'text');
+  const cardBackgroundColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'text');
 
   // Helper function to generate time slots
   const getTimeFromIndex = (index: number) => {
@@ -158,7 +159,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: FontSizes.lg, // 16
     fontWeight: '600',
     marginLeft: 16,
   },
@@ -166,12 +167,12 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   mainHeader: {
-    fontSize: 24,
+    fontSize: FontSizes.titleMd, // 24
     fontWeight: '700',
     marginBottom: 8,
   },
   subHeader: {
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
   },
   formSection: {
     padding: 16,
@@ -183,11 +184,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: FontSizes.lg, // 16
     fontWeight: '600',
   },
   optionalText: {
-    fontSize: 14,
+    fontSize: FontSizes.md, // 14
     fontWeight: 'normal',
   },
   monthYearContainer: {
@@ -195,7 +196,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   monthYearText: {
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
     marginRight: 4,
   },
   dateContainer: {
@@ -213,12 +214,12 @@ const styles = StyleSheet.create({
     borderWidth: 1
   },
   dayText: {
-    fontSize: 14,
+    fontSize: FontSizes.md, // 14
     fontWeight: '600',
     marginBottom: 4,
   },
   dateText: {
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
     fontWeight: '600',
   },
   timeGrid: {
@@ -237,7 +238,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   timeText: {
-    fontSize: 14,
+    fontSize: FontSizes.md, // 14
     fontWeight: '600',
     marginLeft: 8,
   },
@@ -246,7 +247,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   textArea: {
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
     paddingHorizontal: 16,
     paddingVertical: 12,
     minHeight: 100,
@@ -271,7 +272,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   specialistName: {
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
     fontWeight: '600',
     marginBottom: 4,
   },
@@ -280,7 +281,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   ratingText: {
-    fontSize: 14,
+    fontSize: FontSizes.md, // 14
     marginLeft: 4,
   },
   confirmButton: {
@@ -291,7 +292,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   confirmButtonText: {
-    fontSize: 18,
+    fontSize: FontSizes.lg, // 16
     fontWeight: '600',
     color: '#FFFFFF',
   },

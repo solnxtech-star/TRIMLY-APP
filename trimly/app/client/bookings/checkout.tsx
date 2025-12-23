@@ -5,6 +5,7 @@ import { AntDesign } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useState } from 'react';
+import { FontSizes } from '@/constants/theme';
 
 export default function CheckoutScreen() {
   const router = useRouter();
@@ -117,7 +118,7 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: FontSizes.titleMd, // 24
     fontWeight: '600',
   },
   placeholder: {
@@ -131,12 +132,12 @@ const styles = StyleSheet.create({
     marginVertical: 24,
   },
   mainHeading: {
-    fontSize: 28,
+    fontSize: FontSizes.titleLg, // 28
     fontWeight: '700',
     marginBottom: 8,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: FontSizes.md, // 14
   },
   card: {
     borderRadius: 16,
@@ -144,7 +145,7 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   cardHeader: {
-    fontSize: 20,
+    fontSize: FontSizes.xl, // 18
     fontWeight: '700',
     marginBottom: 24,
   },
@@ -154,10 +155,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   label: {
-    fontSize: 14,
+    fontSize: FontSizes.md, // 14
   },
   value: {
-    fontSize: 14,
+    fontSize: FontSizes.md, // 14
     fontWeight: '700',
   },
   divider: {
@@ -170,11 +171,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   totalLabel: {
-    fontSize: 18,
+    fontSize: FontSizes.lg, // 16
     fontWeight: '700',
   },
   totalValue: {
-    fontSize: 20,
+    fontSize: FontSizes.xl, // 18
     fontWeight: '700',
     color: '#2D8A47',
   },
@@ -182,7 +183,7 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   paymentHeader: {
-    fontSize: 18,
+    fontSize: FontSizes.lg, // 16
     fontWeight: '700',
     marginBottom: 16,
   },
@@ -194,7 +195,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   cardNumber: {
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
     fontWeight: '600',
     marginLeft: 16,
   },
@@ -207,7 +208,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonText: {
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
     fontWeight: '600',
     color: '#FFFFFF',
   },

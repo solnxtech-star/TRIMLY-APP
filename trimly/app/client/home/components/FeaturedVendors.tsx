@@ -1,6 +1,7 @@
 import { StyleSheet, View, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { useRouter } from 'expo-router';
+import { FontSizes } from '@/constants/theme';
 
 export default function FeaturedVendors() {
   const router = useRouter();
@@ -64,11 +65,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   title: {
-    fontSize: 20,
+    fontSize: FontSizes.xl, // 18
     fontWeight: '700',
   },
   seeAllText: {
-    fontSize: 14,
+    fontSize: FontSizes.md, // 14
     fontWeight: '400',
     color: '#2D8659',
   },
@@ -99,7 +100,7 @@ const styles = StyleSheet.create({
     left: 12,
   },
   vendorName: {
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
     fontWeight: '700',
     color: '#FFFFFF',
   },

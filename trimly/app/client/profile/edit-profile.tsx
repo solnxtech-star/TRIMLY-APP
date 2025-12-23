@@ -4,6 +4,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { FontSizes } from '@/constants/theme';
 
 export default function EditProfileScreen() {
   const [name, setName] = useState('Alex Briggs');
@@ -138,7 +139,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   header: {
-    fontSize: 27,
+    fontSize: FontSizes.titleMd, // 24
     fontWeight: 'bold',
     marginBottom: 30,
     textAlign: 'center',
@@ -171,14 +172,14 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   label: {
-    fontSize: 15,
+    fontSize: FontSizes.md, // 14
     marginBottom: 8,
   },
   input: {
     borderWidth: 1,
     borderRadius: 10,
     padding: 15,
-    fontSize: 17,
+    fontSize: FontSizes.md, // 14
   },
   dropdownContainer: {
     flexDirection: 'row',
@@ -190,7 +191,7 @@ const styles = StyleSheet.create({
     padding: 15,
   },
   dropdownText: {
-    fontSize: 17,
+    fontSize: FontSizes.md, // 14
   },
   genderOptions: {
     flexDirection: 'row',
@@ -201,7 +202,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   genderText: {
-    fontSize: 15,
+    fontSize: FontSizes.md, // 14
   },
   selectedGender: {
     color: '#2D8659',
@@ -215,7 +216,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   updateButtonText: {
-    fontSize: 17,
+    fontSize: FontSizes.md, // 14
     color: '#FFFFFF',
     fontWeight: '600',
   },

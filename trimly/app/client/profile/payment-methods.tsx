@@ -3,6 +3,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { FontSizes } from '@/constants/theme';
 
 export default function PaymentMethodsScreen() {
   const paymentMethods = [
@@ -71,7 +72,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   header: {
-    fontSize: 27,
+    fontSize: FontSizes.titleMd, // 24
     fontWeight: 'bold',
     marginBottom: 30,
     textAlign: 'center',
@@ -101,11 +102,11 @@ const styles = StyleSheet.create({
     marginLeft: 15,
   },
   cardNumber: {
-    fontSize: 17,
+    fontSize: FontSizes.md, // 14
     fontWeight: '500',
   },
   cardType: {
-    fontSize: 15,
+    fontSize: FontSizes.md, // 14
     marginTop: 3,
   },
   addButton: {
@@ -117,7 +118,7 @@ const styles = StyleSheet.create({
     padding: 15,
   },
   addButtonText: {
-    fontSize: 17,
+    fontSize: FontSizes.md, // 14
     fontWeight: '600',
     marginLeft: 10,
   },

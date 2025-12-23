@@ -3,6 +3,7 @@ import { StyleSheet, View, TouchableOpacity, Alert, TextInput } from 'react-nati
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useLocalSearchParams, router } from 'expo-router';
+import { FontSizes } from '@/constants/theme';
 
 export default function VerifyEmailScreen() {
   const [code, setCode] = useState(['', '', '', '']);
@@ -129,7 +130,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   backIcon: {
-    fontSize: 26,
+    fontSize: FontSizes.xxl, // 20
     color: '#1A1D2E',
   },
   content: {
@@ -139,14 +140,14 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   title: {
-    fontSize: 30,
+    fontSize: FontSizes.titleMd, // 24
     fontWeight: 'bold',
     // color: '#1A1D2E',
       marginBottom: 10,
     lineHeight: 40
   },
   subtitle: {
-    fontSize: 15,
+    fontSize: FontSizes.md, // 14
     color: '#6B7280',
     lineHeight: 22,
     marginBottom: 60,
@@ -163,7 +164,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E7EB',
     borderRadius: 13,
-    fontSize: 32,
+    fontSize: FontSizes.titleLg, // 28
     fontWeight: 'bold',
     color: '#1A1D2E',
     textAlign: 'center',
@@ -185,7 +186,7 @@ const styles = StyleSheet.create({
   },
   resendButtonText: {
     color: '#2D8A4B',
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
     fontWeight: '500',
   },
   continueButton: {
@@ -197,7 +198,7 @@ const styles = StyleSheet.create({
   },
   continueButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
     fontWeight: '500',
   },
 });

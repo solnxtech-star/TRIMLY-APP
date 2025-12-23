@@ -3,6 +3,7 @@ import { StyleSheet, TextInput, View, TouchableOpacity, Alert } from 'react-nati
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Link, useLocalSearchParams, router } from 'expo-router';
+import { FontSizes } from '@/constants/theme';
 
 export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState('');
@@ -83,7 +84,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   backIcon: {
-    fontSize: 26,
+    fontSize: FontSizes.xxl, // 20
     color: '#1A1D2E',
   },
   content: {
@@ -92,14 +93,14 @@ const styles = StyleSheet.create({
     paddingTop: 100,
   },
   title: {
-    fontSize: 30,
+    fontSize: FontSizes.titleMd, // 24
     fontWeight: 'bold',
     color: '#1A1D2E',
     marginBottom: 10,
     lineHeight: 40
   },
   subtitle: {
-    fontSize: 15,
+    fontSize: FontSizes.md, // 14
     color: '#6B7280',
     lineHeight: 22,
     marginBottom: 50,
@@ -111,7 +112,7 @@ const styles = StyleSheet.create({
     borderColor: '#E5E7EB',
     borderRadius: 12,
     paddingHorizontal: 18,
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
     color: '#1A1D2E',
     marginBottom: 140,
   },
@@ -127,11 +128,11 @@ const styles = StyleSheet.create({
   },
   nextButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
     fontWeight: '500',
   },
   loadingText: {
     color: '#FFFFFF',
-    fontSize: 24,
+    fontSize: FontSizes.xl, // 18
   },
 });

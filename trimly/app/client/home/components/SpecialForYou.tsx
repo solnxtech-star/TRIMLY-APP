@@ -1,6 +1,7 @@
 import { StyleSheet, View, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { useRouter } from 'expo-router';
+import { FontSizes } from '@/constants/theme';
 
 export default function SpecialForYou() {
   const router = useRouter();
@@ -85,11 +86,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   title: {
-    fontSize: 20,
+    fontSize: FontSizes.xl, // 18
     fontWeight: '700',
   },
   seeAllText: {
-    fontSize: 14,
+    fontSize: FontSizes.md, // 14
     fontWeight: '400',
     color: '#2D8659',
   },
@@ -132,7 +133,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   badgeText: {
-    fontSize: 12,
+    fontSize: FontSizes.sm, // 12
     fontWeight: '400',
     color: '#000000',
   },
@@ -143,7 +144,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   discountText: {
-    fontSize: 18,
+    fontSize: FontSizes.lg, // 16
     fontWeight: '700',
     color: '#FFFFFF',
     marginBottom: 4,
@@ -152,7 +153,7 @@ const styles = StyleSheet.create({
     textShadowRadius: 2,
   },
   percentageText: {
-    fontSize: 12,
+    fontSize: FontSizes.sm, // 12
     fontWeight: '400',
     color: '#FFFFFF',
     marginBottom: 4,
@@ -161,7 +162,7 @@ const styles = StyleSheet.create({
     textShadowRadius: 2,
   },
   largePercentage: {
-    fontSize: 24,
+    fontSize: FontSizes.xxl, // 20
     fontWeight: '700',
     color: '#FFFFFF',
     textShadowColor: 'rgba(0, 0, 0, 0.75)',
@@ -169,7 +170,7 @@ const styles = StyleSheet.create({
     textShadowRadius: 2,
   },
   termsText: {
-    fontSize: 12,
+    fontSize: FontSizes.sm, // 12
     fontWeight: '400',
     color: '#FFFFFF',
     textShadowColor: 'rgba(0, 0, 0, 0.75)',
@@ -189,7 +190,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   claimText: {
-    fontSize: 14,
+    fontSize: FontSizes.md, // 14
     fontWeight: '600',
     color: '#FFFFFF',
     textShadowColor: 'rgba(0, 0, 0, 0.75)',

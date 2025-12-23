@@ -13,7 +13,7 @@ export default function SalonsScreen() {
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const iconColor = useThemeColor({}, 'text');
-  const borderColor = useThemeColor({}, 'border');
+  const borderColor = useThemeColor({}, 'text');
   const cardBackgroundColor = useThemeColor({ light: '#f5f5f5', dark: '#1a1a1a' }, 'background');
   const featuredCardBackgroundColor = useThemeColor({ light: '#f0f0f0', dark: '#2a2a2a' }, 'background');
 
@@ -105,7 +105,7 @@ export default function SalonsScreen() {
               styles.salonCard, 
               salon.isFeatured && styles.featuredCard
             ]}
-            onPress={() => router.push(`/client/business-details/${salon.id}` as `${string}/${number}`)}
+            onPress={() => router.push(`/client/business-details/${salon.id}`)}
           >
             <View style={styles.cardContent}>
               <Image source={salon.image} style={styles.salonImage} />

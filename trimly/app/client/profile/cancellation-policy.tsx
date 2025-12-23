@@ -2,6 +2,7 @@ import { StyleSheet, ScrollView } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { FontSizes } from '@/constants/theme';
 
 export default function CancellationPolicyScreen() {
   // Get theme colors
@@ -43,13 +44,13 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   header: {
-    fontSize: 27,
+    fontSize: FontSizes.titleMd, // 24
     fontWeight: 'bold',
     marginBottom: 30,
     textAlign: 'center',
   },
   content: {
-    fontSize: 17,
+    fontSize: FontSizes.md, // 14
     lineHeight: 24,
     marginBottom: 20,
   },

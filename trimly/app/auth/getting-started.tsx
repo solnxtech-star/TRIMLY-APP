@@ -3,6 +3,7 @@ import { Image } from 'expo-image';
 import { Link, useLocalSearchParams } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { FontSizes } from '@/constants/theme';
 
 const { width, height } = Dimensions.get('window');
 
@@ -107,7 +108,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#FFFFFF',
-    fontSize: 30,
+    fontSize: FontSizes.titleMd, // 24
     fontWeight: 'bold',
     lineHeight: 46,
     marginBottom: 12,
@@ -115,7 +116,7 @@ const styles = StyleSheet.create({
   },
   description: {
     color: 'rgba(255, 255, 255, 0.85)',
-    fontSize: 15,
+    fontSize: FontSizes.md, // 14
     fontWeight: '500',
     lineHeight: 22,
     textAlign: 'left',
@@ -123,7 +124,7 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     width: '100%',
-    height: 60,
+    height: 40,
     borderRadius: 14,
     backgroundColor: '#00C853', // Vibrant green
     justifyContent: 'center',
@@ -138,18 +139,18 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
     textDecorationLine: 'none',
-    paddingTop: 15
+    paddingTop: 5
   },
   loginButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
     fontWeight: 'bold',
     letterSpacing: 0.8,
     textAlign: 'center'
   },
   signUpButton: {
     width: '100%',
-    height: 60,
+    height: 40,
     borderRadius: 14,
     backgroundColor: 'transparent',
     borderColor: '#00C853', // Vibrant green border
@@ -158,11 +159,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 30,
     textDecorationLine: 'none',
-    paddingTop: 15
+    paddingTop: 5
   },
   signUpButtonText: {
     color: '#00C853', // Vibrant green text
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
     fontWeight: 'bold',
     letterSpacing: 0.8,
     textAlign: 'center',
@@ -178,7 +179,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.3)',
   },
   dividerText: {
-    fontSize: 14,
+    fontSize: FontSizes.md, // 14
     color: '#FFFFFF',
     marginHorizontal: 15,
   },

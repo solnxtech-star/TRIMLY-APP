@@ -4,21 +4,55 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Link, useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { FontSizes } from '@/constants/theme';
 
 export default function SignInScreen() {
   const [email, setEmail] = useState('amy@gmail.com');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [hasError, setHasError] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   
   // Get the role from the URL parameters
   const params = useLocalSearchParams();
   const role = params.role || 'customer';
 
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePassword = (password: string) => {
+    return password.length >= 7;
+  };
+
   const handleSignIn = () => {
-    // Temporary implementation: any login attempt works since we don't have the API yet
-    if (email && password) {
+    // Reset errors
+    setEmailError('');
+    setPasswordError('');
+    
+    let isValid = true;
+    
+    // Validate email
+    if (!email) {
+      setEmailError('Email is required');
+      isValid = false;
+    } else if (!validateEmail(email)) {
+      setEmailError('Please enter a valid email address');
+      isValid = false;
+    }
+    
+    // Validate password
+    if (!password) {
+      setPasswordError('Password is required');
+      isValid = false;
+    } else if (!validatePassword(password)) {
+      setPasswordError('Password must be at least 7 characters');
+      isValid = false;
+    }
+    
+    if (isValid) {
       setIsLoading(true);
       // Simulate API call
       setTimeout(() => {
@@ -31,8 +65,6 @@ export default function SignInScreen() {
           router.replace('/client/dashboard');
         }
       }, 1000);
-    } else {
-      Alert.alert('Error', 'Please enter both email and password');
     }
   };
 
@@ -46,22 +78,36 @@ export default function SignInScreen() {
         {/* Email Input Field */}
         <ThemedText style={styles.label}>Email</ThemedText>
         <TextInput
-          style={styles.input}
+          style={[styles.input, emailError ? styles.inputError : (email && !emailError ? styles.inputSuccess : null)]}
           value={email}
-          onChangeText={setEmail}
+          onChangeText={(text) => {
+            setEmail(text);
+            if (emailError) setEmailError('');
+          }}
           keyboardType="email-address"
           autoCapitalize="none"
         />
+        {emailError ? (
+          <View style={styles.errorMessageContainer}>
+            <ThemedText style={styles.errorIcon}>!</ThemedText>
+            <ThemedText style={styles.errorMessage}>{emailError}</ThemedText>
+          </View>
+        ) : email && !emailError ? (
+          <View style={styles.successMessageContainer}>
+            <Ionicons name="checkmark-circle" size={18} color="#10B981" />
+            <ThemedText style={styles.successMessage}>Valid email</ThemedText>
+          </View>
+        ) : null}
         
-        {/* Password Input Field (Error State) */}
+        {/* Password Input Field */}
         <ThemedText style={styles.label}>Password</ThemedText>
         <View style={styles.passwordContainer}>
           <TextInput
-            style={[styles.input, styles.passwordInput, hasError && styles.inputError]}
+            style={[styles.input, styles.passwordInput, passwordError ? styles.inputError : (password && !passwordError ? styles.inputSuccess : null)]}
             value={password}
             onChangeText={(text) => {
               setPassword(text);
-              if (hasError) setHasError(false);
+              if (passwordError) setPasswordError('');
             }}
             secureTextEntry={!showPassword}
           />
@@ -76,14 +122,19 @@ export default function SignInScreen() {
             />
           </TouchableOpacity>
         </View>
-        
-        {/* Error Message */}
-        {hasError && (
+        {passwordError ? (
           <View style={styles.errorMessageContainer}>
             <ThemedText style={styles.errorIcon}>!</ThemedText>
-            <ThemedText style={styles.errorMessage}>Incorrect password or email</ThemedText>
+            <ThemedText style={styles.errorMessage}>{passwordError}</ThemedText>
           </View>
-        )}
+        ) : password && !passwordError ? (
+          <View style={styles.successMessageContainer}>
+            <Ionicons name="checkmark-circle" size={18} color="#10B981" />
+            <ThemedText style={styles.successMessage}>Valid password</ThemedText>
+          </View>
+        ) : null}
+        
+
         
         {/* Forgot Password Link */}
         <Link href={{ pathname: '/auth/forgot-password', params: { role } }} style={styles.forgotPasswordLink}>
@@ -160,20 +211,20 @@ const styles = StyleSheet.create({
     paddingTop: 80,
   },
   title: {
-    fontSize: 30,
+    fontSize: FontSizes.titleMd, // 24
     fontWeight: 'bold',
     // color: '#1A1D2E',
     marginBottom: 10,
     lineHeight: 40
   },
   subtitle: {
-    fontSize: 15,
+    fontSize: FontSizes.md, // 14
     color: '#6B7280',
     lineHeight: 22,
     marginBottom: 30,
   },
   label: {
-    fontSize: 13,
+    fontSize: FontSizes.sm, // 12
     color: '#6B7280',
     marginBottom: 8,
   },
@@ -184,13 +235,17 @@ const styles = StyleSheet.create({
     borderColor: '#E5E7EB',
     borderRadius: 12,
     paddingHorizontal: 18,
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
     color: '#1A1D2E',
     marginBottom: 20,
   },
   inputError: {
     borderWidth: 2,
     borderColor: '#EF4444',
+  },
+  inputSuccess: {
+    borderWidth: 2,
+    borderColor: '#10B981',
   },
   passwordContainer: {
     position: 'relative',
@@ -208,6 +263,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 15,
   },
+  successMessageContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
   errorIcon: {
     width: 18,
     height: 18,
@@ -216,19 +276,24 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     textAlign: 'center',
     lineHeight: 18,
-    fontSize: 14,
+    fontSize: FontSizes.sm, // 12
     marginRight: 8,
   },
   errorMessage: {
-    fontSize: 13,
+    fontSize: FontSizes.sm, // 12
     color: '#EF4444',
+  },
+  successMessage: {
+    fontSize: FontSizes.sm, // 12
+    color: '#10B981',
+    marginLeft: 8,
   },
   forgotPasswordLink: {
     alignSelf: 'flex-start',
     marginBottom: 30,
   },
   forgotPasswordText: {
-    fontSize: 15,
+    fontSize: FontSizes.md, // 14
     color: '#2D8A4B',
     fontWeight: '500',
   },
@@ -245,12 +310,12 @@ const styles = StyleSheet.create({
   },
   loginButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
     fontWeight: '500',
   },
   loadingText: {
     color: '#FFFFFF',
-    fontSize: 24,
+    fontSize: FontSizes.xl, // 18
   },
   dividerContainer: {
     flexDirection: 'row',
@@ -263,7 +328,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E5E7EB',
   },
   dividerText: {
-    fontSize: 14,
+    fontSize: FontSizes.md, // 14
     color: '#1A1D2E',
     marginHorizontal: 15,
   },
@@ -289,11 +354,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   signUpText: {
-    fontSize: 15,
+    fontSize: FontSizes.md, // 14
     color: '#6B7280',
   },
   signUpLink: {
-    fontSize: 15,
+    fontSize: FontSizes.md, // 14
     color: '#2D8A4B',
     fontWeight: '500',
   },

@@ -1,5 +1,6 @@
 import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
+import { FontSizes } from '@/constants/theme';
 
 interface Category {
   id: string;
@@ -61,7 +62,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#2D8A47',
   },
   pillText: {
-    fontSize: 14,
+    fontSize: FontSizes.sm, // 12
     fontWeight: '500',
     color: '#666666',
   },

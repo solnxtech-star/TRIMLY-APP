@@ -4,6 +4,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { FontSizes } from '@/constants/theme';
 
 export default function SavedSalonsScreen() {
   const [activeFilter, setActiveFilter] = useState('All');
@@ -11,7 +12,7 @@ export default function SavedSalonsScreen() {
   // Get theme colors
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
-  const borderColor = useThemeColor({}, 'border');
+  const borderColor = useThemeColor({}, 'text');
   const cardBackgroundColor = useThemeColor({ light: '#FFFFFF', dark: '#2a2a2a' }, 'background');
 
   const filters = ['All', 'Haircuts', 'Make Up', 'Massage'];
@@ -95,7 +96,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   header: {
-    fontSize: 27,
+    fontSize: FontSizes.titleMd, // 24
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
@@ -114,7 +115,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#2D8659', // Green background
   },
   filterText: {
-    fontSize: 15,
+    fontSize: FontSizes.md, // 14
   },
   activeFilterText: {
     color: '#FFFFFF', // White text
@@ -143,7 +144,7 @@ const styles = StyleSheet.create({
     padding: 15,
   },
   salonName: {
-    fontSize: 17,
+    fontSize: FontSizes.md, // 14
     fontWeight: '600',
     marginBottom: 5,
   },
@@ -153,7 +154,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   address: {
-    fontSize: 15,
+    fontSize: FontSizes.md, // 14
     marginLeft: 5,
   },
   ratingContainer: {
@@ -161,7 +162,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   rating: {
-    fontSize: 15,
+    fontSize: FontSizes.md, // 14
     marginLeft: 5,
   },
 });

@@ -3,6 +3,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { FontSizes } from '@/constants/theme';
 
 export default function SettingsScreen() {
   const settingsItems = [
@@ -67,7 +68,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   header: {
-    fontSize: 27,
+    fontSize: FontSizes.titleMd, // 24
     fontWeight: 'bold',
     marginBottom: 30,
     textAlign: 'center',
@@ -92,7 +93,7 @@ const styles = StyleSheet.create({
   },
   settingLabel: {
     flex: 1,
-    fontSize: 17,
+    fontSize: FontSizes.md, // 14
     fontWeight: '500',
   },
 });

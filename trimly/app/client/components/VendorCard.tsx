@@ -2,6 +2,7 @@ import { StyleSheet, View, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useRouter } from 'expo-router';
+import { FontSizes } from '@/constants/theme';
 
 interface Vendor {
   id: string;
@@ -22,7 +23,7 @@ export default function VendorCard({ vendor }: VendorCardProps) {
   const router = useRouter();
   
   const handlePress = () => {
-    router.push(`/business/${vendor.id}` as `${string}/${string}`);
+    router.push(`/business/${vendor.id}`);
   };
   
   return (
@@ -100,7 +101,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   vendorName: {
-    fontSize: 18,
+    fontSize: FontSizes.lg, // 16
     fontWeight: '700',
     color: '#000000',
   },
@@ -110,17 +111,17 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   ratingText: {
-    fontSize: 14,
+    fontSize: FontSizes.sm, // 12
     color: '#666666',
     marginLeft: 4,
   },
   servicesText: {
-    fontSize: 14,
+    fontSize: FontSizes.sm, // 12
     color: '#666666',
     marginBottom: 4,
   },
   priceRange: {
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
     fontWeight: '600',
     color: '#000000',
     marginBottom: 8,
@@ -131,7 +132,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   distance: {
-    fontSize: 14,
+    fontSize: FontSizes.sm, // 12
     color: '#666666',
   },
   openBadge: {
@@ -141,7 +142,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   openText: {
-    fontSize: 12,
+    fontSize: FontSizes.xs, // 10
     fontWeight: '600',
     color: '#FFFFFF',
   },

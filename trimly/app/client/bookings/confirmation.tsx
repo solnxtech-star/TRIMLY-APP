@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { AntDesign } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { FontSizes } from '@/constants/theme';
 
 export default function BookingConfirmationScreen() {
   const router = useRouter();
@@ -94,7 +95,7 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: FontSizes.lg, // 16
     fontWeight: '600',
   },
   placeholder: {
@@ -117,12 +118,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   mainHeading: {
-    fontSize: 32,
+    fontSize: FontSizes.titleLg, // 28
     fontWeight: '700',
     marginBottom: 12,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
     marginBottom: 48,
     textAlign: 'center',
   },
@@ -133,7 +134,7 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   cardHeader: {
-    fontSize: 17,
+    fontSize: FontSizes.md, // 14
     fontWeight: '700',
     marginBottom: 24,
   },
@@ -143,10 +144,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   label: {
-    fontSize: 14,
+    fontSize: FontSizes.md, // 14
   },
   value: {
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
     fontWeight: '700',
   },
   button: {
@@ -158,7 +159,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonText: {
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
     fontWeight: '600',
     color: '#FFFFFF',
   },

@@ -4,6 +4,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Link, useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { FontSizes } from '@/constants/theme';
 
 export default function SignUpScreen() {
   const [name, setName] = useState('');
@@ -12,26 +13,72 @@ export default function SignUpScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [nameError, setNameError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState('');
   
   // Get the role from the URL parameters
   const params = useLocalSearchParams();
   const role = params.role || 'customer';
 
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePassword = (password: string) => {
+    return password.length >= 7;
+  };
+
   const handleSignUp = () => {
-    // Here you would typically call your authentication API
-    if (name && email && password && confirmPassword) {
-      if (password !== confirmPassword) {
-        Alert.alert('Error', 'Passwords do not match');
-        return;
-      }
-      
+    // Reset errors
+    setNameError('');
+    setEmailError('');
+    setPasswordError('');
+    setConfirmPasswordError('');
+    
+    let isValid = true;
+    
+    // Validate name
+    if (!name) {
+      setNameError('Name is required');
+      isValid = false;
+    }
+    
+    // Validate email
+    if (!email) {
+      setEmailError('Email is required');
+      isValid = false;
+    } else if (!validateEmail(email)) {
+      setEmailError('Please enter a valid email address');
+      isValid = false;
+    }
+    
+    // Validate password
+    if (!password) {
+      setPasswordError('Password is required');
+      isValid = false;
+    } else if (!validatePassword(password)) {
+      setPasswordError('Password must be at least 7 characters');
+      isValid = false;
+    }
+    
+    // Validate confirm password
+    if (!confirmPassword) {
+      setConfirmPasswordError('Please confirm your password');
+      isValid = false;
+    } else if (password !== confirmPassword) {
+      setConfirmPasswordError('Passwords do not match');
+      isValid = false;
+    }
+    
+    if (isValid) {
       // Navigate to verify email screen
       router.replace({
         pathname: '/auth/verify-email',
         params: { role, email }
       });
-    } else {
-      Alert.alert('Error', 'Please fill in all fields');
     }
   };
 
@@ -61,30 +108,61 @@ export default function SignUpScreen() {
             {/* Name Input Field */}
             <ThemedText style={styles.label}>Full Name</ThemedText>
             <TextInput
-              style={styles.input}
+              style={[styles.input, nameError ? styles.inputError : (name && !nameError ? styles.inputSuccess : null)]}
               value={name}
-              onChangeText={setName}
+              onChangeText={(text) => {
+                setName(text);
+                if (nameError) setNameError('');
+              }}
               placeholder="Enter your full name"
             />
+            {nameError ? (
+              <View style={styles.errorMessageContainer}>
+                <ThemedText style={styles.errorIcon}>!</ThemedText>
+                <ThemedText style={styles.errorMessage}>{nameError}</ThemedText>
+              </View>
+            ) : name && !nameError ? (
+              <View style={styles.successMessageContainer}>
+                <Ionicons name="checkmark-circle" size={18} color="#10B981" />
+                <ThemedText style={styles.successMessage}>Valid name</ThemedText>
+              </View>
+            ) : null}
             
             {/* Email Input Field */}
             <ThemedText style={styles.label}>Email</ThemedText>
             <TextInput
-              style={styles.input}
+              style={[styles.input, emailError ? styles.inputError : (email && !emailError ? styles.inputSuccess : null)]}
               value={email}
-              onChangeText={setEmail}
+              onChangeText={(text) => {
+                setEmail(text);
+                if (emailError) setEmailError('');
+              }}
               keyboardType="email-address"
               autoCapitalize="none"
               placeholder="Enter your email"
             />
+            {emailError ? (
+              <View style={styles.errorMessageContainer}>
+                <ThemedText style={styles.errorIcon}>!</ThemedText>
+                <ThemedText style={styles.errorMessage}>{emailError}</ThemedText>
+              </View>
+            ) : email && !emailError ? (
+              <View style={styles.successMessageContainer}>
+                <Ionicons name="checkmark-circle" size={18} color="#10B981" />
+                <ThemedText style={styles.successMessage}>Valid email</ThemedText>
+              </View>
+            ) : null}
             
             {/* Password Input Field */}
             <ThemedText style={styles.label}>Password</ThemedText>
             <View style={styles.passwordContainer}>
               <TextInput
-                style={styles.input}
+                style={[styles.input, passwordError ? styles.inputError : (password && !passwordError ? styles.inputSuccess : null)]}
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  if (passwordError) setPasswordError('');
+                }}
                 secureTextEntry={!showPassword}
                 placeholder="Create a password"
               />
@@ -99,14 +177,28 @@ export default function SignUpScreen() {
                 />
               </TouchableOpacity>
             </View>
+            {passwordError ? (
+              <View style={styles.errorMessageContainer}>
+                <ThemedText style={styles.errorIcon}>!</ThemedText>
+                <ThemedText style={styles.errorMessage}>{passwordError}</ThemedText>
+              </View>
+            ) : password && !passwordError ? (
+              <View style={styles.successMessageContainer}>
+                <Ionicons name="checkmark-circle" size={18} color="#10B981" />
+                <ThemedText style={styles.successMessage}>Valid password</ThemedText>
+              </View>
+            ) : null}
             
             {/* Confirm Password Input Field */}
             <ThemedText style={styles.label}>Confirm Password</ThemedText>
             <View style={styles.passwordContainer}>
               <TextInput
-                style={styles.input}
+                style={[styles.input, confirmPasswordError ? styles.inputError : (confirmPassword && !confirmPasswordError ? styles.inputSuccess : null)]}
                 value={confirmPassword}
-                onChangeText={setConfirmPassword}
+                onChangeText={(text) => {
+                  setConfirmPassword(text);
+                  if (confirmPasswordError) setConfirmPasswordError('');
+                }}
                 secureTextEntry={!showConfirmPassword}
                 placeholder="Confirm your password"
               />
@@ -121,6 +213,17 @@ export default function SignUpScreen() {
                 />
               </TouchableOpacity>
             </View>
+            {confirmPasswordError ? (
+              <View style={styles.errorMessageContainer}>
+                <ThemedText style={styles.errorIcon}>!</ThemedText>
+                <ThemedText style={styles.errorMessage}>{confirmPasswordError}</ThemedText>
+              </View>
+            ) : confirmPassword && !confirmPasswordError ? (
+              <View style={styles.successMessageContainer}>
+                <Ionicons name="checkmark-circle" size={18} color="#10B981" />
+                <ThemedText style={styles.successMessage}>Passwords match</ThemedText>
+              </View>
+            ) : null}
             
             {/* Sign Up Button */}
             <TouchableOpacity 
@@ -170,7 +273,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   backIcon: {
-    fontSize: 26,
+    fontSize: FontSizes.xxl, // 20
     color: '#1A1D2E',
   },
   content: {
@@ -180,19 +283,19 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   title: {
-    fontSize: 30,
+    fontSize: FontSizes.titleMd, // 24
     fontWeight: 'bold',
     color: '#1A1D2E',
     marginBottom: 10,
   },
   subtitle: {
-    fontSize: 15,
+    fontSize: FontSizes.md, // 14
     color: '#6B7280',
     lineHeight: 22,
     marginBottom: 40,
   },
   label: {
-    fontSize: 13,
+    fontSize: FontSizes.sm, // 12
     color: '#6B7280',
     marginBottom: 8,
   },
@@ -203,9 +306,17 @@ const styles = StyleSheet.create({
     borderColor: '#E5E7EB',
     borderRadius: 12,
     paddingHorizontal: 18,
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
     color: '#1A1D2E',
     marginBottom: 25,
+  },
+  inputError: {
+    borderWidth: 2,
+    borderColor: '#EF4444',
+  },
+  inputSuccess: {
+    borderWidth: 2,
+    borderColor: '#10B981',
   },
   passwordContainer: {
     position: 'relative',
@@ -214,6 +325,25 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 18,
     top: 20,
+  },
+  errorMessageContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  successMessageContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  errorMessage: {
+    fontSize: FontSizes.sm, // 12
+    color: '#EF4444',
+  },
+  successMessage: {
+    fontSize: FontSizes.sm, // 12
+    color: '#10B981',
+    marginLeft: 8,
   },
   signUpButton: {
     backgroundColor: '#2D8A4B',
@@ -226,7 +356,7 @@ const styles = StyleSheet.create({
   },
   signUpButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
     fontWeight: '500',
   },
   signInContainer: {
@@ -234,11 +364,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   signInText: {
-    fontSize: 15,
+    fontSize: FontSizes.md, // 14
     color: '#6B7280',
   },
   signInLink: {
-    fontSize: 15,
+    fontSize: FontSizes.md, // 14
     color: '#2D8A4B',
     fontWeight: '500',
   },

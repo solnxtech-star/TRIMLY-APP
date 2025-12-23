@@ -3,6 +3,7 @@ import { Image } from 'expo-image';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useLocalSearchParams, router } from 'expo-router';
+import { FontSizes } from '@/constants/theme';
 
 export default function EmailVerificationSuccessScreen() {
   // Get the role from the URL parameters
@@ -64,14 +65,14 @@ const styles = StyleSheet.create({
     marginBottom: 35,
   },
   title: {
-    fontSize: 34,
+    fontSize: FontSizes.titleLg, // 28
     fontWeight: 'bold',
     color: '#1A1D2E',
     marginBottom: 13,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
     color: '#6B7280',
     lineHeight: 24,
     textAlign: 'center',
@@ -94,7 +95,7 @@ const styles = StyleSheet.create({
   },
   homeButtonText: {
     color: '#FFFFFF',
-    fontSize: 17,
+    fontSize: FontSizes.md, // 14
     fontWeight: '500',
   },
 });

@@ -3,6 +3,8 @@ import { Image } from 'expo-image';
 import { Link } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { FontSizes } from '@/constants/theme';
+import CircularProgressButton from '@/components/CircularProgressButton';
 
 const { width, height } = Dimensions.get('window');
 
@@ -36,10 +38,18 @@ export default function AccountTypeScreen() {
       </View>
 
       {/* Next button - Will be enabled after selection */}
-      {/* @ts-ignore */}
-      <Link href="/onboarding/get-started" style={styles.nextButton}>
-        <ThemedText style={styles.nextButtonText}>→</ThemedText>
-      </Link>
+      <View style={styles.nextButtonContainer}>
+        <CircularProgressButton
+          onPress={() => {}}
+          progress={0}
+          size={56}
+          progressSize={5}
+          progressLength={40}
+          staticProgressLength={270}
+          arrowColor="#ffffff"
+          destination="/onboarding/get-started"
+        />
+      </View>
       
       {/* Back button - REMOVED as per user request */}
     </ThemedView>
@@ -72,7 +82,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#FFFFFF',
-    fontSize: 34,
+    fontSize: FontSizes.titleSm, // 28
     fontWeight: 'bold',
     lineHeight: 40,
     marginBottom: 16,
@@ -80,7 +90,7 @@ const styles = StyleSheet.create({
   },
   description: {
     color: 'rgba(255, 255, 255, 0.9)',
-    fontSize: 17,
+    fontSize: FontSizes.md, // 14
     fontWeight: '400',
     lineHeight: 26,
     textAlign: 'left',
@@ -106,32 +116,9 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     backgroundColor: '#00C853', // Vibrant green for active dot
   },
-  nextButton: {
+  nextButtonContainer: {
     position: 'absolute',
     bottom: 60,
     right: 32,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    borderWidth: 2,
-    borderColor: '#00C853', // Vibrant green border
-    backgroundColor: '#00C853', // White background
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  nextButtonText: {
-    color: '#ffffff', // Vibrant green arrow
-    fontSize: 32, // Bigger arrow
-    fontWeight: 'bold',
-    textAlign: 'center',
-    lineHeight: 40, 
   },
 });

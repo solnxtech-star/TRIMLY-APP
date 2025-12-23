@@ -2,6 +2,7 @@ import { StyleSheet, View, ScrollView } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { FontSizes } from '@/constants/theme';
 
 export default function TransactionsScreen() {
   // Get theme colors
@@ -91,7 +92,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   header: {
-    fontSize: 27,
+    fontSize: FontSizes.titleMd, // 24
     fontWeight: 'bold',
     marginBottom: 30,
     textAlign: 'center',
@@ -103,7 +104,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   dateLabel: {
-    fontSize: 17,
+    fontSize: FontSizes.md, // 14
     fontWeight: '600',
     marginBottom: 15,
   },
@@ -124,15 +125,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   serviceName: {
-    fontSize: 17,
+    fontSize: FontSizes.md, // 14
     fontWeight: '600',
     marginBottom: 5,
   },
   dateTime: {
-    fontSize: 15,
+    fontSize: FontSizes.md, // 14
   },
   amount: {
-    fontSize: 17,
+    fontSize: FontSizes.md, // 14
     fontWeight: '600',
   },
 });

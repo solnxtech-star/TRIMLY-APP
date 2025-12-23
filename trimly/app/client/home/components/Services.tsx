@@ -2,6 +2,7 @@ import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useRouter } from 'expo-router';
+import { FontSizes } from '@/constants/theme';
 
 export default function Services() {
   const router = useRouter();
@@ -40,7 +41,7 @@ export default function Services() {
         {services.map((service) => (
           <TouchableOpacity key={service.id} style={styles.serviceItem} onPress={() => handleServicePress(service.id)}>
             <View style={styles.iconContainer}>
-              <IconSymbol name={service.icon} size={28} color="#000000" />
+              <IconSymbol name={service.icon} size={28} color="#ffffff" />
             </View>
             <ThemedText style={styles.serviceName}>{service.name}</ThemedText>
           </TouchableOpacity>
@@ -62,11 +63,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   title: {
-    fontSize: 20,
+    fontSize: FontSizes.xl, // 18
     fontWeight: '700',
   },
   seeAllText: {
-    fontSize: 14,
+    fontSize: FontSizes.md, // 14
     fontWeight: '400',
     color: '#2D8659',
   },
@@ -85,13 +86,13 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: '#F0F0F0',
+    backgroundColor: '#2D8659',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
   },
   serviceName: {
-    fontSize: 13,
+    fontSize: FontSizes.sm, // 12
     fontWeight: '500',
     textAlign: 'center',
   },

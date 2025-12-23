@@ -6,6 +6,7 @@ import { CustomSafeAreaView } from '@/components/custom-safe-area-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useRouter } from 'expo-router';
+import { FontSizes } from '@/constants/theme';
 
 export default function ExploreScreen() {
   const router = useRouter();
@@ -210,7 +211,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   searchPlaceholder: {
-    fontSize: 15,
+    fontSize: FontSizes.sm, // 12
   },
   mapContainer: {
     flex: 1,
@@ -375,7 +376,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   exploreButtonText: {
-    fontSize: 18,
+    fontSize: FontSizes.lg, // 16
     fontWeight: '600',
     color: '#FFFFFF',
   },

@@ -5,6 +5,7 @@ import { ThemedView } from '@/components/themed-view';
 import UpcomingBookings from './upcoming';
 import CompletedBookings from './completed';
 import CancelledBookings from './cancelled';
+import { FontSizes } from '@/constants/theme';
 
 export default function BookingsScreen() {
   const [activeTab, setActiveTab] = useState<'upcoming' | 'completed' | 'cancelled'>('upcoming');
@@ -76,7 +77,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   header: {
-    fontSize: 30,
+    fontSize: FontSizes.titleLg, // 28
     fontWeight: 'bold',
     color: '#000000',
     marginBottom: 20,
@@ -95,7 +96,7 @@ const styles = StyleSheet.create({
     // No additional styling needed
   },
   tabText: {
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
     color: '#000000',
     fontWeight: '500',
   },

@@ -5,6 +5,7 @@ import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { AntDesign } from '@expo/vector-icons';
+import { FontSizes } from '@/constants/theme';
 
 export default function ServiceOptionsScreen() {
   const router = useRouter();
@@ -182,7 +183,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: FontSizes.lg, // 16
     fontWeight: '600',
     color: '#FFFFFF',
     marginLeft: 16,
@@ -198,12 +199,12 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   serviceName: {
-    fontSize: 20,
+    fontSize: FontSizes.xl, // 18
     fontWeight: '700',
     marginBottom: 8,
   },
   serviceDescription: {
-    fontSize: 14,
+    fontSize: FontSizes.sm, // 12
     marginBottom: 16,
     lineHeight: 20,
   },
@@ -216,7 +217,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   detailText: {
-    fontSize: 14,
+    fontSize: FontSizes.sm, // 12
     marginLeft: 8,
     fontWeight: '500',
   },
@@ -224,7 +225,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: FontSizes.lg, // 16
     fontWeight: '600',
     marginBottom: 16,
   },
@@ -246,16 +247,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   optionName: {
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
     fontWeight: '600',
     marginBottom: 4,
   },
   optionDuration: {
-    fontSize: 14,
+    fontSize: FontSizes.sm, // 12
     color: '#666666',
   },
   optionPrice: {
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
     fontWeight: '700',
     color: '#2D8A47',
     marginRight: 16,
@@ -268,7 +269,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   bookButtonText: {
-    fontSize: 18,
+    fontSize: FontSizes.lg, // 16
     fontWeight: '600',
     color: '#FFFFFF',
   },

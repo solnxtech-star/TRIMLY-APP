@@ -5,6 +5,7 @@ import { CustomSafeAreaView } from '@/components/custom-safe-area-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useRouter } from 'expo-router';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { FontSizes } from '@/constants/theme';
 
 export default function ServicesScreen() {
   const router = useRouter();
@@ -13,7 +14,7 @@ export default function ServicesScreen() {
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({light: '#1a1a1a', dark: '#ffffff'}, 'text');
   const iconColor = useThemeColor({light: '#1a1a1a', dark: '#ffffff'}, 'text');
-  const borderColor = useThemeColor({light: '#1a1a1a', dark: '#ffffff'}, 'border');
+  const borderColor = useThemeColor({light: '#1a1a1a', dark: '#ffffff'}, 'text');
   const cardBackgroundColor = useThemeColor({ light: '#FFFFFF', dark: '#1a1a1a' }, 'background');
   const cardBackgroundColor2 = useThemeColor({ light: 'lightgray', dark: 'gray' }, 'background');
 
@@ -83,7 +84,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontSize: 20,
+    fontSize: FontSizes.xl, // 18
     fontWeight: '700',
   },
   placeholder: {
@@ -114,12 +115,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   serviceName: {
-    fontSize: 15,
+    fontSize: FontSizes.md, // 14
     fontWeight: '600',
     marginBottom: 4,
   },
   categoryText: {
-    fontSize: 14,
+    fontSize: FontSizes.sm, // 12
     fontWeight: '400',
   },
 });

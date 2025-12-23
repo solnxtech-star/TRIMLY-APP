@@ -1,6 +1,7 @@
 import { StyleSheet, View, Image } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { FontSizes } from '@/constants/theme';
 
 export default function Header() {
   return (
@@ -45,12 +46,12 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   welcomeText: {
-    fontSize: 13,
+    fontSize: FontSizes.sm, // 12
     color: '#6B6B6B',
     fontWeight: '400',
   },
   nameText: {
-    fontSize: 18,
+    fontSize: FontSizes.lg, // 16
     fontWeight: '700',
   },
   rightSection: {

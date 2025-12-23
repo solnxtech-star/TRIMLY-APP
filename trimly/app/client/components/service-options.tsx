@@ -7,6 +7,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AntDesign } from '@expo/vector-icons';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { FontSizes } from '@/constants/theme';
 
 export default function ServiceOptionsScreen() {
   const router = useRouter();
@@ -16,10 +17,10 @@ export default function ServiceOptionsScreen() {
   // Theme colors
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
-  const borderColor = useThemeColor({ light: '#ffffff', dark: '#424242' }, 'border');
-  const cardBackgroundColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'cardBackground');
-  const filterBackgroundColor = useThemeColor({ light: '#F0F0F0', dark: '#2D2D2D' }, 'filterBackground');
-  const filterTextColor = useThemeColor({ light: '#424242', dark: '#ffffff' }, 'filterText');
+  const borderColor = useThemeColor({ light: '#ffffff', dark: '#424242' }, 'text');
+  const cardBackgroundColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'text');
+  const filterBackgroundColor = useThemeColor({ light: '#F0F0F0', dark: '#2D2D2D' }, 'text');
+  const filterTextColor = useThemeColor({ light: '#424242', dark: '#ffffff' }, 'text');
 
   // Sample services data - in a real app this would come from an API
   const services = [
@@ -152,7 +153,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
   },
   title: {
-    fontSize: 20,
+    fontSize: FontSizes.xl, // 18
     fontWeight: '700',
   },
   placeholder: {
@@ -174,7 +175,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#2D8A47',
   },
   filterText: {
-    fontSize: 14,
+    fontSize: FontSizes.sm, // 12
   },
   selectedFilterText: {
     fontWeight: '600',
@@ -203,12 +204,12 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   optionName: {
-    fontSize: 18,
+    fontSize: FontSizes.lg, // 16
     fontWeight: '700',
     marginBottom: 4,
   },
   optionDescription: {
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
     marginBottom: 12,
   },
   optionDetails: {
@@ -217,12 +218,12 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   price: {
-    fontSize: 20,
+    fontSize: FontSizes.xl, // 18
     fontWeight: '700',
     color: '#2D8A47',
   },
   duration: {
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
   },
   bookButton: {
     backgroundColor: '#2D8A47',
@@ -232,7 +233,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   bookButtonText: {
-    fontSize: 13,
+    fontSize: FontSizes.xs, // 10
     fontWeight: '600',
   },
 });

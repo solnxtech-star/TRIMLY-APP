@@ -3,6 +3,7 @@ import { StyleSheet, View, TouchableOpacity, Alert, TextInput } from 'react-nati
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Link, useLocalSearchParams, router } from 'expo-router';
+import { FontSizes } from '@/constants/theme';
 
 export default function OTPVerificationScreen() {
   const [otp, setOtp] = useState(['1', '4', '7', '7']);
@@ -124,7 +125,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   backIcon: {
-    fontSize: 26,
+    fontSize: FontSizes.xxl, // 20
     color: '#1A1D2E',
   },
   content: {
@@ -133,13 +134,13 @@ const styles = StyleSheet.create({
     paddingTop: 100,
   },
   title: {
-    fontSize: 30,
+    fontSize: FontSizes.titleMd, // 24
     fontWeight: 'bold',
     // color: '#1A1D2E',
     marginBottom: 10,
   },
   subtitle: {
-    fontSize: 15,
+    fontSize: FontSizes.md, // 14
     color: '#6B7280',
     lineHeight: 22,
     marginBottom: 60,
@@ -156,7 +157,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E7EB',
     borderRadius: 13,
-    fontSize: 22,
+    fontSize: FontSizes.xl, // 18
     fontWeight: 'bold',
     color: '#1A1D2E',
     textAlign: 'center',
@@ -176,7 +177,7 @@ const styles = StyleSheet.create({
   },
   verifyButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
     fontWeight: '500',
   },
   signUpContainer: {
@@ -184,11 +185,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   signUpText: {
-    fontSize: 15,
+    fontSize: FontSizes.md, // 14
     color: '#6B7280',
   },
   signUpLink: {
-    fontSize: 15,
+    fontSize: FontSizes.md, // 14
     color: '#2D8A4B',
     fontWeight: '500',
   },

@@ -4,6 +4,7 @@ import { ThemedText } from '@/components/themed-text';
 import { useRouter } from 'expo-router';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { FontSizes } from '@/constants/theme';
 
 interface Location {
   id: string;
@@ -172,7 +173,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   title: {
-    fontSize: 20,
+    fontSize: FontSizes.xl, // 18
     fontWeight: '700',
   },
   exploreButton: {
@@ -180,7 +181,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   exploreText: {
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
     fontWeight: '600',
     marginRight: 4,
   },

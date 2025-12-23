@@ -6,6 +6,7 @@ import { CustomSafeAreaView } from '@/components/custom-safe-area-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useRouter } from 'expo-router';
+import { FontSizes } from '@/constants/theme';
 
 export default function MapScreen() {
   const router = useRouter();
@@ -109,7 +110,7 @@ export default function MapScreen() {
   };
   
   const handleStorePress = (storeId: number) => {
-    router.push(`/client/business-details/${storeId}` as `${string}/${number}`);
+    router.push(`/client/business-details/${storeId}`);
   };
   
   return (
@@ -235,7 +236,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: FontSizes.xl, // 18
     fontWeight: '700',
   },
   placeholder: {
@@ -285,7 +286,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: FontSizes.xl, // 18
     fontWeight: '700',
     marginBottom: 16,
   },

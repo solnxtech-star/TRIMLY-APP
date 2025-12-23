@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { AntDesign } from '@expo/vector-icons';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { FontSizes } from '@/constants/theme';
 
 export default function CancelBookingScreen() {
   const router = useRouter();
@@ -15,12 +16,12 @@ export default function CancelBookingScreen() {
   // Theme colors
   const backgroundColor = useThemeColor({ light: '#FFFFFF', dark: '#000000' }, 'background');
   const textColor = useThemeColor({}, 'text');
-  const secondaryTextColor = useThemeColor({ light: '#000000', dark: '#FFFFFF' }, 'secondaryText');
-  const borderColor = useThemeColor({ light: '#E5E5E5', dark: '#333333' }, 'border');
-  const cardBackgroundColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'cardBackground');
+  const secondaryTextColor = useThemeColor({ light: '#000000', dark: '#FFFFFF' }, 'text');
+  const borderColor = useThemeColor({ light: '#E5E5E5', dark: '#333333' }, 'text');
+  const cardBackgroundColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'text');
   const primaryColor = useThemeColor({ light: '#2D8659', dark: '#2D8A47' }, 'tint');
-  const placeholderTextColor = useThemeColor({ light: '#8E8E93', dark: '#8E8E93' }, 'placeholderText');
-  const backButtonColor = useThemeColor({ light: '#F2F2F7', dark: '#2C2C2E' }, 'backButton');
+  const placeholderTextColor = useThemeColor({ light: '#8E8E93', dark: '#8E8E93' }, 'text');
+  const backButtonColor = useThemeColor({ light: '#F2F2F7', dark: '#2C2C2E' }, 'text');
 
   const reasons = [
     "Schedule Change",
@@ -133,14 +134,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontSize: 22,
+    fontSize: FontSizes.titleSm, // 20
     fontWeight: 'bold',
   },
   placeholder: {
     width: 40,
   },
   instructionText: {
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
     marginBottom: 24,
   },
   radioList: {
@@ -166,7 +167,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   radioLabel: {
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
   },
   divider: {
     height: 1,
@@ -176,7 +177,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   otherLabel: {
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
     fontWeight: '600',
     marginBottom: 12,
   },
@@ -198,7 +199,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cancelButtonText: {
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
     fontWeight: '600',
   },
 });

@@ -2,6 +2,7 @@ import { StyleSheet, View, TouchableOpacity, ScrollView } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { FontSizes } from '@/constants/theme';
 
 export default function PrivacyPolicyScreen() {
   // Get theme colors
@@ -48,7 +49,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   header: {
-    fontSize: 27,
+    fontSize: FontSizes.titleMd, // 24
     fontWeight: 'bold',
     marginBottom: 30,
     textAlign: 'center',
@@ -62,7 +63,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   policyLabel: {
-    fontSize: 17,
+    fontSize: FontSizes.md, // 14
     fontWeight: '500',
   },
 });

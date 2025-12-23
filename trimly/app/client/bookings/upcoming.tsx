@@ -4,6 +4,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useRouter } from 'expo-router';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { FontSizes } from '@/constants/theme';
 
 export default function UpcomingBookings() {
   const router = useRouter();
@@ -11,10 +12,10 @@ export default function UpcomingBookings() {
   
   // Theme colors
   const backgroundColor = useThemeColor({}, 'background');
-  const cardBackgroundColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'cardBackground');
+  const cardBackgroundColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'text');
   const textColor = useThemeColor({}, 'text');
-  const secondaryTextColor = useThemeColor({ light: '#6B6B6B', dark: '#A0A0A0' }, 'secondaryText');
-  const borderColor = useThemeColor({ light: '#E5E5E5', dark: '#333333' }, 'border');
+  const secondaryTextColor = useThemeColor({ light: '#6B6B6B', dark: '#A0A0A0' }, 'text');
+  const borderColor = useThemeColor({ light: '#E5E5E5', dark: '#333333' }, 'text');
   const primaryColor = useThemeColor({ light: '#2D8659', dark: '#2D8A47' }, 'tint');
 
   const toggleSwitch = (index: number) => {
@@ -133,7 +134,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   dateTimeText: {
-    fontSize: 14,
+    fontSize: FontSizes.md, // 14
     fontWeight: '600',
   },
   reminderContainer: {
@@ -141,7 +142,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   reminderText: {
-    fontSize: 13,
+    fontSize: FontSizes.sm, // 12
     marginRight: 8,
   },
   divider: {
@@ -162,7 +163,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   salonName: {
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
     fontWeight: '600',
     marginBottom: 6,
   },
@@ -172,7 +173,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   infoText: {
-    fontSize: 12,
+    fontSize: FontSizes.sm, // 12
   },
   buttonRow: {
     flexDirection: 'row',
@@ -189,7 +190,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cancelButtonText: {
-    fontSize: 14,
+    fontSize: FontSizes.md, // 14
     fontWeight: '600',
   },
   receiptButton: {
@@ -200,7 +201,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   receiptButtonText: {
-    fontSize: 14,
+    fontSize: FontSizes.md, // 14
     fontWeight: '600',
     color: '#FFFFFF',
   },

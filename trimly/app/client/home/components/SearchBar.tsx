@@ -1,6 +1,7 @@
 import { StyleSheet, View, TextInput } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { FontSizes } from '@/constants/theme';
 
 export default function SearchBar() {
   return (
@@ -35,7 +36,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontSize: 15,
+    fontSize: FontSizes.md, // 14
     color: '#000000',
     paddingLeft: 8,
   },

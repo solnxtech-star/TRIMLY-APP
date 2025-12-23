@@ -2,6 +2,7 @@ import { StyleSheet, View, ScrollView, TouchableOpacity, Image } from 'react-nat
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useRouter } from 'expo-router';
+import { FontSizes } from '@/constants/theme';
 
 export default function Salons() {
   const router = useRouter();
@@ -71,11 +72,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   title: {
-    fontSize: 20,
+    fontSize: FontSizes.xl, // 18
     fontWeight: '700',
   },
   seeAllText: {
-    fontSize: 14,
+    fontSize: FontSizes.md, // 14
     fontWeight: '400',
     color: '#2D8659',
   },
@@ -121,7 +122,7 @@ const styles = StyleSheet.create({
     left: 12,
   },
   salonName: {
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
     fontWeight: '700',
     color: '#FFFFFF',
   },

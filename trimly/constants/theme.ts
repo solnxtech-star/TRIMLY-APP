@@ -51,3 +51,27 @@ export const Fonts = Platform.select({
     mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
   },
 });
+
+export const FontSizes = {
+  // Extra small
+  xs: 10,
+  // Small
+  sm: 12,
+  // Medium (default)
+  md: 14,
+  // Large
+  lg: 16,
+  // Extra large
+  xl: 18,
+  // 2X large
+  xxl: 20,
+  // 3X large
+  xxxl: 24,
+  // 4X large
+  xxxx: 28,
+  // Title sizes
+  titleSm: 20,
+  titleMd: 24,
+  titleLg: 28,
+  titleXl: 32,
+};

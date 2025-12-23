@@ -3,6 +3,7 @@ import { Image } from 'expo-image';
 import { Link } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { FontSizes } from '@/constants/theme';
 
 const { width, height } = Dimensions.get('window');
 
@@ -69,7 +70,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#FFFFFF',
-    fontSize: 30,
+    fontSize: FontSizes.titleMd, // 24
     fontWeight: 'bold',
     lineHeight: 44,
     marginBottom: 12,
@@ -77,7 +78,7 @@ const styles = StyleSheet.create({
   },
   description: {
     color: 'rgba(255, 255, 255, 0.85)',
-    fontSize: 14,
+    fontSize: FontSizes.md, // 14
     fontWeight: '500',
     lineHeight: 26,
     textAlign: 'left',
@@ -85,7 +86,7 @@ const styles = StyleSheet.create({
   },
   customerButton: {
     width: '100%',
-    height: 60,
+    height: 40,
     borderRadius: 14,
     backgroundColor: '#00C853', // Vibrant green
     justifyContent: 'center',
@@ -101,16 +102,16 @@ const styles = StyleSheet.create({
     elevation: 5,
     textDecorationLine: 'none',
     textAlign: 'center',
-    paddingTop: 15
+    paddingTop: 5
   },
   customerButtonText: {
     color: '#FFFFFF',
-    fontSize: 17,
+    fontSize: FontSizes.md, // 14
     fontWeight: 'bold'
   },
   vendorButton: {
     width: '100%',
-    height: 60,
+    height: 40,
     borderRadius: 14,
     backgroundColor: 'transparent',
     borderColor: '#00C853', // Vibrant green border
@@ -119,11 +120,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     textDecorationLine: 'none',
     textAlign: 'center',
-    paddingTop: 15
+    paddingTop: 5
   },
   vendorButtonText: {
     color: '#00C853', // Vibrant green text
-    fontSize: 17,
+    fontSize: FontSizes.md, // 14
     fontWeight: 'bold',
   },
 });

@@ -6,6 +6,7 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import UpcomingBookings from './bookings/upcoming';
 import CompletedBookings from './bookings/completed';
 import CancelledBookings from './bookings/cancelled';
+import { FontSizes } from '@/constants/theme';
 
 export default function AppointmentsScreen() {
   const [activeTab, setActiveTab] = useState<'upcoming' | 'completed' | 'cancelled'>('upcoming');
@@ -81,7 +82,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   header: {
-    fontSize: 25,
+    fontSize: FontSizes.titleMd, // 24
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'left',
@@ -99,7 +100,7 @@ const styles = StyleSheet.create({
     // No additional styling needed
   },
   tabText: {
-    fontSize: 16,
+    fontSize: FontSizes.md, // 14
     fontWeight: '500',
   },
   activeTabText: {

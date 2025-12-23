@@ -5,6 +5,7 @@ import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Collapsible } from '@/components/ui/collapsible';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { FontSizes } from '@/constants/theme';
 
 export default function HelpCenterScreen() {
   const [activeTab, setActiveTab] = useState<'faq' | 'contact'>('faq');
@@ -122,7 +123,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   header: {
-    fontSize: 20,
+    fontSize: FontSizes.titleSm, // 20
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
@@ -142,7 +143,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     marginLeft: 10,
-    fontSize: 17,
+    fontSize: FontSizes.md, // 14
   },
   tabsContainer: {
     flexDirection: 'row',
@@ -157,7 +158,7 @@ const styles = StyleSheet.create({
     // No additional styling needed
   },
   tabText: {
-    fontSize: 17,
+    fontSize: FontSizes.md, // 14
     // fontWeight: '500',
   },
   activeTabText: {
@@ -192,6 +193,6 @@ const styles = StyleSheet.create({
   },
   contactLabel: {
     flex: 1,
-    fontSize: 17,
+    fontSize: FontSizes.md, // 14
   },
 });
