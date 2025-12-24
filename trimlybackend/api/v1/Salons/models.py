@@ -2,6 +2,7 @@ from django.db import models
 from api.v1.Category.models import ServiceCategory, Gallery
 from api.v1.Users.models import User
 import uuid
+from cloudinary.models import CloudinaryField
 
 class SalonProfile(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
@@ -15,7 +16,7 @@ class SalonProfile(models.Model):
     latitude = models.CharField(max_length=100)
     longitude = models.CharField(max_length=100)
 
-    profile_pic = models.ImageField(upload_to='salon_profiles/', null=True, blank=True)
+    profile_pic = CloudinaryField('image', folder='profile_pic/salon_profile', overwrite=True, resource_type="image", null=True, blank = True)
 
     links = models.CharField(max_length=255, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -28,7 +29,7 @@ class SalonOwnerProfile(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.TextField(blank=True)
-    profile_pic = models.ImageField(upload_to='owners/', blank=True)
+    profile_pic = CloudinaryField('image', folder='profile_pic/salon_owner', overwrite=True, resource_type="image", null=True, blank = True)
     address = models.CharField(max_length=255)
     date_of_birth = models.DateTimeField(auto_now_add=True)
     Gender = models.CharField(max_length=10, choices=[('male', 'male'), ('female', 'female')])
@@ -42,7 +43,7 @@ class SalonStaff(models.Model):
     service_category = models.ForeignKey(ServiceCategory, on_delete=models.SET_NULL, null=True)
     salon = models.ForeignKey(SalonProfile, on_delete=models.CASCADE, related_name='salon_staff')
 
-    image = models.ImageField(upload_to='staff/', null=True)
+    profile_pic = CloudinaryField('image', folder='profile_pic/salon_staff', overwrite=True, resource_type="image", null=True, blank = True)
     experience = models.IntegerField()
     is_active = models.BooleanField(default=True)
 

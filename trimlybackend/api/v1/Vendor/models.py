@@ -1,5 +1,5 @@
 from django.db import models
-
+from cloudinary.models import CloudinaryField
 from api.v1.Category.models import Gallery, ServiceCategory
 from api.v1.Users.models import User
 import uuid
@@ -9,7 +9,7 @@ class IndividualVendorProfile(models.Model):
     service_category = models.ForeignKey(ServiceCategory, on_delete=models.SET_NULL, null=True)
     date_of_birth = models.DateTimeField(auto_now_add=True)
     bio = models.TextField()
-    profile_pic = models.ImageField(upload_to='vendors/', null=True)
+    profile_pic = CloudinaryField('image', folder='profile_pic/vendors', overwrite=True, resource_type="image", null=True, blank = True)
     years_of_experience = models.IntegerField()
     Gender = models.CharField(max_length=10, choices=[('male', 'male'), ('female', 'female')], default='male')
     total_earnings = models.BigIntegerField(default=0)

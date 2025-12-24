@@ -4,7 +4,7 @@ from api.v1.Category.models import Availability, AvailabilityException, Gallery
 from api.v1.Category.serializers import AvailabilityExceptionSerializer, AvailaibilitySerializer, GallerySerializer
 from .models import IndividualVendorProfile, VendorServices
 from .serializers import VendorSerializer, VendorServicesSerializer
-from rest_framework import generics, viewsets, permissions
+from rest_framework import generics, viewsets, permissions, parsers
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from api.v1.Users.permissions import IsAdminVendorOrReadOnly, IsAdminOrVendorServiceObject, IsVendorAvailabilityOwner, IsOwnerOfTargetProvider
 from rest_framework.views import APIView
@@ -30,7 +30,7 @@ class VendorServicesRetrieveUpdateDeleteAPIView(generics.RetrieveUpdateDestroyAP
     serializer_class = VendorServicesSerializer
     permission_classes = [IsAdminOrVendorServiceObject]
     def get_queryset(self):
-        qs = VendorServices.objects.filter(vendor_id = self.kwargs["vendor_id"])
+        qs = VendorServices.objects.filter(worker_id = self.kwargs["vendor_id"])
 
         return qs
 
@@ -58,12 +58,13 @@ class VendorGalleryUploadAPIView(generics.ListCreateAPIView):
     Handle vendor Gallery and Portfolio
     """
     serializer_class = GallerySerializer
+    parser_classes = (parsers.MultiPartParser, parsers.FormParser)
 
     def get_queryset(self):
         return Gallery.objects.filter(vendor_id=self.kwargs["id"])
 
     def perform_create(self, serializer):
-        vendor = get_object_or_404(Gallery, vendor_id=self.kwargs["id"])
+        vendor = get_object_or_404(IndividualVendorProfile, worker_id=self.kwargs["id"])
         serializer.save(
             vendor=vendor
         )

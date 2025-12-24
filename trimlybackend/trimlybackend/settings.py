@@ -53,12 +53,29 @@ INSTALLED_APPS = [
     'allauth', # Core for registration/verification
     'allauth.account', # Specific allauth module
     'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
     'dj_rest_auth', # The wrapper for DRF endpoints
     'dj_rest_auth.registration', # Registration module,
     'drf_spectacular',
-    'django_filters'
+    'django_filters',
+    'cloudinary_storage',
+    'cloudinary',
+    # 'anymail',
+
 ]
 SITE_ID = 1 
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        },
+        'OAUTH_PKCE_ENABLED': True,
+    }
+}
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -154,6 +171,11 @@ AUTH_USER_MODEL = 'Users.User'
 # CORS_ALLOWED_ORIGINS = ["*"]                 
 CORS_ORIGIN_ALLOW_ALL =True
 CORS_ALLOW_CREDENTIALS = True
+CSRF_TRUSTED_ORIGINS = [
+    "https://*.onrender.com",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
 
 from datetime import timedelta
 
@@ -166,12 +188,18 @@ SIMPLE_JWT = {
 }
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
+        'api.v1.utils.authentication.CsrfExemptSessionAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.FormParser',
+        'rest_framework.parsers.MultiPartParser', # <--- This allows images!
+    ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
@@ -183,8 +211,8 @@ ACCOUNT_LOGIN_METHODS = ['email']
 # 'email*' satisfies the mandatory verification requirement.
 # 'password' and 'password2' are the explicit fields used by the registration form.
 ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1', 'password2'] 
-
-
+# ACCOUNT_USERNAME_REQUIRED = False
+# ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 # Mandates that the user MUST verify their email before they can log in successfully
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 
@@ -202,7 +230,17 @@ REST_AUTH = {
     'USER_MODEL': 'Users.User',
 }
 # For development: prints emails (like verification links) to the console/terminal
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend' 
+# Mailtrap Sandbox SMTP Credentials
+EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")   # From Mailtrap Inbox Settings
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")  # From Mailtrap Inbox Settings
+EMAIL_PORT = os.getenv("EMAIL_PORT")
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+
+# This can be anything in Sandbox mode
+DEFAULT_FROM_EMAIL = "Trimly <support@trimly.app>"
 
 # In production, you would replace this with something like:
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -213,4 +251,23 @@ SPECTACULAR_SETTINGS = {
     # OTHER RECOMMENDED SETTINGS:
     'SERVE_INCLUDE_SCHEMA': False, # Schema is served separately
     # 'SWAGGER_UI_DIST': 'SIDECAR'
-    }
+    "SWAGGER_UI_SETTINGS": {
+        "persistAuthorization": True,
+        # This is the magic line that fixes CSRF
+        "withCredentials": True, 
+    },
+}
+
+
+# This tells Django: "If the Google email matches an existing user, 
+# just log them into that account instead of crashing/erroring."
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
+}
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'

@@ -1,6 +1,6 @@
 from datetime import datetime
 from django.shortcuts import render
-from rest_framework import viewsets, generics
+from rest_framework import viewsets, generics, parsers
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.shortcuts import get_object_or_404
 from api.v1.Category.serializers import AvailabilityExceptionSerializer, GallerySerializer, AvailaibilitySerializer
@@ -70,12 +70,12 @@ class SalonGalleryUploadAPIView(generics.ListCreateAPIView):
     Handle Salon Gallery and Portfolio
     """
     serializer_class = GallerySerializer
-
+    parser_classes = (parsers.MultiPartParser, parsers.FormParser)
     def get_queryset(self):
-        return Gallery.objects.filter(salon_id=self.kwargs["id"])
+        return Gallery.objects.filter(salon_id=self.kwargs["salon_id"])
 
     def perform_create(self, serializer):
-        salon = get_object_or_404(Gallery, salon_id=self.kwargs["id"])
+        salon = get_object_or_404(SalonProfile, salon_id=self.kwargs["salon_id"])
         serializer.save(
             salon=salon
         )

@@ -1,5 +1,6 @@
 import uuid
 from django.db import models
+from cloudinary.models import CloudinaryField
 from django.core.exceptions import ValidationError
 
 class ServiceCategory(models.Model):
@@ -12,7 +13,7 @@ class ServiceCategory(models.Model):
 
 class Gallery(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    image = models.ImageField(upload_to='gallery/')
+    image = CloudinaryField('image', folder='gallery/', overwrite=True, resource_type="image")
     salon = models.ForeignKey('Salons.SalonProfile', related_name="salon_portfolio", on_delete=models.CASCADE, null=True, blank=True)
     vendor = models.ForeignKey('Vendor.IndividualVendorProfile', related_name = "vendor_portfolio", null=True, blank=True, on_delete=models.CASCADE)
     caption = models.CharField(max_length=255, blank=True)
