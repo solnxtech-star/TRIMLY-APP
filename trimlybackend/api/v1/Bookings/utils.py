@@ -1,8 +1,10 @@
 from datetime import datetime, timedelta
 from api.v1.Category.models import Availability, AvailabilityException
 from .models import Booking
+from django.db import models
 
-def get_available_slots(vendor, date, service_duration):
+
+def get_available_slots(provider, date, service_duration):
     """
     Returns a list of available time slots for a specific vendor on a specific date.
     """
@@ -10,12 +12,12 @@ def get_available_slots(vendor, date, service_duration):
     weekday = date.weekday()
 
     # 2. Check general availability rules for this day
-    avail = Availability.objects.filter(vendor=vendor, day_of_week=weekday).first()
+    avail = Availability.objects.filter(salon=provider, day_of_week=weekday).first()
     if not avail:
         return [] # Not working this day
 
     # 3. Check for Exceptions (e.g., Holiday or changed hours)
-    exception = AvailabilityException.objects.filter(vendor=vendor, date=date).first()
+    exception = AvailabilityException.objects.filter(salon=provider, date=date).first()
     
     if exception:
         if not exception.is_available:
@@ -32,7 +34,7 @@ def get_available_slots(vendor, date, service_duration):
         status__in=['pending', 'confirmed']
     ).filter(
         # This handles your dynamic provider logic
-        models.Q(salon_service__salon=vendor) | models.Q(vendor_service__vendor=vendor)
+        models.Q(salon_service__salon=provider) | models.Q(vendor_service__vendor=provider)
     )
 
     # 5. Generate Potential Slots (e.g., every 30 minutes)
