@@ -35,7 +35,7 @@ class BookingSerializer(serializers.ModelSerializer):
 
         service = salon_service or vendor_service
         start_datetime = datetime.combine(date, start_time)
-        end_datetime = start_datetime + timedelta(minutes=service.duration)
+        end_datetime = start_datetime + timedelta(minutes=service.duration_minutes)
         calculated_end_time = end_datetime.time()
         
         # --- CHANGE HERE ---
