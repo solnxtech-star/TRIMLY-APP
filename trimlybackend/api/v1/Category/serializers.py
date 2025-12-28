@@ -76,7 +76,7 @@ class AvailabilityExceptionSerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ("id", "salon", "vendor")
     
-def validate(self, attrs):
+    def validate(self, attrs):
         is_available = attrs.get('is_available')
         start_time = attrs.get('start_time')
         end_time = attrs.get('end_time')
@@ -92,3 +92,4 @@ def validate(self, attrs):
         
         # If is_available is False (Closed), we can ignore the times or set them to null
         return attrs
+

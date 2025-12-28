@@ -12,10 +12,10 @@ class SalonProfile(models.Model):
     category = models.ForeignKey(ServiceCategory, on_delete=models.SET_NULL, null=True)
 
     about = models.TextField(null=True, blank=True)
-    address = models.CharField(max_length=255)
-    latitude = models.CharField(max_length=100)
-    longitude = models.CharField(max_length=100)
-
+    latitude = models.DecimalField(max_digits=22, decimal_places=16, null=True, blank=True)
+    # Longitude: ranges from -180 to 180
+    longitude = models.DecimalField(max_digits=22, decimal_places=16, null=True, blank=True )
+    address = models.CharField(max_length=255, null=True, blank=True)
     profile_pic = CloudinaryField('image', folder='profile_pic/salon_profile', overwrite=True, resource_type="image", null=True, blank = True)
 
     links = models.CharField(max_length=255, blank=True)

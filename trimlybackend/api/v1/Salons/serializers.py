@@ -1,3 +1,10 @@
+from datetime import datetime
+from django.shortcuts import get_object_or_404
+from django.http import HttpResponse
+from rest_framework.permissions import AllowAny
+from api.v1.Bookings.utils import get_available_slots
+from api.v1.Reviews.serializers import ReviewSerializer
+from api.v1.Vendor.models import IndividualVendorProfile
 from .models import SalonProfile, SalonServices
 from rest_framework import serializers
 from api.v1.Category.serializers import CategorySerializer, GallerySerializer
@@ -14,10 +21,16 @@ class SalonServicesSerializer(serializers.ModelSerializer):
 
 class SalonProfileSerializer(serializers.ModelSerializer):
     salon_services = SalonServicesSerializer(many=True, read_only=True)
-    category = CategorySerializer(many=True, read_only = True)
+    category = CategorySerializer(read_only=True) # Usually a salon has 1 category
     salon_portfolio = GallerySerializer(many=True, read_only=True)
+
+    salon_reviews = ReviewSerializer(many=True, read_only=True, source='reviews') 
+
     class Meta:
         model = SalonProfile
-        fields = ("id", "owner", "category", "about", "address", "latitude", "longitude", "profile_pic", "salon_portfolio", "links", "created_at", "is_open", "salon_services")
-        read_only_fields = ["id", "owner", "salon_services", "salon_portfolio","created_at"]
-        
+        fields = (
+            "id", "owner", "name", "category", "about", "address", 
+            "latitude", "longitude", "profile_pic", "salon_portfolio", 
+            "links", "created_at", "is_open", "salon_services", "salon_reviews"
+        )
+        read_only_fields = ["id", "owner", "created_at"]

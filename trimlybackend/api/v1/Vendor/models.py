@@ -6,14 +6,18 @@ import uuid
 class IndividualVendorProfile(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     worker = models.OneToOneField(User, on_delete=models.CASCADE)
-    service_category = models.ForeignKey(ServiceCategory, on_delete=models.SET_NULL, null=True)
+    category = models.ForeignKey(ServiceCategory, on_delete=models.SET_NULL, null=True)
     date_of_birth = models.DateTimeField(auto_now_add=True)
     bio = models.TextField()
     profile_pic = CloudinaryField('image', folder='profile_pic/vendors', overwrite=True, resource_type="image", null=True, blank = True)
     years_of_experience = models.IntegerField()
     Gender = models.CharField(max_length=10, choices=[('male', 'male'), ('female', 'female')], default='male')
+    latitude = models.CharField(max_length=100)
+    longitude = models.CharField(max_length=100)
+
     total_earnings = models.BigIntegerField(default=0)
     is_active = models.BooleanField(default=True)
+    is_available = models.BooleanField(default=True)
 
 
     def __str__(self):

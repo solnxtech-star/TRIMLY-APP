@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     'api.v1.Reviews',
     'api.v1.Users',
     'api.v1.Vendor',
+    'api.v1.Search',
+
     #third party packages
     'rest_framework',
     'django.contrib.sites', 

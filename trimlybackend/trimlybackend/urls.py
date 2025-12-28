@@ -21,6 +21,7 @@ from dj_rest_auth.registration.views import VerifyEmailView, RegisterView
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
 from api.v1.Users.views import GoogleLogin
+from api.v1.Search.views import toggle_availability
 urlpatterns = [
     path('admin/', admin.site.urls),
     # Enables: Login, Logout, Password Reset, and User Details
@@ -35,9 +36,15 @@ urlpatterns = [
     path('api/v1/', include('api.v1.Vendor.urls')),
     path('api/v1/', include('api.v1.Category.urls')),
     path('api/v1/', include('api.v1.Bookings.urls')),
+    path('api/v1/search/', include('api.v1.Search.urls')),
+    path('api/v1/toggle-status/', toggle_availability, name='toggle-availability'),
+    #documentation
     path('swagger/', SpectacularSwaggerView.as_view(), name="schema"),
     path('redoc', SpectacularRedocView.as_view(), name="redoc"),
     path('swagger-schema/', SpectacularAPIView.as_view(), name="schema")
 ]
+ 
+
+
 
 
