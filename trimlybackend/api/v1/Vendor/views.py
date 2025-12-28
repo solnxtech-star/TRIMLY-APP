@@ -19,7 +19,7 @@ class VendorServicesListCreateAPIView(generics.ListCreateAPIView):
     permission_classes = [IsAdminVendorOrReadOnly]
     def get_queryset(self):
         vendor_id = self.kwargs["id"]
-        return VendorServices.objects.filter(worker_id=vendor_id)
+        return VendorServices.objects.filter(vendor_id=vendor_id)
     def perform_create(self, serializer):
         return serializer.save(vendor=self.request.user)
 
@@ -30,7 +30,7 @@ class VendorServicesRetrieveUpdateDeleteAPIView(generics.RetrieveUpdateDestroyAP
     serializer_class = VendorServicesSerializer
     permission_classes = [IsAdminOrVendorServiceObject]
     def get_queryset(self):
-        qs = VendorServices.objects.filter(worker_id = self.kwargs["vendor_id"])
+        qs = VendorServices.objects.filter(vendor_id = self.kwargs["vendor_id"])
 
         return qs
 
