@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     flex: 1,
     textAlign: 'center',
@@ -148,12 +148,12 @@ const styles = StyleSheet.create({
     flex: 0.75,
   },
   notificationLabel: {
-    fontSize: 17,
+    fontSize: 15,
     fontWeight: 'bold',
     marginBottom: 4,
   },
   notificationDescription: {
-    fontSize: 14,
+    fontSize: 12,
   },
   toggleSwitch: {
     width: 50,
@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
   },
   saveButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
   },
 });

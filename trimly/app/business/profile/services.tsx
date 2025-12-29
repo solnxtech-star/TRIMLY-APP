@@ -43,7 +43,7 @@ const Services = () => {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: backgroundColor }]}>      
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={24} color={textColor} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: textColor }]}>Services</Text>
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     flex: 1,
     textAlign: 'center',
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   tabText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
   },
   activeTabIndicator: {
@@ -160,12 +160,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   serviceTitle: {
-    fontSize: 24,
+    fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 8,
   },
   serviceDescription: {
-    fontSize: 15,
+    fontSize: 14,
     marginBottom: 16,
   },
   serviceDetailsRow: {
@@ -182,12 +182,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   serviceDetailText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '500',
     marginLeft: 8,
   },
   servicePrice: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '500',
   },
   buttonContainer: {
@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
   },
   addButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
   },
 });

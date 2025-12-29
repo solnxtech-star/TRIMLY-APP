@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useColorScheme } from 'react-native';
 import { router } from 'expo-router';
+import LogoutConfirmationModal from './profile/logout-confirmation-modal';
 
 const { width } = Dimensions.get('window');
 
@@ -18,6 +19,8 @@ const BusinessProfile = () => {
   const dividerColor = colorScheme === 'dark' ? '#374151' : '#F0F0F0'; // Light gray for dividers
 
   const iconColor = '#00C853'; // Green color for icons
+
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const menuItems = [
     {
@@ -72,7 +75,7 @@ const BusinessProfile = () => {
       id: 'logout',
       title: 'Log out',
       icon: 'log-out-outline',
-      action: () => router.push('/auth/sign-in'),
+      action: () => setShowLogoutModal(true),
       isDestructive: true
     }
   ];
@@ -127,6 +130,14 @@ const BusinessProfile = () => {
           </TouchableOpacity>
         ))}
       </ScrollView>
+      <LogoutConfirmationModal 
+        visible={showLogoutModal} 
+        onClose={() => setShowLogoutModal(false)} 
+        onConfirm={() => {
+          router.push('/auth/sign-in');
+          setShowLogoutModal(false);
+        }} 
+      />
     </SafeAreaView>
   );
 };
@@ -140,12 +151,12 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   headerTitle: {
-    fontSize: 32,
+    fontSize: 20,
     fontWeight: '700',
   },
   menuItem: {
-    height: 70,
-    paddingHorizontal: 16,
+    height: 60,
+    paddingHorizontal: 12,
   },
   menuContent: {
     flexDirection: 'row',
@@ -153,15 +164,15 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   iconCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
   menuText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '500',
     marginRight: 12,
   },

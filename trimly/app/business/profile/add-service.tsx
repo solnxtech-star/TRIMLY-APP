@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     flex: 1,
     textAlign: 'center',
@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   tabText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
   },
   activeTabIndicator: {
@@ -214,24 +214,24 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   fieldLabel: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     marginBottom: 8,
   },
   inputField: {
-    height: 56,
+    height: 50,
     borderWidth: 1,
     borderRadius: 12,
-    paddingHorizontal: 16,
-    fontSize: 15,
+    paddingHorizontal: 14,
+    fontSize: 14,
   },
   textArea: {
-    height: 150,
+    height: 130,
     borderWidth: 1,
     borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    fontSize: 15,
+    paddingHorizontal: 14,
+    paddingTop: 14,
+    fontSize: 14,
     textAlignVertical: 'top',
   },
   durationContainer: {
@@ -243,8 +243,8 @@ const styles = StyleSheet.create({
   },
   durationInput: {
     flex: 1,
-    paddingHorizontal: 16,
-    fontSize: 15,
+    paddingHorizontal: 14,
+    fontSize: 14,
   },
   priceContainer: {
     flexDirection: 'row',
@@ -255,8 +255,8 @@ const styles = StyleSheet.create({
   },
   priceInput: {
     flex: 1,
-    paddingHorizontal: 16,
-    fontSize: 15,
+    paddingHorizontal: 14,
+    fontSize: 14,
   },
   spinnerContainer: {
     flexDirection: 'column',
@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
   },
   saveButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
   },
 });

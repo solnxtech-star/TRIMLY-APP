@@ -111,6 +111,12 @@ export default function BusinessLayout() {
           href: null
         }}
       />
+      <Tabs.Screen
+        name="profile/logout-confirmation-modal"
+        options={{
+          href: null
+        }}
+      />
     </Tabs>
   );
 }

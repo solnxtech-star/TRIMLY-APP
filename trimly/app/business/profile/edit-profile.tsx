@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useColorScheme } from 'react-native';
+import { router } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
@@ -39,7 +40,7 @@ const EditProfile = () => {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: backgroundColor }]}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={24} color={textColor} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: textColor }]}>Set Up Profile</Text>
@@ -154,7 +155,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     flex: 1,
     textAlign: 'center',
@@ -195,7 +196,7 @@ const styles = StyleSheet.create({
       alignItems: 'center',
   },
   uploadText: {
-    fontSize: 15,
+    fontSize: 14,
     color: '#999999',
     textAlign: 'center',
   },
@@ -206,38 +207,38 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   fieldLabel: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     marginBottom: 8,
   },
   inputField: {
-    height: 55,
+    height: 50,
     borderWidth: 1,
     borderRadius: 12,
-    paddingHorizontal: 16,
-    fontSize: 15,
+    paddingHorizontal: 14,
+    fontSize: 14,
   },
   textArea: {
-    height: 160,
+    height: 140,
     borderWidth: 1,
     borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    fontSize: 15,
+    paddingHorizontal: 14,
+    paddingTop: 14,
+    fontSize: 14,
     textAlignVertical: 'top',
   },
   dropdownField: {
-    height: 55,
+    height: 50,
     borderWidth: 1,
     borderRadius: 12,
-    paddingHorizontal: 16,
-    fontSize: 15,
+    paddingHorizontal: 14,
+    fontSize: 14,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   dropdownText: {
-    fontSize: 15,
+    fontSize: 14,
     flex: 1,
   },
   portfolioContainer: {
@@ -249,7 +250,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   portfolioText: {
-    fontSize: 15,
+    fontSize: 14,
     color: '#999999',
     marginTop: 8,
   },
@@ -266,7 +267,7 @@ const styles = StyleSheet.create({
   },
   continueButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
   },
 });
