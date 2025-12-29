@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useColorScheme } from 'react-native';
+import { router } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
@@ -39,7 +40,7 @@ const EditProfile = () => {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: backgroundColor }]}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.push('/business/profile')}>
           <Ionicons name="chevron-back" size={24} color={textColor} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: textColor }]}>Set Up Profile</Text>

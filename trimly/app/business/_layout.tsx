@@ -117,6 +117,12 @@ export default function BusinessLayout() {
           href: null
         }}
       />
+      <Tabs.Screen
+        name="chat/conversation"
+        options={{
+          href: null
+        }}
+      />
     </Tabs>
   );
 }

@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { TouchableOpacity } from 'react-native';
 import { useColorScheme } from 'react-native';
+import { router } from 'expo-router';
 
 const Portfolio = () => {
   const backgroundColor = useThemeColor({}, 'background');
@@ -107,7 +108,7 @@ const Portfolio = () => {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: backgroundColor }]}>      
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.push('/business/profile')}>
           <Ionicons name="chevron-back" size={24} color={textColor} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: textColor }]}>Portfolio & Reviews</Text>
