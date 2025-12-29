@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import AddPortfolioModal from './add-portfolio-modal';
+import ReplyToReviewModal from './reply-to-review-modal';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeColor } from '@/hooks/use-theme-color';
@@ -18,6 +20,9 @@ const Portfolio = () => {
   const reviewTextColor = colorScheme === 'dark' ? '#D1D5DB' : '#333333';
   
   const [activeTab, setActiveTab] = useState('Reviews');
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showReplyModal, setShowReplyModal] = useState(false);
+  const [currentReview, setCurrentReview] = useState<any>(null);
   
   // Mock data for reviews
   const reviews = [
@@ -56,8 +61,32 @@ const Portfolio = () => {
   ];
 
   const handleReply = (reviewId: number) => {
-    // Handle reply to review
-    console.log('Reply to review:', reviewId);
+    // Find the review to reply to
+    const reviewToReply = reviews.find(review => review.id === reviewId);
+    if (reviewToReply) {
+      setCurrentReview(reviewToReply);
+      setShowReplyModal(true);
+    }
+  };
+  
+  const handleSendReply = (reply: string) => {
+    // Handle sending the reply
+    console.log('Sending reply:', reply, 'to review:', currentReview?.id);
+    setShowReplyModal(false);
+    setCurrentReview(null);
+  };
+  
+  const handleCloseReplyModal = () => {
+    setShowReplyModal(false);
+    setCurrentReview(null);
+  };
+  
+  const handleAddPhoto = () => {
+    setShowAddModal(true);
+  };
+  
+  const handleCloseModal = () => {
+    setShowAddModal(false);
   };
     
   const renderStars = (rating: number) => {
@@ -134,10 +163,67 @@ const Portfolio = () => {
       )}
         
       {activeTab === 'Portfolios' && (
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-          <Text style={{ color: textColor }}>Portfolio content would be displayed here</Text>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.portfolioScrollContent}>
+          <View style={styles.gridContainer}>
+            {/* Row 1 */}
+            <View style={styles.gridRow}>
+              <TouchableOpacity style={[styles.gridItem, { backgroundColor: cardBackgroundColor, borderColor: borderColor }] as any}>
+                <View style={styles.imagePlaceholder}>
+                  <Ionicons name="image-outline" size={40} color={secondaryTextColor} />
+                </View>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.gridItem, { backgroundColor: cardBackgroundColor, borderColor: borderColor }] as any}>
+                <View style={styles.imagePlaceholder}>
+                  <Ionicons name="image-outline" size={40} color={secondaryTextColor} />
+                </View>
+              </TouchableOpacity>
+            </View>
+            
+            {/* Row 2 */}
+            <View style={styles.gridRow}>
+              <TouchableOpacity style={[styles.gridItem, { backgroundColor: cardBackgroundColor, borderColor: borderColor }] as any}>
+                <View style={styles.imagePlaceholder}>
+                  <Ionicons name="image-outline" size={40} color={secondaryTextColor} />
+                </View>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.gridItem, { backgroundColor: cardBackgroundColor, borderColor: borderColor }] as any}>
+                <View style={styles.imagePlaceholder}>
+                  <Ionicons name="image-outline" size={40} color={secondaryTextColor} />
+                </View>
+              </TouchableOpacity>
+            </View>
+            
+            {/* Row 3 */}
+            <View style={styles.gridRow}>
+              <TouchableOpacity style={[styles.gridItem, { backgroundColor: cardBackgroundColor, borderColor: borderColor }] as any}>
+                <View style={styles.imagePlaceholder}>
+                  <Ionicons name="image-outline" size={40} color={secondaryTextColor} />
+                </View>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.gridItem, { backgroundColor: cardBackgroundColor, borderColor: borderColor }] as any}>
+                <View style={styles.imagePlaceholder}>
+                  <Ionicons name="image-outline" size={40} color={secondaryTextColor} />
+                </View>
+              </TouchableOpacity>
+            </View>
+          </View>
+          
+          {/* Add Photo Button */}
+          <View style={styles.addButtonContainer}>
+            <TouchableOpacity style={styles.addButton} onPress={handleAddPhoto}>
+              <Ionicons name="add" size={20} color="#FFFFFF" />
+              <Text style={styles.addButtonText}>Add Photo</Text>
+            </TouchableOpacity>
+          </View>
         </ScrollView>
       )}
+      <AddPortfolioModal visible={showAddModal} onClose={handleCloseModal} />
+      <ReplyToReviewModal 
+        visible={showReplyModal} 
+        onClose={handleCloseReplyModal} 
+        review={currentReview || { id: 0, name: '', review: '' }} 
+        onSendReply={handleSendReply} 
+      />
     </SafeAreaView>
   );
 };
@@ -150,6 +236,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 24,
     paddingBottom: 24,
+  },
+  portfolioScrollContent: {
+    paddingHorizontal: 16,
+    paddingTop: 24,
+    paddingBottom: 100, // Extra padding to account for the button at the bottom
   },
   header: {
     flexDirection: 'row',
@@ -243,6 +334,48 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '500',
     marginLeft: 6,
+  },
+  gridContainer: {
+    marginBottom: 24,
+  },
+  gridRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  gridItem: {
+    flex: 0.48, // Two items with 4% gap between them
+    aspectRatio: 1, // Square aspect ratio
+    borderRadius: 16,
+    overflow: 'hidden',
+    backgroundColor: '#FFFFFF', // Light theme default
+    borderColor: '#E0E0E0', // Light theme default
+    borderWidth: 1,
+  },
+  imagePlaceholder: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  addButtonContainer: {
+    position: 'absolute',
+    bottom: 24,
+    left: 16,
+    right: 16,
+  },
+  addButton: {
+    backgroundColor: '#2E7D32',
+    height: 56,
+    borderRadius: 12,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  addButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 8,
   },
 });
 

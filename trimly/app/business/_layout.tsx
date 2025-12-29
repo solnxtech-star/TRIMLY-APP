@@ -99,6 +99,18 @@ export default function BusinessLayout() {
           href: null
         }}
       />
+      <Tabs.Screen
+        name="profile/reply-to-review-modal"
+        options={{
+          href: null
+        }}
+      />
+      <Tabs.Screen
+        name="profile/add-portfolio-modal"
+        options={{
+          href: null
+        }}
+      />
     </Tabs>
   );
 }
