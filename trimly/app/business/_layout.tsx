@@ -45,6 +45,60 @@ export default function BusinessLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="profile/services"
+        options={{
+          href: null
+        }}
+      />
+      <Tabs.Screen
+        name="profile/availability"
+        options={{
+          href: null
+        }}
+      />
+      <Tabs.Screen
+        name="profile/edit-profile"
+        options={{
+          href: null
+        }}
+      />
+      <Tabs.Screen
+        name="profile/help-center"
+        options={{
+          href: null
+        }}
+      />
+      <Tabs.Screen
+        name="profile/notification-settings"
+        options={{
+          href: null
+        }}
+      />
+      <Tabs.Screen
+        name="profile/portfolio"
+        options={{
+          href: null
+        }}
+      />
+      <Tabs.Screen
+        name="profile/privacy-policy"
+        options={{
+          href: null
+        }}
+      />
+      <Tabs.Screen
+        name="profile/transactions"
+        options={{
+          href: null
+        }}
+      />
+      <Tabs.Screen
+        name="profile/add-service"
+        options={{
+          href: null
+        }}
+      />
     </Tabs>
   );
 }

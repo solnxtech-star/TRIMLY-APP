@@ -1,106 +1,170 @@
-import { StyleSheet } from 'react-native';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
+import React from 'react';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Dimensions } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import { useColorScheme } from 'react-native';
+import { router } from 'expo-router';
 
-export default function BusinessProfileScreen() {
+const { width } = Dimensions.get('window');
+
+const BusinessProfile = () => {
+  const backgroundColor = useThemeColor({}, 'background');
+  const textColor = useThemeColor({}, 'text');
+  
+  // Define custom colors based on theme
+  const colorScheme = useColorScheme();
+  const cardBackgroundColor = colorScheme === 'dark' ? 'transparent' : '#FFFFFF'; // Card background
+  const dividerColor = colorScheme === 'dark' ? '#374151' : '#F0F0F0'; // Light gray for dividers
+
+  const iconColor = '#00C853'; // Green color for icons
+
+  const menuItems = [
+    {
+      id: 'profile',
+      title: 'Your profile',
+      icon: 'person-outline',
+      action: () => router.push('/business/profile/edit-profile')
+    },
+    {
+      id: 'services',
+      title: 'Services & Pricing',
+      icon: 'pricetag-outline',
+      action: () => router.push('/business/profile/services')
+    },
+    {
+      id: 'availability',
+      title: 'Availability',
+      icon: 'time-outline',
+      action: () => router.push('/business/profile/availability')
+    },
+    {
+      id: 'portfolio',
+      title: 'Portfolio & Reviews',
+      icon: 'star-outline',
+      action: () => router.push('/business/profile/portfolio')
+    },
+    {
+      id: 'notification',
+      title: 'Notification',
+      icon: 'notifications-outline',
+      action: () => router.push('/business/profile/notification-settings')
+    },
+    {
+      id: 'transactions',
+      title: 'Transactions',
+      icon: 'card-outline',
+      action: () => router.push('/business/profile/transactions')
+    },
+    {
+      id: 'help',
+      title: 'Help Center',
+      icon: 'help-circle-outline',
+      action: () => router.push('/business/profile/help-center')
+    },
+    {
+      id: 'privacy',
+      title: 'Privacy Policy',
+      icon: 'lock-closed-outline',
+      action: () => router.push('/business/profile/privacy-policy')
+    },
+    {
+      id: 'logout',
+      title: 'Log out',
+      icon: 'log-out-outline',
+      action: () => router.push('/auth/sign-in'),
+      isDestructive: true
+    }
+  ];
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#B0B0B0', dark: '#404040' }}
-      headerImage={
-        <ThemedView style={styles.headerContainer}>
-          <ThemedText type="title" style={styles.headerTitle}>Business Profile</ThemedText>
-        </ThemedView>
-      }>
-      <ThemedView style={styles.profileHeader}>
-        <ThemedView style={styles.avatar} />
-        <ThemedText type="title">Salon Beautiful</ThemedText>
-        <ThemedText>Beauty Salon</ThemedText>
-      </ThemedView>
+    <SafeAreaView style={[styles.container, { backgroundColor: backgroundColor }]}>
+      <View style={styles.headerContainer}>
+        <Text style={[styles.headerTitle, { color: textColor }]}>Profile</Text>
+      </View>
       
-      <ThemedView style={styles.section}>
-        <ThemedText type="subtitle">Business Information</ThemedText>
-        <ThemedView style={styles.infoRow}>
-          <ThemedText>Address:</ThemedText>
-          <ThemedText>123 Beauty Street, New York</ThemedText>
-        </ThemedView>
-        <ThemedView style={styles.infoRow}>
-          <ThemedText>Phone:</ThemedText>
-          <ThemedText>(123) 456-7890</ThemedText>
-        </ThemedView>
-        <ThemedView style={styles.infoRow}>
-          <ThemedText>Email:</ThemedText>
-          <ThemedText>info@salonbeautiful.com</ThemedText>
-        </ThemedView>
-      </ThemedView>
-      
-      <ThemedView style={styles.section}>
-        <ThemedText type="subtitle">Business Hours</ThemedText>
-        <ThemedView style={styles.infoRow}>
-          <ThemedText>Monday-Friday:</ThemedText>
-          <ThemedText>9:00 AM - 7:00 PM</ThemedText>
-        </ThemedView>
-        <ThemedView style={styles.infoRow}>
-          <ThemedText>Saturday:</ThemedText>
-          <ThemedText>10:00 AM - 5:00 PM</ThemedText>
-        </ThemedView>
-        <ThemedView style={styles.infoRow}>
-          <ThemedText>Sunday:</ThemedText>
-          <ThemedText>Closed</ThemedText>
-        </ThemedView>
-      </ThemedView>
-      
-      <ThemedView style={styles.section}>
-        <ThemedText type="subtitle">Account Settings</ThemedText>
-        <ThemedView style={styles.button}>
-          <ThemedText>Edit Business Profile</ThemedText>
-        </ThemedView>
-        <ThemedView style={styles.button}>
-          <ThemedText>Change Password</ThemedText>
-        </ThemedView>
-        <ThemedView style={[styles.button, styles.logoutButton]}>
-          <ThemedText>Logout</ThemedText>
-        </ThemedView>
-      </ThemedView>
-    </ParallaxScrollView>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {menuItems.map((item, index) => (
+          <TouchableOpacity
+            key={item.id}
+            style={[
+              styles.menuItem,
+              { 
+                backgroundColor: cardBackgroundColor,
+                borderBottomColor: dividerColor,
+                borderBottomWidth: index < menuItems.length - 1 ? 1 : 0
+              }
+            ]}
+            onPress={item.action}
+          >
+            <View style={styles.menuContent}>
+              <View style={[styles.iconCircle, { backgroundColor: item.isDestructive ? '#FFEBEE' : '#F8F8F8' }]}>
+                <Ionicons 
+                  name={item.icon as any} 
+                  size={22} 
+                  color={item.isDestructive ? '#FF5252' : iconColor} 
+                />
+              </View>
+              
+              <Text 
+                style={[
+                  styles.menuText, 
+                  { 
+                    color: item.isDestructive ? '#FF5252' : textColor,
+                    flex: 1
+                  }
+                ]}
+              >
+                {item.title}
+              </Text>
+              
+              <Ionicons 
+                name="chevron-forward" 
+                size={20} 
+                color={item.isDestructive ? '#FF5252' : '#666666'} 
+              />
+            </View>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+    </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  headerContainer: {
+  container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+  },
+  headerContainer: {
+    paddingHorizontal: 24,
+    paddingVertical: 16,
   },
   headerTitle: {
-    color: 'white',
+    fontSize: 32,
+    fontWeight: '700',
   },
-  profileHeader: {
-    alignItems: 'center',
-    marginBottom: 24,
+  menuItem: {
+    height: 70,
+    paddingHorizontal: 16,
   },
-  avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#ccc',
-    marginBottom: 16,
-  },
-  section: {
-    marginBottom: 24,
-  },
-  infoRow: {
+  menuContent: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 8,
+    alignItems: 'center',
+    height: '100%',
   },
-  button: {
-    padding: 16,
-    backgroundColor: 'rgba(0, 0, 0, 0.05)',
-    borderRadius: 8,
-    marginBottom: 8,
+  iconCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
   },
-  logoutButton: {
-    backgroundColor: '#FF3B30',
+  menuText: {
+    fontSize: 13,
+    fontWeight: '500',
+    marginRight: 12,
   },
 });
+
+export default BusinessProfile;
