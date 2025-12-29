@@ -176,16 +176,16 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     flex: 1,
     textAlign: 'center',
     marginRight: 32, // To account for the back button space
   },
   instructionText: {
-    fontSize: 13,
+    fontSize: 14,
     marginBottom: 24,
-    lineHeight: 18,
+    lineHeight: 20,
   },
   dayContainer: {
     marginBottom: 24,
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   dayLabel: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   timePickerContainer: {
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
     width: '47%',
   },
   timeLabel: {
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: 'bold',
     marginBottom: 8,
   },
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   timeValue: {
-    fontSize: 13,
+    fontSize: 15,
   },
   spinnerContainer: {
     flexDirection: 'column',
@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
   },
   continueButtonText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
   },
 });

@@ -155,8 +155,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   menuItem: {
-    height: 60,
-    paddingHorizontal: 12,
+    height: 70,
+    paddingHorizontal: 16,
   },
   menuContent: {
     flexDirection: 'row',
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   menuText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '500',
     marginRight: 12,
   },

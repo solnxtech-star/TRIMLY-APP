@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     flex: 1,
     textAlign: 'center',
@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   tabText: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   activeTabIndicator: {
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   reviewerName: {
-    fontSize: 15,
+    fontSize: 17,
     fontWeight: 'bold',
     marginBottom: 4,
   },
@@ -318,12 +318,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   reviewDate: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: 'normal',
   },
   reviewText: {
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 15,
+    lineHeight: 22,
     marginBottom: 12,
   },
   replyButton: {
@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   replyText: {
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '500',
     marginLeft: 6,
   },
@@ -373,7 +373,7 @@ const styles = StyleSheet.create({
   },
   addButtonText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
     marginLeft: 8,
   },

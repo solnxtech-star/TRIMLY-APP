@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     paddingVertical: 24,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: 'bold',
   },
   tabContainer: {
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   tabText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
   },
   activeTabIndicator: {
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
     marginRight: 16,
   },
   clientName: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     marginBottom: 8,
   },
