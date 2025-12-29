@@ -1,6 +1,5 @@
-import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useRouter } from 'expo-router';
 import { FontSizes } from '@/constants/theme';
 
@@ -8,11 +7,11 @@ export default function Services() {
   const router = useRouter();
   
   const services = [
-    { id: 1, name: 'Haircut', icon: 'content-cut' },
-    { id: 2, name: 'Hair Styling', icon: 'brush' },
-    { id: 3, name: 'Nails', icon: 'spa' },
-    { id: 4, name: 'Facials & Skincare', icon: 'face' },
-    { id: 5, name: 'Lashes & Brows', icon: 'visibility' },
+    { id: 1, name: 'Haircut', icon: require('@/assets/icon/haircut.png') },
+    { id: 2, name: 'Hair Styling', icon: require('@/assets/icon/haircut.png') },
+    { id: 3, name: 'Nails', icon: require('@/assets/icon/nails.png') },
+    { id: 4, name: 'Facials & Skincare', icon: require('@/assets/icon/makeup.png') },
+    { id: 5, name: 'Lashes & Brows', icon: require('@/assets/icon/makeup.png') },
   ];
   
   const handleSeeAll = () => {
@@ -41,7 +40,7 @@ export default function Services() {
         {services.map((service) => (
           <TouchableOpacity key={service.id} style={styles.serviceItem} onPress={() => handleServicePress(service.id)}>
             <View style={styles.iconContainer}>
-              <IconSymbol name={service.icon} size={28} color="#ffffff" />
+              <Image source={service.icon} style={styles.serviceIcon} />
             </View>
             <ThemedText style={styles.serviceName}>{service.name}</ThemedText>
           </TouchableOpacity>
@@ -90,6 +89,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
+  },
+  serviceIcon: {
+    width: 28,
+    height: 28,
   },
   serviceName: {
     fontSize: FontSizes.sm, // 12
