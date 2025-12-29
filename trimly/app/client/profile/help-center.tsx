@@ -42,10 +42,11 @@ export default function HelpCenterScreen() {
   ];
 
   return (
-    <ThemedView style={[styles.container, { backgroundColor }]}>
+    <ThemedView style={[styles.container, { backgroundColor }]}>      
       <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
       >
         {/* Header */}
         <ThemedText style={[styles.header, { color: textColor }]}>Help Center</ThemedText>

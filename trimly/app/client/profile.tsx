@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   header: {
-    fontSize: 27,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#000000',
     marginBottom: 30,
@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
   },
   menuLabel: {
     flex: 1,
-    fontSize: 17,
+    fontSize: 13,
     color: '#000000',
     fontWeight: '500',
   },
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
   },
   logoutLabel: {
     flex: 1,
-    fontSize: 17,
+    fontSize: 15,
     color: '#FF3B30', // Red text
     fontWeight: '500',
   },

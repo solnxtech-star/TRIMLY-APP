@@ -1,4 +1,4 @@
-import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { CustomSafeAreaView } from '@/components/custom-safe-area-view';
@@ -19,12 +19,12 @@ export default function ServicesScreen() {
   const cardBackgroundColor2 = useThemeColor({ light: 'lightgray', dark: 'gray' }, 'background');
 
   const services = [
-    { id: 1, name: 'Massage & Body Care', category: 'Spa', icon: 'spa' },
-    { id: 2, name: 'Tattooing & Body Piercing', category: 'Body Art', icon: 'brush' },
-    { id: 3, name: 'Facial Treatments', category: 'Skincare', icon: 'face' },
-    { id: 4, name: 'Manicure & Pedicure', category: 'Nails', icon: 'spa' },
-    { id: 5, name: 'Hair Coloring', category: 'Hair', icon: 'brush' },
-    { id: 6, name: 'Beard Trimming', category: 'Grooming', icon: 'content-cut' },
+    { id: 1, name: 'Massage & Body Care', category: 'Spa', icon: require('@/assets/icon/haircut.png') },
+    { id: 2, name: 'Tattooing & Body Piercing', category: 'Body Art', icon: require('@/assets/icon/makeup.png') },
+    { id: 3, name: 'Facial Treatments', category: 'Skincare', icon: require('@/assets/icon/haircut.png') },
+    { id: 4, name: 'Manicure & Pedicure', category: 'Nails', icon: require('@/assets/icon/nails.png') },
+    { id: 5, name: 'Hair Coloring', category: 'Hair', icon: require('@/assets/icon/haircut.png') },
+    { id: 6, name: 'Beard Trimming', category: 'Grooming', icon: require('@/assets/icon/haircut.png') },
   ];
 
   return (
@@ -50,8 +50,8 @@ export default function ServicesScreen() {
             style={[styles.serviceItem, { backgroundColor: cardBackgroundColor }]}
             onPress={() => router.push('/client/salons')}
           >
-            <View style={[styles.iconContainer, { backgroundColor: cardBackgroundColor2 }]}>
-              <IconSymbol name={service.icon} size={28} color={iconColor} />
+            <View style={[styles.iconContainer, { backgroundColor: cardBackgroundColor2 }]}>              
+              <Image source={service.icon} style={styles.serviceIcon} />
             </View>
             <View style={styles.textContainer}>
               <ThemedText style={[styles.serviceName, { color: textColor }]}>{service.name}</ThemedText>
@@ -110,6 +110,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
+  },
+  serviceIcon: {
+    width: 28,
+    height: 28,
   },
   textContainer: {
     flex: 1,
