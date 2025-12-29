@@ -18,61 +18,146 @@ const appointments = () => {
   const [activeTab, setActiveTab] = useState('Today');
   
   // Mock data for appointments
-  const appointments = [
-    { 
-      id: 1, 
-      clientName: 'Micheal Brown', 
-      time: '10:30 AM', 
-      service: 'Haircut & Beard Trim', 
-      lastVisit: '2 months ago',
-      status: 'Confirmed',
-      profileImage: null // In a real app, this would be an image URL
-    },
-    { 
-      id: 2, 
-      clientName: 'Micheal Brown', 
-      time: '10:30 AM', 
-      service: 'Haircut & Beard Trim', 
-      lastVisit: '2 months ago',
-      status: 'Confirmed',
-      profileImage: null
-    },
-    { 
-      id: 3, 
-      clientName: 'Micheal Brown', 
-      time: '10:30 AM', 
-      service: 'Haircut & Beard Trim', 
-      lastVisit: '2 months ago',
-      status: 'Pending',
-      profileImage: null
-    },
-    { 
-      id: 4, 
-      clientName: 'Micheal Brown', 
-      time: '10:30 AM', 
-      service: 'Haircut & Beard Trim', 
-      lastVisit: '2 months ago',
-      status: 'Confirmed',
-      profileImage: null
-    },
-  ];
+  // Mock data for appointments - different data for each tab
+  const getTabAppointments = () => {
+    if (activeTab === 'Today') {
+      return [
+        { 
+          id: 1, 
+          clientName: 'Micheal Brown', 
+          time: '10:30 AM', 
+          service: 'Haircut & Beard Trim', 
+          lastVisit: '2 months ago',
+          status: 'Confirmed',
+          profileImage: null // In a real app, this would be an image URL
+        },
+        { 
+          id: 2, 
+          clientName: 'Micheal Brown', 
+          time: '10:30 AM', 
+          service: 'Haircut & Beard Trim', 
+          lastVisit: '2 months ago',
+          status: 'Confirmed',
+          profileImage: null
+        },
+        { 
+          id: 3, 
+          clientName: 'Micheal Brown', 
+          time: '10:30 AM', 
+          service: 'Haircut & Beard Trim', 
+          lastVisit: '2 months ago',
+          status: 'Pending',
+          profileImage: null
+        },
+        { 
+          id: 4, 
+          clientName: 'Micheal Brown', 
+          time: '10:30 AM', 
+          service: 'Haircut & Beard Trim', 
+          lastVisit: '2 months ago',
+          status: 'Confirmed',
+          profileImage: null
+        },
+      ];
+    } else if (activeTab === 'Upcoming') {
+      return [
+        { 
+          id: 1, 
+          clientName: 'Sarah Johnson', 
+          time: '2:00 PM', 
+          service: 'Haircut & Styling', 
+          lastVisit: '3 weeks ago',
+          status: 'Confirmed',
+          profileImage: null
+        },
+        { 
+          id: 2, 
+          clientName: 'James Wilson', 
+          time: '3:30 PM', 
+          service: 'Beard Trim', 
+          lastVisit: '1 month ago',
+          status: 'Pending',
+          profileImage: null
+        },
+        { 
+          id: 3, 
+          clientName: 'Robert Davis', 
+          time: '4:15 PM', 
+          service: 'Haircut & Beard Trim', 
+          lastVisit: '2 weeks ago',
+          status: 'Confirmed',
+          profileImage: null
+        },
+      ];
+    } else { // Past
+      return [
+        { 
+          id: 1, 
+          clientName: 'Emily Chen', 
+          time: '9:00 AM', 
+          service: 'Haircut & Styling', 
+          lastVisit: '1 week ago',
+          status: 'Complete',
+          profileImage: null
+        },
+        { 
+          id: 2, 
+          clientName: 'Michael Rodriguez', 
+          time: '11:30 AM', 
+          service: 'Beard Trim', 
+          lastVisit: '5 days ago',
+          status: 'Complete',
+          profileImage: null
+        },
+        { 
+          id: 3, 
+          clientName: 'Jessica Thompson', 
+          time: '1:45 PM', 
+          service: 'Haircut & Beard Trim', 
+          lastVisit: '3 days ago',
+          status: 'Complete',
+          profileImage: null
+        },
+        { 
+          id: 4, 
+          clientName: 'David Kim', 
+          time: '4:00 PM', 
+          service: 'Haircut & Styling', 
+          lastVisit: 'yesterday',
+          status: 'Complete',
+          profileImage: null
+        },
+      ];
+    }
+  };
   
-  const getStatusStyle = (status: string) => {
-    if (status === 'Confirmed') {
+  const appointments = getTabAppointments();
+  
+  const getStatusStyle = (status: string, activeTab: string) => {
+    if (activeTab === 'Past') {
+      // For Past tab, complete appointments show in green
       return {
-        backgroundColor: '#E3F2FD',
-        color: '#1976D2',
+        backgroundColor: '#E8F5E8',
+        color: '#4CAF50',
       };
-    } else if (status === 'Pending') {
+    } else {
+      // For Today and Upcoming tabs, use original colors
+      if (status === 'Confirmed') {
+        return {
+          backgroundColor: '#E3F2FD',
+          color: '#1976D2',
+        };
+      } else if (status === 'Pending') {
+        return {
+          backgroundColor: '#FFE8D6',
+          color: '#F57C00',
+        };
+      }
       return {
-        backgroundColor: '#FFE8D6',
-        color: '#F57C00',
+        backgroundColor: '#F5F5F5',
+        color: '#666666',
       };
     }
-    return {
-      backgroundColor: '#F5F5F5',
-      color: '#666666',
-    };
   };
   
   const handleMoreOptions = (appointmentId: number) => {
@@ -143,13 +228,15 @@ const appointments = () => {
           
           {/* Right Section - Status & Actions */}
           <View style={styles.statusSection}>
-            <View style={[styles.statusBadge, getStatusStyle(appointment.status)]}>
-              <Text style={[styles.statusText, { color: getStatusStyle(appointment.status).color }]}>{appointment.status}</Text>
+            <View style={styles.statusAndActionsRow}>
+              <View style={[styles.statusBadge, getStatusStyle(appointment.status, activeTab)]}>
+                <Text style={[styles.statusText, { color: getStatusStyle(appointment.status, activeTab).color }]}>{activeTab === 'Past' ? 'Complete' : appointment.status}</Text>
+              </View>
+              
+              <TouchableOpacity style={styles.moreOptionsButton} onPress={() => handleMoreOptions(appointment.id)}>
+                <Ionicons name="ellipsis-vertical" size={20} color={secondaryTextColor} />
+              </TouchableOpacity>
             </View>
-            
-            <TouchableOpacity style={styles.moreOptionsButton} onPress={() => handleMoreOptions(appointment.id)}>
-              <Ionicons name="ellipsis-vertical" size={20} color={secondaryTextColor} />
-            </TouchableOpacity>
           </View>
         </View>
       ))}
@@ -220,8 +307,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   detailsSection: {
-    flex: 1,
-    marginRight: 16,
+    flex: 3/4,
+    // marginRight: 16,
   },
   clientName: {
     fontSize: 14,
@@ -238,13 +325,19 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   statusSection: {
+    flex: 0.3,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
+  statusAndActionsRow: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-end',
   },
   statusBadge: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 7,
     paddingVertical: 8,
     borderRadius: 20,
-    marginBottom: 8,
   },
   statusText: {
     fontSize: 12,
