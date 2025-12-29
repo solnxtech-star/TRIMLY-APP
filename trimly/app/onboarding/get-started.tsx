@@ -1,10 +1,11 @@
 import { StyleSheet, View, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { FontSizes } from '@/constants/theme';
 import CircularProgressButton from '@/components/CircularProgressButton';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
 
@@ -40,14 +41,25 @@ export default function GetStartedScreen() {
       {/* Get Started button */}
       <View style={styles.getStartedButtonContainer}>
         <CircularProgressButton
-          onPress={() => {}}
+          onPress={async () => {
+            try {
+              // Mark onboarding as completed
+              await AsyncStorage.setItem('onboardingCompleted', 'true');
+              // Navigate to the next screen
+              router.push('/auth/role-selection');
+            } catch (error) {
+              console.error('Error marking onboarding as complete:', error);
+              // Navigate anyway even if storage fails
+              router.push('/auth/role-selection');
+            }
+          }}
           progress={0}
           size={56}
-          progressSize={6}
+          progressSize={3}
           progressLength={45}
           staticProgressLength={360}
           arrowColor="#ffffff"
-          destination="/auth/role-selection"
+          handleNavigation={false}
         />
       </View>
       

@@ -3,7 +3,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 
-export default function BusinessServicesScreen() {
+export default function Chat() {
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#C0C0C0', dark: '#404040' }}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { StyleSheet, View, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { Link, router } from 'expo-router';
@@ -6,20 +6,52 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { FontSizes } from '@/constants/theme';
 import CircularProgressButton from '@/components/CircularProgressButton';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
 
 export default function WelcomeScreen() {
   const [progress, setProgress] = useState(0);
   
-  const handleNext = () => {
-    // Simulate progress
-    setProgress(1); // Complete the progress
+  useEffect(() => {
+    const checkOnboardingStatus = async () => {
+      try {
+        const hasCompletedOnboarding = await AsyncStorage.getItem('onboardingCompleted');
+        if (hasCompletedOnboarding === 'true') {
+          router.replace('/auth/role-selection');
+        }
+      } catch (error) {
+        console.error('Error checking onboarding status:', error);
+      }
+    };
     
-    // After a short delay, navigate to the next screen
-    setTimeout(() => {
-      // Navigation is now handled by the button component
-    }, 300);
+    checkOnboardingStatus();
+  }, []);
+  
+  const handleNext = async () => {
+    try {
+      // Check if onboarding has already been completed
+      const hasCompletedOnboarding = await AsyncStorage.getItem('onboardingCompleted');
+      if (hasCompletedOnboarding === 'true') {
+        router.replace('/auth/role-selection');
+        return;
+      }
+      
+      // Simulate progress
+      setProgress(1); // Complete the progress
+      
+      // After a short delay, navigate to the next screen
+      setTimeout(() => {
+        router.push('/onboarding/features');
+      }, 300);
+    } catch (error) {
+      console.error('Error checking onboarding status:', error);
+      // Navigate to next screen if there's an error
+      setProgress(1);
+      setTimeout(() => {
+        router.push('/onboarding/features');
+      }, 300);
+    }
   };
   
   return (
@@ -61,6 +93,7 @@ export default function WelcomeScreen() {
           staticProgressLength={90}
           arrowColor="#ffffff"
           destination="/onboarding/features"
+          handleNavigation={false}
         />
       </View>
     </ThemedView>

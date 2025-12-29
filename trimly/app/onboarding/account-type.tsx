@@ -1,10 +1,11 @@
 import { StyleSheet, View, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { FontSizes } from '@/constants/theme';
 import CircularProgressButton from '@/components/CircularProgressButton';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
 
@@ -40,14 +41,29 @@ export default function AccountTypeScreen() {
       {/* Next button - Will be enabled after selection */}
       <View style={styles.nextButtonContainer}>
         <CircularProgressButton
-          onPress={() => {}}
+          onPress={async () => {
+            try {
+              const hasCompletedOnboarding = await AsyncStorage.getItem('onboardingCompleted');
+              if (hasCompletedOnboarding === 'true') {
+                router.replace('/auth/role-selection');
+              } else {
+                // Normal navigation to next screen if onboarding is not completed
+                router.push('/onboarding/get-started');
+              }
+            } catch (error) {
+              console.error('Error checking onboarding status:', error);
+              // Navigate to next screen in case of error
+              router.push('/onboarding/get-started');
+            }
+          }}
           progress={0}
           size={56}
-          progressSize={5}
+          progressSize={3}
           progressLength={40}
           staticProgressLength={270}
           arrowColor="#ffffff"
           destination="/onboarding/get-started"
+          handleNavigation={false}
         />
       </View>
       

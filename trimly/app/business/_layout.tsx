@@ -5,6 +5,7 @@ import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function BusinessLayout() {
   const colorScheme = useColorScheme();
@@ -27,14 +28,14 @@ export default function BusinessLayout() {
         name="appointments"
         options={{
           title: 'Appointments',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="calendar" color={color} />,
+          tabBarIcon: ({ color }) => <Ionicons name="calendar-outline" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="services"
+        name="chat"
         options={{
-          title: 'Services',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="scissors" color={color} />,
+          title: 'Chat',
+          tabBarIcon: ({ color }) => <Ionicons name="chatbubble-outline" size={24} color={color} />,
         }}
       />
       <Tabs.Screen

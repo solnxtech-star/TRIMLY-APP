@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
 interface CircularProgressButtonProps {
-  onPress: () => void;
+  onPress: () => void | Promise<void>;
   progress?: number; // 0 to 1
   loading?: boolean;
   success?: boolean;
@@ -19,6 +19,7 @@ interface CircularProgressButtonProps {
   arrowColor?: string;
   style?: ViewStyle;
   destination?: string; // Optional destination for navigation
+  handleNavigation?: boolean; // Whether the component should handle navigation (default: true)
 }
 
 const CircularProgressButton: React.FC<CircularProgressButtonProps> = ({
@@ -36,6 +37,7 @@ const CircularProgressButton: React.FC<CircularProgressButtonProps> = ({
   arrowColor = '#ffffff',
   style,
   destination = '/onboarding/features', // Default destination
+  handleNavigation = true, // Default to handling navigation
 }) => {
   const [rotation] = useState(new Animated.Value(0));
   const [successAnimation] = useState(new Animated.Value(0));
@@ -102,11 +104,12 @@ const CircularProgressButton: React.FC<CircularProgressButtonProps> = ({
     }).start();
   };
 
-  const handleButtonPress = () => {
+  const handleButtonPress = async () => {
     if (!disabled && !loading && !success) {
-      onPress();
-      if (destination) {
-        router.push(destination);
+      await onPress();
+      // Only navigate to destination if handleNavigation is true
+      if (destination && handleNavigation) {
+        router.push(destination as any);
       }
     }
   };
