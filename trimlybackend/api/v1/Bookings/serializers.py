@@ -18,6 +18,7 @@ class BookingSerializer(serializers.ModelSerializer):
             'id', 'customer', 'salon_service', 'vendor_service', 
             'date', 'start_time', 'end_time', 'status'
         ]
+        read_only_Fields = ['status']
 
     def validate(self, data):
         salon_service = data.get('salon_service')

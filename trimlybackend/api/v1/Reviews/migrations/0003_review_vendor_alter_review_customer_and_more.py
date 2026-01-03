@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('Reviews', '0002_initial'),
         ('Salons', '0004_alter_salonprofile_address_and_more'),
-        ('Vendor', '0005_rename_service_category_individualvendorprofile_category_and_more'),
+        ('Vendor', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 

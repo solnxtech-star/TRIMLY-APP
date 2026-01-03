@@ -205,17 +205,21 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
-# General Allauth Settings
-# How users can log in: only via email (not username)
-ACCOUNT_LOGIN_METHODS = ['email'] 
+# =========================
+# DJANGO ALLAUTH SETTINGS
+# =========================
 
-# CRITICAL FIX: Must use 'email*', 'password', and 'password2'
-# 'email*' satisfies the mandatory verification requirement.
-# 'password' and 'password2' are the explicit fields used by the registration form.
-ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1', 'password2'] 
-# ACCOUNT_USERNAME_REQUIRED = False
-# ACCOUNT_USER_MODEL_USERNAME_FIELD = None
-# Mandates that the user MUST verify their email before they can log in successfully
+# LOGIN WITH EMAIL ONLY
+ACCOUNT_LOGIN_METHODS = {'email'}
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None  # keep it
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+
+ACCOUNT_SIGNUP_FIELDS = [
+    'email*',
+    'password1*',
+    'password2*',
+]
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 
 REST_AUTH = {
@@ -226,12 +230,15 @@ REST_AUTH = {
     'JWT_AUTH_REFRESH_COOKIE': 'refresh_token', # Optional: Use cookie for refresh token
     'JWT_AUTH_HTTPONLY': True, # Optional security enhancement
     'TOKEN_SERIALIZER': 'dj_rest_auth.serializers.JWTSerializer',
-
+    'USER_MODEL': 'Users.User',
     'REGISTER_SERIALIZER': 'api.v1.Users.serializers.CustomRegisterSerializer',
     'USER_DETAILS_SERIALIZER': 'api.v1.Users.serializers.UserDetailSerializer',
-    'USER_MODEL': 'Users.User',
+    'LOGIN_SERIALIZER': 'api.v1.Users.serializers.EmailLoginSerializer',
 }
-# For development: prints emails (like verification links) to the console/terminal
+
+
+
+# For development: uses mailbox sandbox
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend' 
 # Mailtrap Sandbox SMTP Credentials
 EMAIL_HOST = 'sandbox.smtp.mailtrap.io'

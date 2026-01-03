@@ -1,0 +1,3299 @@
+openapi: 3.0.3
+info:
+  title: Trimly Backend API
+  version: 1.0.0
+  description: API documentation for the Trimly backend services, including authentication
+    and user management.
+paths:
+  /api/v1/auth/google/:
+    post:
+      operationId: api_v1_auth_google_create
+      description: |-
+        class used for social authentications
+        example usage for facebook with access_token
+        -------------
+        from allauth.socialaccount.providers.facebook.views import FacebookOAuth2Adapter
+
+        class FacebookLogin(SocialLoginView):
+            adapter_class = FacebookOAuth2Adapter
+        -------------
+
+        example usage for facebook with code
+
+        -------------
+        from allauth.socialaccount.providers.facebook.views import FacebookOAuth2Adapter
+        from allauth.socialaccount.providers.oauth2.client import OAuth2Client
+
+        class FacebookLogin(SocialLoginView):
+            adapter_class = FacebookOAuth2Adapter
+            client_class = OAuth2Client
+            callback_url = 'localhost:8000'
+        -------------
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SocialLogin'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SocialLogin'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SocialLogin'
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SocialLogin'
+          description: ''
+  /api/v1/auth/login/:
+    post:
+      operationId: api_v1_auth_login_create
+      description: |-
+        Check the credentials and return the REST Token
+        if the credentials are valid and authenticated.
+        Calls Django Auth login method to register User ID
+        in Django session framework
+
+        Accept the following POST parameters: username, password
+        Return the REST Framework Token Object's key.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Login'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Login'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JWT'
+          description: ''
+  /api/v1/auth/logout/:
+    post:
+      operationId: api_v1_auth_logout_create
+      description: |-
+        Calls Django logout method and delete the Token object
+        assigned to the current User object.
+
+        Accepts/Returns nothing.
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestAuthDetail'
+          description: ''
+  /api/v1/auth/password/change/:
+    post:
+      operationId: api_v1_auth_password_change_create
+      description: |-
+        Calls Django Auth SetPasswordForm save method.
+
+        Accepts the following POST parameters: new_password1, new_password2
+        Returns the success/fail message.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordChange'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordChange'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordChange'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestAuthDetail'
+          description: ''
+  /api/v1/auth/password/reset/:
+    post:
+      operationId: api_v1_auth_password_reset_create
+      description: |-
+        Calls Django Auth PasswordResetForm save method.
+
+        Accepts the following POST parameters: email
+        Returns the success/fail message.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordReset'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordReset'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordReset'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestAuthDetail'
+          description: ''
+  /api/v1/auth/password/reset/confirm/:
+    post:
+      operationId: api_v1_auth_password_reset_confirm_create
+      description: |-
+        Password reset e-mail link is confirmed, therefore
+        this resets the user's password.
+
+        Accepts the following POST parameters: token, uid,
+            new_password1, new_password2
+        Returns the success/fail message.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirm'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirm'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirm'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestAuthDetail'
+          description: ''
+  /api/v1/auth/password/reset/confirm/{uid}/{token}/:
+    post:
+      operationId: api_v1_auth_password_reset_confirm_create_2
+      description: |-
+        Password reset e-mail link is confirmed, therefore
+        this resets the user's password.
+
+        Accepts the following POST parameters: token, uid,
+            new_password1, new_password2
+        Returns the success/fail message.
+      parameters:
+      - in: path
+        name: token
+        schema:
+          type: string
+          pattern: ^[-:\w]+$
+        required: true
+      - in: path
+        name: uid
+        schema:
+          type: string
+          pattern: ^[-:\w]+$
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirm'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirm'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirm'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestAuthDetail'
+          description: ''
+  /api/v1/auth/registration/:
+    post:
+      operationId: api_v1_auth_registration_create
+      description: |-
+        Registers a new user.
+
+        Accepts the following POST parameters: username, email, password1, password2.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Register'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Register'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Register'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestAuthDetail'
+          description: ''
+  /api/v1/auth/registration/account-confirm-email/{key}/:
+    post:
+      operationId: api_v1_auth_registration_account_confirm_email_create
+      description: |-
+        Verifies the email associated with the provided key.
+
+        Accepts the following POST parameter: key.
+      parameters:
+      - in: path
+        name: key
+        schema:
+          type: string
+          pattern: ^[-:\w]+$
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyEmail'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VerifyEmail'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VerifyEmail'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestAuthDetail'
+          description: ''
+  /api/v1/auth/registration/resend-email/:
+    post:
+      operationId: api_v1_auth_registration_resend_email_create
+      description: |-
+        Resends another email to an unverified email.
+
+        Accepts the following POST parameter: email.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResendEmailVerification'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ResendEmailVerification'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ResendEmailVerification'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestAuthDetail'
+          description: ''
+  /api/v1/auth/registration/verify-email/:
+    post:
+      operationId: api_v1_auth_registration_verify_email_create
+      description: |-
+        Verifies the email associated with the provided key.
+
+        Accepts the following POST parameter: key.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyEmail'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VerifyEmail'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VerifyEmail'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestAuthDetail'
+          description: ''
+  /api/v1/auth/token/refresh/:
+    post:
+      operationId: api_v1_auth_token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/v1/auth/token/verify/:
+    post:
+      operationId: api_v1_auth_token_verify_create
+      description: |-
+        Takes a token and indicates if it is valid.  This view provides no
+        information about a token's fitness for a particular use.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenVerify'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenVerify'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenVerify'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenVerify'
+          description: ''
+  /api/v1/auth/user/:
+    get:
+      operationId: api_v1_auth_user_retrieve
+      description: |-
+        Reads and updates UserModel fields
+        Accepts GET, PUT, PATCH methods.
+
+        Default accepted fields: username, first_name, last_name
+        Default display fields: pk, username, email, first_name, last_name
+        Read-only fields: pk, email
+
+        Returns UserModel fields.
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetails'
+          description: ''
+    put:
+      operationId: api_v1_auth_user_update
+      description: |-
+        Reads and updates UserModel fields
+        Accepts GET, PUT, PATCH methods.
+
+        Default accepted fields: username, first_name, last_name
+        Default display fields: pk, username, email, first_name, last_name
+        Read-only fields: pk, email
+
+        Returns UserModel fields.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserDetails'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserDetails'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserDetails'
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetails'
+          description: ''
+    patch:
+      operationId: api_v1_auth_user_partial_update
+      description: |-
+        Reads and updates UserModel fields
+        Accepts GET, PUT, PATCH methods.
+
+        Default accepted fields: username, first_name, last_name
+        Default display fields: pk, username, email, first_name, last_name
+        Read-only fields: pk, email
+
+        Returns UserModel fields.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserDetails'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserDetails'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserDetails'
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetails'
+          description: ''
+  /api/v1/auth/users/{id}/:
+    get:
+      operationId: api_v1_auth_users_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetail'
+          description: ''
+  /api/v1/bookings/:
+    get:
+      operationId: api_v1_bookings_list
+      description: Handles bookings for all users (salon, vendors, users)
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Booking'
+          description: ''
+    post:
+      operationId: api_v1_bookings_create
+      description: Handles bookings for all users (salon, vendors, users)
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Booking'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Booking'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Booking'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+          description: ''
+  /api/v1/bookings/{id}/:
+    get:
+      operationId: api_v1_bookings_retrieve
+      description: Handles bookings for all users (salon, vendors, users)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+          description: ''
+    put:
+      operationId: api_v1_bookings_update
+      description: Handles bookings for all users (salon, vendors, users)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Booking'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Booking'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Booking'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+          description: ''
+    patch:
+      operationId: api_v1_bookings_partial_update
+      description: Handles bookings for all users (salon, vendors, users)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBooking'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBooking'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBooking'
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+          description: ''
+    delete:
+      operationId: api_v1_bookings_destroy
+      description: Handles bookings for all users (salon, vendors, users)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/bookings/{id}/cancel/:
+    post:
+      operationId: api_v1_bookings_cancel_create
+      description: Handles bookings for all users (salon, vendors, users)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Booking'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Booking'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Booking'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+          description: ''
+  /api/v1/bookings/{id}/confirm/:
+    post:
+      operationId: api_v1_bookings_confirm_create
+      description: Handles bookings for all users (salon, vendors, users)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Booking'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Booking'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Booking'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+          description: ''
+  /api/v1/category/:
+    get:
+      operationId: api_v1_category_list
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+          description: ''
+    post:
+      operationId: api_v1_category_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Category'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Category'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Category'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+  /api/v1/category/{id}/:
+    get:
+      operationId: api_v1_category_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this service category.
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+    put:
+      operationId: api_v1_category_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this service category.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Category'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Category'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Category'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+    patch:
+      operationId: api_v1_category_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this service category.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCategory'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCategory'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCategory'
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+    delete:
+      operationId: api_v1_category_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this service category.
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/salons/:
+    get:
+      operationId: api_v1_salons_list
+      description: |-
+        "
+        A viewset for viewing and editing salon instances.
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SalonProfile'
+          description: ''
+    post:
+      operationId: api_v1_salons_create
+      description: |-
+        "
+        A viewset for viewing and editing salon instances.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalonProfile'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SalonProfile'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SalonProfile'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalonProfile'
+          description: ''
+  /api/v1/salons/{id}/availability/:
+    get:
+      operationId: api_v1_salons_availability_list
+      description: Instantiates and Returns Salon Avalaibility
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Availaibility'
+          description: ''
+    post:
+      operationId: api_v1_salons_availability_create
+      description: Instantiates and Returns Salon Avalaibility
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Availaibility'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Availaibility'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Availaibility'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Availaibility'
+          description: ''
+  /api/v1/salons/{id}/services:
+    get:
+      operationId: api_v1_salons_services_list
+      description: Instantiates and Return Salon Services
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SalonServices'
+          description: ''
+    post:
+      operationId: api_v1_salons_services_create
+      description: Instantiates and Return Salon Services
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalonServices'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SalonServices'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SalonServices'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalonServices'
+          description: ''
+  /api/v1/salons/{id}/:
+    get:
+      operationId: api_v1_salons_retrieve
+      description: |-
+        "
+        A viewset for viewing and editing salon instances.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this salon profile.
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalonProfile'
+          description: ''
+    put:
+      operationId: api_v1_salons_update
+      description: |-
+        "
+        A viewset for viewing and editing salon instances.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this salon profile.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalonProfile'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SalonProfile'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SalonProfile'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalonProfile'
+          description: ''
+    patch:
+      operationId: api_v1_salons_partial_update
+      description: |-
+        "
+        A viewset for viewing and editing salon instances.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this salon profile.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSalonProfile'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSalonProfile'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSalonProfile'
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalonProfile'
+          description: ''
+    delete:
+      operationId: api_v1_salons_destroy
+      description: |-
+        "
+        A viewset for viewing and editing salon instances.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this salon profile.
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/salons/{salon_id}/availability-exceptions/:
+    get:
+      operationId: api_v1_salons_availability_exceptions_list
+      description: Instantiates and Returns Salon Avalaibility Exception
+      parameters:
+      - in: path
+        name: salon_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AvailabilityException'
+          description: ''
+    post:
+      operationId: api_v1_salons_availability_exceptions_create
+      description: Instantiates and Returns Salon Avalaibility Exception
+      parameters:
+      - in: path
+        name: salon_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AvailabilityException'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AvailabilityException'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AvailabilityException'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailabilityException'
+          description: ''
+  /api/v1/salons/{salon_id}/gallery/:
+    get:
+      operationId: api_v1_salons_gallery_list
+      description: Handle Salon Gallery and Portfolio
+      parameters:
+      - in: path
+        name: salon_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Gallery'
+          description: ''
+    post:
+      operationId: api_v1_salons_gallery_create
+      description: Handle Salon Gallery and Portfolio
+      parameters:
+      - in: path
+        name: salon_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Gallery'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Gallery'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Gallery'
+          description: ''
+  /api/v1/salons/{salon_id}/services/{id}/:
+    get:
+      operationId: api_v1_salons_services_retrieve
+      description: Retrieves Salon Services objects(Id)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: salon_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalonServices'
+          description: ''
+    put:
+      operationId: api_v1_salons_services_update
+      description: Retrieves Salon Services objects(Id)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: salon_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalonServices'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SalonServices'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SalonServices'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalonServices'
+          description: ''
+    patch:
+      operationId: api_v1_salons_services_partial_update
+      description: Retrieves Salon Services objects(Id)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: salon_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSalonServices'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSalonServices'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSalonServices'
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalonServices'
+          description: ''
+    delete:
+      operationId: api_v1_salons_services_destroy
+      description: Retrieves Salon Services objects(Id)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: salon_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/salons/{salon_id}/slots/:
+    get:
+      operationId: api_v1_salons_slots_retrieve
+      description: Handles returning Available slots to the user
+      parameters:
+      - in: path
+        name: salon_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/search/:
+    get:
+      operationId: api_v1_search_retrieve
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/toggle-status/:
+    patch:
+      operationId: api_v1_toggle_status_partial_update
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/vendors/:
+    get:
+      operationId: api_v1_vendors_list
+      description: |-
+        "
+        A viewset for viewing and editing vendor instances.
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Vendor'
+          description: ''
+    post:
+      operationId: api_v1_vendors_create
+      description: |-
+        "
+        A viewset for viewing and editing vendor instances.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Vendor'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Vendor'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Vendor'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vendor'
+          description: ''
+  /api/v1/vendors/{id}/gallery:
+    get:
+      operationId: api_v1_vendors_gallery_list
+      description: Handle vendor Gallery and Portfolio
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Gallery'
+          description: ''
+    post:
+      operationId: api_v1_vendors_gallery_create
+      description: Handle vendor Gallery and Portfolio
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Gallery'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Gallery'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Gallery'
+          description: ''
+  /api/v1/vendors/{id}/services:
+    get:
+      operationId: api_v1_vendors_services_list
+      description: Instantiates and Return vendor Services
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VendorServices'
+          description: ''
+    post:
+      operationId: api_v1_vendors_services_create
+      description: Instantiates and Return vendor Services
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VendorServices'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VendorServices'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VendorServices'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VendorServices'
+          description: ''
+  /api/v1/vendors/{id}/:
+    get:
+      operationId: api_v1_vendors_retrieve
+      description: |-
+        "
+        A viewset for viewing and editing vendor instances.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this individual vendor profile.
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vendor'
+          description: ''
+    put:
+      operationId: api_v1_vendors_update
+      description: |-
+        "
+        A viewset for viewing and editing vendor instances.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this individual vendor profile.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Vendor'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Vendor'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Vendor'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vendor'
+          description: ''
+    patch:
+      operationId: api_v1_vendors_partial_update
+      description: |-
+        "
+        A viewset for viewing and editing vendor instances.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this individual vendor profile.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedVendor'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedVendor'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedVendor'
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vendor'
+          description: ''
+    delete:
+      operationId: api_v1_vendors_destroy
+      description: |-
+        "
+        A viewset for viewing and editing vendor instances.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this individual vendor profile.
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/vendors/{vendor_id}/availability/:
+    get:
+      operationId: api_v1_vendors_availability_list
+      description: Instantiates and Returns vendor Avalaibility
+      parameters:
+      - in: path
+        name: vendor_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Availaibility'
+          description: ''
+    post:
+      operationId: api_v1_vendors_availability_create
+      description: Instantiates and Returns vendor Avalaibility
+      parameters:
+      - in: path
+        name: vendor_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Availaibility'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Availaibility'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Availaibility'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Availaibility'
+          description: ''
+  /api/v1/vendors/{vendor_id}/availability-exceptions/:
+    get:
+      operationId: api_v1_vendors_availability_exceptions_list
+      description: Instantiates and Returns vendor Avalaibility Exception
+      parameters:
+      - in: path
+        name: vendor_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AvailabilityException'
+          description: ''
+    post:
+      operationId: api_v1_vendors_availability_exceptions_create
+      description: Instantiates and Returns vendor Avalaibility Exception
+      parameters:
+      - in: path
+        name: vendor_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AvailabilityException'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AvailabilityException'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AvailabilityException'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailabilityException'
+          description: ''
+  /api/v1/vendors/{vendor_id}/availability-exceptions/{id}/:
+    get:
+      operationId: api_v1_vendors_availability_exceptions_retrieve
+      description: Instantiates and Returns Vendor Avalaibility Exception object (id)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: vendor_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailabilityException'
+          description: ''
+    put:
+      operationId: api_v1_vendors_availability_exceptions_update
+      description: Instantiates and Returns Vendor Avalaibility Exception object (id)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: vendor_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AvailabilityException'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AvailabilityException'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AvailabilityException'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailabilityException'
+          description: ''
+    patch:
+      operationId: api_v1_vendors_availability_exceptions_partial_update
+      description: Instantiates and Returns Vendor Avalaibility Exception object (id)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: vendor_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAvailabilityException'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAvailabilityException'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAvailabilityException'
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailabilityException'
+          description: ''
+    delete:
+      operationId: api_v1_vendors_availability_exceptions_destroy
+      description: Instantiates and Returns Vendor Avalaibility Exception object (id)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: vendor_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/vendors/{vendor_id}/availability/{id}/:
+    get:
+      operationId: api_v1_vendors_availability_retrieve
+      description: Instantiates and Returns vendor Avalaibility objects(Id)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: vendor_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Availaibility'
+          description: ''
+    put:
+      operationId: api_v1_vendors_availability_update
+      description: Instantiates and Returns vendor Avalaibility objects(Id)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: vendor_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Availaibility'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Availaibility'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Availaibility'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Availaibility'
+          description: ''
+    patch:
+      operationId: api_v1_vendors_availability_partial_update
+      description: Instantiates and Returns vendor Avalaibility objects(Id)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: vendor_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAvailaibility'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAvailaibility'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAvailaibility'
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Availaibility'
+          description: ''
+    delete:
+      operationId: api_v1_vendors_availability_destroy
+      description: Instantiates and Returns vendor Avalaibility objects(Id)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: vendor_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/vendors/{vendor_id}/available-slots/:
+    get:
+      operationId: api_v1_vendors_available_slots_retrieve
+      description: Handles returning Available slots to the user
+      parameters:
+      - in: path
+        name: vendor_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/vendors/{vendor_id}/services/{id}/:
+    get:
+      operationId: api_v1_vendors_services_retrieve
+      description: Retrieves vendor Services objects(Id)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: vendor_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VendorServices'
+          description: ''
+    put:
+      operationId: api_v1_vendors_services_update
+      description: Retrieves vendor Services objects(Id)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: vendor_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VendorServices'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VendorServices'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VendorServices'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VendorServices'
+          description: ''
+    patch:
+      operationId: api_v1_vendors_services_partial_update
+      description: Retrieves vendor Services objects(Id)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: vendor_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedVendorServices'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedVendorServices'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedVendorServices'
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VendorServices'
+          description: ''
+    delete:
+      operationId: api_v1_vendors_services_destroy
+      description: Retrieves vendor Services objects(Id)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: vendor_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+components:
+  schemas:
+    AvailabilityException:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        date:
+          type: string
+          format: date
+        is_available:
+          type: boolean
+        start_time:
+          type: string
+          format: time
+          nullable: true
+        end_time:
+          type: string
+          format: time
+          nullable: true
+        salon:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        vendor:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+      required:
+      - date
+      - id
+      - salon
+      - vendor
+    Availaibility:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        day_of_week:
+          allOf:
+          - $ref: '#/components/schemas/DayOfWeekEnum'
+          minimum: -2147483648
+          maximum: 2147483647
+        start_time:
+          type: string
+          format: time
+        end_time:
+          type: string
+          format: time
+        salon:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        vendor:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+      required:
+      - end_time
+      - id
+      - salon
+      - start_time
+      - vendor
+    Booking:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        customer:
+          type: string
+          format: uuid
+        salon_service:
+          type: string
+          format: uuid
+          nullable: true
+        vendor_service:
+          type: string
+          format: uuid
+          nullable: true
+        date:
+          type: string
+          format: date
+        start_time:
+          type: string
+          format: time
+        end_time:
+          type: string
+          format: time
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+      required:
+      - customer
+      - date
+      - end_time
+      - id
+      - start_time
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - name
+    DayOfWeekEnum:
+      enum:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      type: integer
+      description: |-
+        * `0` - Monday
+        * `1` - Tuesday
+        * `2` - Wednesday
+        * `3` - Thursday
+        * `4` - Friday
+        * `5` - Saturday
+        * `6` - Sunday
+    Gallery:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        salon:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        vendor:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        caption:
+          type: string
+          maxLength: 255
+        image:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - image
+      - salon
+      - vendor
+    GenderEnum:
+      enum:
+      - male
+      - female
+      type: string
+      description: |-
+        * `male` - male
+        * `female` - female
+    IndividualVendor:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        date_of_birth:
+          type: string
+          format: date-time
+          readOnly: true
+        bio:
+          type: string
+        profile_pic:
+          type: string
+          nullable: true
+          title: Image
+        years_of_experience:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        Gender:
+          $ref: '#/components/schemas/GenderEnum'
+        latitude:
+          type: string
+          maxLength: 100
+        longitude:
+          type: string
+          maxLength: 100
+        total_earnings:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+        is_active:
+          type: boolean
+        is_available:
+          type: boolean
+        worker:
+          type: string
+          format: uuid
+        category:
+          type: integer
+          nullable: true
+      required:
+      - bio
+      - date_of_birth
+      - latitude
+      - longitude
+      - worker
+      - years_of_experience
+    JWT:
+      type: object
+      description: Serializer for JWT authentication.
+      properties:
+        access:
+          type: string
+        refresh:
+          type: string
+        user:
+          $ref: '#/components/schemas/UserDetails'
+      required:
+      - access
+      - refresh
+      - user
+    Login:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+      required:
+      - password
+    PasswordChange:
+      type: object
+      properties:
+        new_password1:
+          type: string
+          maxLength: 128
+        new_password2:
+          type: string
+          maxLength: 128
+      required:
+      - new_password1
+      - new_password2
+    PasswordReset:
+      type: object
+      description: Serializer for requesting a password reset e-mail.
+      properties:
+        email:
+          type: string
+          format: email
+      required:
+      - email
+    PasswordResetConfirm:
+      type: object
+      description: Serializer for confirming a password reset attempt.
+      properties:
+        new_password1:
+          type: string
+          maxLength: 128
+        new_password2:
+          type: string
+          maxLength: 128
+        uid:
+          type: string
+        token:
+          type: string
+      required:
+      - new_password1
+      - new_password2
+      - token
+      - uid
+    PatchedAvailabilityException:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        date:
+          type: string
+          format: date
+        is_available:
+          type: boolean
+        start_time:
+          type: string
+          format: time
+          nullable: true
+        end_time:
+          type: string
+          format: time
+          nullable: true
+        salon:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        vendor:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+    PatchedAvailaibility:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        day_of_week:
+          allOf:
+          - $ref: '#/components/schemas/DayOfWeekEnum'
+          minimum: -2147483648
+          maximum: 2147483647
+        start_time:
+          type: string
+          format: time
+        end_time:
+          type: string
+          format: time
+        salon:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        vendor:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+    PatchedBooking:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        customer:
+          type: string
+          format: uuid
+        salon_service:
+          type: string
+          format: uuid
+          nullable: true
+        vendor_service:
+          type: string
+          format: uuid
+          nullable: true
+        date:
+          type: string
+          format: date
+        start_time:
+          type: string
+          format: time
+        end_time:
+          type: string
+          format: time
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+    PatchedCategory:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedSalonProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        owner:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        category:
+          allOf:
+          - $ref: '#/components/schemas/Category'
+          readOnly: true
+        about:
+          type: string
+          nullable: true
+        address:
+          type: string
+          nullable: true
+          maxLength: 255
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,16})?$
+          nullable: true
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,16})?$
+          nullable: true
+        profile_pic:
+          type: string
+          nullable: true
+          title: Image
+        salon_portfolio:
+          type: array
+          items:
+            $ref: '#/components/schemas/Gallery'
+          readOnly: true
+        links:
+          type: string
+          maxLength: 255
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        is_open:
+          type: boolean
+        salon_services:
+          type: array
+          items:
+            $ref: '#/components/schemas/SalonServices'
+          readOnly: true
+        salon_reviews:
+          type: array
+          items:
+            $ref: '#/components/schemas/Review'
+          readOnly: true
+    PatchedSalonServices:
+      type: object
+      properties:
+        salon:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        duration_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+    PatchedUserDetails:
+      type: object
+      description: User model w/o password
+      properties:
+        pk:
+          type: string
+          format: uuid
+          readOnly: true
+          title: Id
+        email:
+          type: string
+          format: email
+          readOnly: true
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+    PatchedVendor:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        worker:
+          type: string
+          format: uuid
+          readOnly: true
+        category:
+          allOf:
+          - $ref: '#/components/schemas/Category'
+          readOnly: true
+        bio:
+          type: string
+        profile_pic:
+          type: string
+          nullable: true
+          title: Image
+        years_of_experience:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        Gender:
+          $ref: '#/components/schemas/GenderEnum'
+        is_active:
+          type: boolean
+        vendor_services:
+          type: array
+          items:
+            $ref: '#/components/schemas/VendorServices'
+          readOnly: true
+        vendor_portfolio:
+          type: array
+          items:
+            $ref: '#/components/schemas/Gallery'
+          readOnly: true
+        vendor_reviews:
+          type: array
+          items:
+            $ref: '#/components/schemas/Review'
+          readOnly: true
+    PatchedVendorServices:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        duration_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        vendor:
+          type: string
+          format: uuid
+          readOnly: true
+        categories:
+          type: array
+          items:
+            type: integer
+    Register:
+      type: object
+      properties:
+        username:
+          type: string
+          maxLength: 0
+          minLength: 1
+        email:
+          type: string
+          format: email
+        password1:
+          type: string
+          writeOnly: true
+        password2:
+          type: string
+          writeOnly: true
+      required:
+      - email
+      - password1
+      - password2
+      - username
+    ResendEmailVerification:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+      required:
+      - email
+    RestAuthDetail:
+      type: object
+      properties:
+        detail:
+          type: string
+          readOnly: true
+      required:
+      - detail
+    Review:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        customer:
+          type: string
+          format: uuid
+        customer_name:
+          type: string
+          nullable: true
+          readOnly: true
+        rating:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        review:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - customer
+      - customer_name
+      - id
+    RoleEnum:
+      enum:
+      - customer
+      - individual_vendor
+      - salon_owner
+      - admin
+      type: string
+      description: |-
+        * `customer` - Customer
+        * `individual_vendor` - Individual Vendor
+        * `salon_owner` - Salon Owner
+        * `admin` - admin
+    SalonOwner:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        bio:
+          type: string
+        profile_pic:
+          type: string
+          nullable: true
+          title: Image
+        address:
+          type: string
+          maxLength: 255
+        date_of_birth:
+          type: string
+          format: date-time
+          readOnly: true
+        Gender:
+          $ref: '#/components/schemas/GenderEnum'
+        user:
+          type: string
+          format: uuid
+      required:
+      - Gender
+      - address
+      - date_of_birth
+      - user
+    SalonProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        owner:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        category:
+          allOf:
+          - $ref: '#/components/schemas/Category'
+          readOnly: true
+        about:
+          type: string
+          nullable: true
+        address:
+          type: string
+          nullable: true
+          maxLength: 255
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,16})?$
+          nullable: true
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,16})?$
+          nullable: true
+        profile_pic:
+          type: string
+          nullable: true
+          title: Image
+        salon_portfolio:
+          type: array
+          items:
+            $ref: '#/components/schemas/Gallery'
+          readOnly: true
+        links:
+          type: string
+          maxLength: 255
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        is_open:
+          type: boolean
+        salon_services:
+          type: array
+          items:
+            $ref: '#/components/schemas/SalonServices'
+          readOnly: true
+        salon_reviews:
+          type: array
+          items:
+            $ref: '#/components/schemas/Review'
+          readOnly: true
+      required:
+      - category
+      - created_at
+      - id
+      - name
+      - owner
+      - salon_portfolio
+      - salon_reviews
+      - salon_services
+    SalonServices:
+      type: object
+      properties:
+        salon:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        duration_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+      required:
+      - categories
+      - name
+      - salon
+    SocialLogin:
+      type: object
+      properties:
+        access_token:
+          type: string
+        code:
+          type: string
+        id_token:
+          type: string
+    StatusEnum:
+      enum:
+      - pending
+      - confirmed
+      - cancelled
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `confirmed` - Confirmed
+        * `cancelled` - Cancelled
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    TokenVerify:
+      type: object
+      properties:
+        token:
+          type: string
+          writeOnly: true
+      required:
+      - token
+    UserDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        username:
+          type: string
+          nullable: true
+          maxLength: 150
+        phone_number:
+          type: string
+          nullable: true
+          maxLength: 20
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        salon_profile:
+          $ref: '#/components/schemas/SalonOwner'
+        vendor_profile:
+          $ref: '#/components/schemas/IndividualVendor'
+      required:
+      - email
+      - id
+    UserDetails:
+      type: object
+      description: User model w/o password
+      properties:
+        pk:
+          type: string
+          format: uuid
+          readOnly: true
+          title: Id
+        email:
+          type: string
+          format: email
+          readOnly: true
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+      required:
+      - email
+      - pk
+    Vendor:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        worker:
+          type: string
+          format: uuid
+          readOnly: true
+        category:
+          allOf:
+          - $ref: '#/components/schemas/Category'
+          readOnly: true
+        bio:
+          type: string
+        profile_pic:
+          type: string
+          nullable: true
+          title: Image
+        years_of_experience:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        Gender:
+          $ref: '#/components/schemas/GenderEnum'
+        is_active:
+          type: boolean
+        vendor_services:
+          type: array
+          items:
+            $ref: '#/components/schemas/VendorServices'
+          readOnly: true
+        vendor_portfolio:
+          type: array
+          items:
+            $ref: '#/components/schemas/Gallery'
+          readOnly: true
+        vendor_reviews:
+          type: array
+          items:
+            $ref: '#/components/schemas/Review'
+          readOnly: true
+      required:
+      - bio
+      - category
+      - id
+      - vendor_portfolio
+      - vendor_reviews
+      - vendor_services
+      - worker
+      - years_of_experience
+    VendorServices:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        duration_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        vendor:
+          type: string
+          format: uuid
+          readOnly: true
+        categories:
+          type: array
+          items:
+            type: integer
+      required:
+      - categories
+      - id
+      - name
+      - vendor
+    VerifyEmail:
+      type: object
+      properties:
+        key:
+          type: string
+          writeOnly: true
+      required:
+      - key
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

@@ -19,7 +19,7 @@ class User(AbstractUser):
     username = models.CharField(max_length=150, unique=False, null=True, blank=True) 
     
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['phone_number', 'first_name', 'last_name'] # Add fields you REQUIRE at sign up
+    REQUIRED_FIELDS = [] # Add fields you REQUIRE at sign up
     objects = CustomUserManager()
 
     def __str__(self):
