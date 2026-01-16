@@ -40,7 +40,13 @@ export default function Salons() {
             <IconSymbol name="heart" size={20} color="#FFFFFF" style={styles.heartIcon} />
           </View>
           <View style={styles.textOverlay}>
-            <ThemedText style={styles.salonName}>Slay Best Saloon</ThemedText>
+            <View style={styles.salonInfoContainer}>
+              <ThemedText style={styles.salonName}>Slay Best Saloon</ThemedText>
+              <View style={styles.ratingPill}>
+                <IconSymbol name="star.fill" size={12} color="#FFD700" />
+                <ThemedText style={styles.ratingText}>4.8</ThemedText>
+              </View>
+            </View>
           </View>
         </TouchableOpacity>
         
@@ -54,14 +60,17 @@ export default function Salons() {
           <View style={styles.overlay}>
             <ThemedText style={styles.comingSoonText}>Coming Soon!</ThemedText>
           </View>
-          <View style={styles.overlay}>
-            <ThemedText style={styles.comingSoonText}>Coming Soon!</ThemedText>
-          </View>
           <View style={styles.heartIconBackground}>
             <IconSymbol name="heart" size={20} color="#FFFFFF" style={styles.heartIcon} />
           </View>
           <View style={styles.textOverlay}>
-            <ThemedText style={styles.salonName}>Slay Best Saloon</ThemedText>
+            <View style={styles.salonInfoContainer}>
+              <ThemedText style={styles.salonName}>Slay Best Saloon</ThemedText>
+              <View style={styles.ratingPill}>
+                <IconSymbol name="star.fill" size={12} color="#FFD700" />
+                <ThemedText style={styles.ratingText}>4.7</ThemedText>
+              </View>
+            </View>
           </View>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.card, styles.secondCard]} onPress={() => router.push('/client/salons')}>
@@ -77,7 +86,13 @@ export default function Salons() {
             <IconSymbol name="heart" size={20} color="#FFFFFF" style={styles.heartIcon} />
           </View>
           <View style={styles.textOverlay}>
-            <ThemedText style={styles.salonName}>Slay Best Saloon</ThemedText>
+            <View style={styles.salonInfoContainer}>
+              <ThemedText style={styles.salonName}>Slay Best Saloon</ThemedText>
+              <View style={styles.ratingPill}>
+                <IconSymbol name="star.fill" size={12} color="#FFD700" />
+                <ThemedText style={styles.ratingText}>4.9</ThemedText>
+              </View>
+            </View>
           </View>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.card, styles.secondCard]} onPress={() => router.push('/client/salons')}>
@@ -93,23 +108,13 @@ export default function Salons() {
             <IconSymbol name="heart" size={20} color="#FFFFFF" style={styles.heartIcon} />
           </View>
           <View style={styles.textOverlay}>
-            <ThemedText style={styles.salonName}>Slay Best Saloon</ThemedText>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.card, styles.secondCard]} onPress={() => router.push('/client/salons')}>
-          <Image 
-            source={require('@/assets/stock/rated.png')} 
-            style={styles.cardBackground}
-            resizeMode="cover"
-          />
-          <View style={styles.overlay}>
-            <ThemedText style={styles.comingSoonText}>Coming Soon!</ThemedText>
-          </View>
-          <View style={styles.heartIconBackground}>
-            <IconSymbol name="heart" size={20} color="#FFFFFF" style={styles.heartIcon} />
-          </View>
-          <View style={styles.textOverlay}>
-            <ThemedText style={styles.salonName}>Slay Best Saloon</ThemedText>
+            <View style={styles.salonInfoContainer}>
+              <ThemedText style={styles.salonName}>Slay Best Saloon</ThemedText>
+              <View style={styles.ratingPill}>
+                <IconSymbol name="star.fill" size={12} color="#FFD700" />
+                <ThemedText style={styles.ratingText}>4.6</ThemedText>
+              </View>
+            </View>
           </View>
         </TouchableOpacity>
       </ScrollView>
@@ -198,5 +203,25 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.xxxl,
     fontWeight: 'bold',
     color: '#FFFFFF',
+  },
+  salonInfoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  ratingPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    gap: 4,
+  },
+  ratingText: {
+    fontSize: FontSizes.sm,
+    fontWeight: '600',
+    color: '#000000',
   },
 });

@@ -91,6 +91,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
+    boxShadow: '0px 1.8px 2px rgb(0, 0, 0)',
+    elevation: 2,
+    shadowColor: 'rgb(0, 0, 0)',
+    shadowOffset: { width: 5, height: 4 },
+    shadowRadius: 0,
+    marginTop: 8
   },
 
   serviceIcon: {
@@ -100,7 +106,7 @@ const styles = StyleSheet.create({
   },
   serviceName: {
     fontSize: FontSizes.sm, // 12
-    fontWeight: '500',
+    fontWeight: '700',
     textAlign: 'center',
   },
 });

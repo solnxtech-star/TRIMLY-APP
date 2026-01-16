@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
     flex: 1,
     lineHeight: 15,
     width: '100%',
-    textShadowColor: 'rgba(27, 76, 3, 0.24)',
+    textShadowColor: 'rgba(27, 76, 3, 0.15)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
   },
