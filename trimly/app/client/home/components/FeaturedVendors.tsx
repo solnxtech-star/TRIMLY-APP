@@ -28,24 +28,30 @@ export default function FeaturedVendors() {
         {/* Vendor Card 1 */}
         <TouchableOpacity style={styles.card} onPress={() => router.push('/client/business-details/2')}>
           <Image 
-            source={require('@/assets/stock/img.png')} 
+            source={require('@/assets/images/4.jpg')} 
             style={styles.cardBackground}
             resizeMode="cover"
           />
           <View style={styles.textOverlay}>
             <ThemedText style={styles.vendorName}>Vendor Name</ThemedText>
+            <View style={styles.ratingContainer}>
+              <ThemedText style={styles.rating}>★ 4.8</ThemedText>
+            </View>
           </View>
         </TouchableOpacity>
         
         {/* Vendor Card 2 */}
-        <TouchableOpacity style={[styles.card, styles.secondCard]} onPress={() => router.push('/business/2')}>
+        <TouchableOpacity style={[styles.card, styles.secondCard]} onPress={() => router.push('/client/business-details/2')}>
           <Image 
-            source={require('@/assets/stock/special.jpg')} 
+            source={require('@/assets/images/3.jpg')} 
             style={styles.cardBackground}
             resizeMode="cover"
           />
           <View style={styles.textOverlay}>
             <ThemedText style={styles.vendorName}>Another Vendor</ThemedText>
+            <View style={styles.ratingContainer}>
+              <ThemedText style={styles.rating}>★ 4.5</ThemedText>
+            </View>
           </View>
         </TouchableOpacity>
       </ScrollView>
@@ -91,17 +97,35 @@ const styles = StyleSheet.create({
   },
   cardBackground: {
     width: '100%',
-    height: '100%',
+    height: '150%',
     borderRadius: 16,
   },
   textOverlay: {
     position: 'absolute',
     bottom: 12,
     left: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '90%'
   },
   vendorName: {
     fontSize: FontSizes.md, // 14
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: 'white',
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  },
+  ratingContainer: {
+    marginTop: 4,
+  },
+  rating: {
+    fontSize: FontSizes.sm, // 12
+    fontWeight: '500',
+    color: 'yellow',
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
 });

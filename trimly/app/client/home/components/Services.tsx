@@ -7,11 +7,11 @@ export default function Services() {
   const router = useRouter();
   
   const services = [
-    { id: 1, name: 'Haircut', icon: require('@/assets/icon/haircut.png') },
-    { id: 2, name: 'Hair Styling', icon: require('@/assets/icon/haircut.png') },
+    { id: 1, name: 'Haircut', icon: require('@/assets/icon/beard.png') },
+    { id: 2, name: 'Hair Styling', icon: require('@/assets/icon/styling.png') },
     { id: 3, name: 'Nails', icon: require('@/assets/icon/nails.png') },
     { id: 4, name: 'Facials & Skincare', icon: require('@/assets/icon/makeup.png') },
-    { id: 5, name: 'Lashes & Brows', icon: require('@/assets/icon/makeup.png') },
+    { id: 5, name: 'Lashes & Brows', icon: require('@/assets/icon/lashes.png') },
   ];
   
   const handleSeeAll = () => {
@@ -25,7 +25,7 @@ export default function Services() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <ThemedText style={styles.title}>Services</ThemedText>
+        <ThemedText style={styles.title}>Categories</ThemedText>
         <TouchableOpacity onPress={handleSeeAll}>
           <ThemedText style={styles.seeAllText}>See all</ThemedText>
         </TouchableOpacity>
@@ -82,17 +82,19 @@ const styles = StyleSheet.create({
     width: 72,
   },
   iconContainer: {
-    width: 72,
-    height: 72,
+    width: 52,
+    height: 52,
     borderRadius: 36,
     backgroundColor: '#2D8659',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
   },
+
   serviceIcon: {
-    width: 28,
-    height: 28,
+    width: 34,
+    height: 34,
+    resizeMode: 'contain',
   },
   serviceName: {
     fontSize: FontSizes.sm, // 12

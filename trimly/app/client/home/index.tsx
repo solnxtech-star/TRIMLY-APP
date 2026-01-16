@@ -22,7 +22,7 @@ export default function HomeScreen() {
           <SpecialForYou />
           <Services />
           <Salons />
-          <TopRatedSalons />
+          {/* <TopRatedSalons /> */}
           <FeaturedVendors />
         </ScrollView>
       </ThemedView>
