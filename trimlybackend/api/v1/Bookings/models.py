@@ -36,23 +36,40 @@ class Booking(models.Model):
     date = models.DateField()
     start_time = models.TimeField()
     end_time = models.TimeField()
-
+    payment_reference = models.CharField(max_length=20, null=True, blank=True)
     status = models.CharField(
         max_length=20,
         choices=[
             ("pending", "Pending"),
             ("confirmed", "Confirmed"),
-            ("cancelled", "Cancelled"),
+            ("completed", "Completed"),
             ("cancelled", "Cancelled"),
         ],
         default="pending",
     )
-
+    vendor_payout_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ["-created_at"]
 
+    @property
+    def get_vendor_user(self):
+        """Returns the User object of the person providing the service"""
+        if self.vendor_service:
+            return self.vendor_service.vendor.worker
+        return self.salon_service.salon.owner
+    @property
+    def get_vendor_wallet(self):
+        """Returns the Wallet of the barber or salon owner"""
+        vendor_user = self.get_vendor_user
+        return vendor_user.wallet 
+    @property
+    def total_service_price(self): # Rename this so it's not confusing
+        if self.vendor_service:
+            return self.vendor_service.price
+        return self.salon_service.price
+    @property
     def __str__(self):
         return f"Booking {self.id} - {self.customer}"
 

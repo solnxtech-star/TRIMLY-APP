@@ -1,3 +1,4 @@
+from api.v1.Payments.models import Transaction
 from .serializers import BookingSerializer
 from rest_framework.viewsets import ModelViewSet
 from rest_framework import  permissions
@@ -9,7 +10,7 @@ from .serializers import BookingSerializer
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
-
+from django.db import transaction
 
 class BookingViewSet(ModelViewSet):
     """
@@ -45,7 +46,7 @@ class BookingViewSet(ModelViewSet):
 
         if user.role == "individual_vendor":
             return Booking.objects.filter(
-                vendor_service__vendor=user
+                vendor_service__vendor__worker=user
             )
 
         return Booking.objects.filter(customer=user)
@@ -89,20 +90,45 @@ class BookingViewSet(ModelViewSet):
             status=status.HTTP_200_OK
         )
 
-@action(detail=True, methods=["post"])
-def complete(self, request, pk=None):
-    booking = self.get_object()
 
-    if booking.status != "confirmed":
-        return Response(
-            {"detail": "Only confirmed bookings can be completed."},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+    @action(detail=True, methods=["post"])
+    def complete(self, request, pk=None):
+        booking = self.get_object()
 
-    booking.status = "completed"
-    booking.save(update_fields=["status"])
+        # 1. Validation
+        if booking.status != "confirmed":
+            return Response(
+                {"detail": "Only confirmed bookings can be completed."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-    return Response(
-        {"detail": "Booking completed."},
-        status=status.HTTP_200_OK
-    )
+        # 2. Financial Logic (The "Money Move")
+        try:
+            with transaction.atomic():
+                # Update Status
+                booking.status = "completed"
+                booking.save(update_fields=["status"])
+
+                # Release Funds from Pending to Available
+                wallet = booking.get_vendor_wallet # Using the helper we discussed
+                amount_to_release = booking.vendor_payout_amount # Stored during the Webhook
+
+                wallet.pending_balance -= amount_to_release
+                wallet.available_balance += amount_to_release
+                wallet.save()
+
+                # Record the move in your Transaction ledger
+                Transaction.objects.create(
+                    wallet=wallet,
+                    amount=amount_to_release,
+                    tx_type='payout_release',
+                    status='completed',
+                    booking_id = booking.id,
+                    tx_ref=f"RELEASE-{booking.id}"
+                )
+
+            return Response({"detail": "Booking completed and funds released."}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            # If anything fails (like a database error), the status stays 'confirmed'
+            return Response({"detail": f"Error releasing funds: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

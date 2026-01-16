@@ -177,7 +177,9 @@ CSRF_TRUSTED_ORIGINS = [
     "https://*.onrender.com",
     "http://localhost:8000",
     "http://127.0.0.1:8000",
+    'https://interconfessional-erna-unheaded.ngrok-free.dev'
 ]
+ALLOWED_HOSTS = ['.ngrok-free.dev', 'localhost', '127.0.0.1']
 
 from datetime import timedelta
 
@@ -264,7 +266,9 @@ SPECTACULAR_SETTINGS = {
         "persistAuthorization": True,
         # This is the magic line that fixes CSRF
         "withCredentials": True, 
+        
     },
+    'SCHEMA_PATH_PREFIX': r'/api/v[0-9]/',
 }
 
 
@@ -280,3 +284,5 @@ CLOUDINARY_STORAGE = {
 }
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+FLW_SECRET_HASH = os.getenv("FLW_SECRET_HASH")
+FLW_SECRET_KEY = os.getenv("FLW_SECRET_KEY")

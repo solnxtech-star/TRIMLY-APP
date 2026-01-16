@@ -27,8 +27,11 @@ class SalonProfile(models.Model):
 
 class SalonOwnerProfile(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="salon_owner_Profile")
     bio = models.TextField(blank=True)
+    flw_subaccount_id = models.CharField(max_length=50, null=True, blank=True)
+    bank_code = models.CharField(max_length=15, null=True, blank=True)
+    account_number = models.CharField(max_length=15, null=True, blank=True)
     profile_pic = CloudinaryField('image', folder='profile_pic/salon_owner', overwrite=True, resource_type="image", null=True, blank = True)
     address = models.CharField(max_length=255)
     date_of_birth = models.DateTimeField(auto_now_add=True)

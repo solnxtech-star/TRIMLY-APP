@@ -77,7 +77,7 @@ class IsBookingOwnerOrProvider(permissions.BasePermission):
         if obj.salon_service and obj.salon_service.salon.owner == request.user:
             return True
 
-        if obj.vendor_service and obj.vendor_service.vendor == request.user:
+        if obj.vendor_service and obj.vendor_service.vendor.worker == request.user:
             return True
 
         return False
@@ -91,17 +91,13 @@ class BookingActionPermission(permissions.BasePermission):
 
         # COMPLETE / CONFIRM → provider only
         if view.action in ["confirm", "complete"]:
-            return (
-                (obj.salon and obj.salon.owner == request.user) or
-                (obj.vendor and obj.vendor == request.user)
-            )
-
+            return  obj.get_vendor_user == request.user
         # CANCEL → customer or provider
         if view.action == "cancel":
             return (
                 obj.customer == request.user or
-                (obj.salon and obj.salon.owner == request.user) or
-                (obj.vendor and obj.vendor == request.user)
+                (obj.salon_service and obj.salon_service.salon.owner == request.user) or
+                (obj.vendor_service and obj.vendor_service.vendor.worker == request.user)
             )
 
         return False

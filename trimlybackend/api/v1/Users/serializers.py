@@ -116,3 +116,6 @@ class EmailLoginSerializer(LoginSerializer):
         """Map email to username for authentication backend"""
         attrs['username'] = attrs.get('email')
         return super().validate(attrs)
+    
+class WithdrawalRequestSerializer(serializers.Serializer):
+    amount = serializers.DecimalField(max_digits=12, decimal_places=2, min_value=500.00)
