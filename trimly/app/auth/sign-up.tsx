@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, TextInput, View, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { StyleSheet, TextInput, View, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Alert, Image } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Link, useLocalSearchParams, router } from 'expo-router';
@@ -17,6 +17,10 @@ export default function SignUpScreen() {
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
+  const [nameFocused, setNameFocused] = useState(false);
+  const [emailFocused, setEmailFocused] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
+  const [confirmPasswordFocused, setConfirmPasswordFocused] = useState(false);
   
   // Get the role from the URL parameters
   const params = useLocalSearchParams();
@@ -103,17 +107,19 @@ export default function SignUpScreen() {
           <View style={styles.content}>
             {/* Page Header */}
             <ThemedText style={styles.title}>Create Account</ThemedText>
-            <ThemedText style={styles.subtitle}>Join us today to discover amazing services</ThemedText>
+            <ThemedText style={styles.subtitle}>Insert your details to create your account in minutes and start enjoying our services</ThemedText>
             
             {/* Name Input Field */}
-            <ThemedText style={styles.label}>Full Name</ThemedText>
+            {/* <ThemedText style={styles.label}>Full Name</ThemedText> */}
             <TextInput
-              style={[styles.input, nameError ? styles.inputError : (name && !nameError ? styles.inputSuccess : null)]}
+              style={[styles.input, nameFocused && styles.inputFocused, nameError ? styles.inputError : (name && !nameError ? styles.inputSuccess : null)]}
               value={name}
               onChangeText={(text) => {
                 setName(text);
                 if (nameError) setNameError('');
               }}
+              onFocus={() => setNameFocused(true)}
+              onBlur={() => setNameFocused(false)}
               placeholder="Enter your full name"
             />
             {nameError ? (
@@ -129,17 +135,19 @@ export default function SignUpScreen() {
             ) : null}
             
             {/* Email Input Field */}
-            <ThemedText style={styles.label}>Email</ThemedText>
+            {/* <ThemedText style={styles.label}>Email</ThemedText> */}
             <TextInput
-              style={[styles.input, emailError ? styles.inputError : (email && !emailError ? styles.inputSuccess : null)]}
+              style={[styles.input, emailFocused && styles.inputFocused, emailError ? styles.inputError : (email && !emailError ? styles.inputSuccess : null)]}
               value={email}
               onChangeText={(text) => {
                 setEmail(text);
                 if (emailError) setEmailError('');
               }}
+              onFocus={() => setEmailFocused(true)}
+              onBlur={() => setEmailFocused(false)}
               keyboardType="email-address"
               autoCapitalize="none"
-              placeholder="Enter your email"
+              placeholder="Email"
             />
             {emailError ? (
               <View style={styles.errorMessageContainer}>
@@ -154,17 +162,19 @@ export default function SignUpScreen() {
             ) : null}
             
             {/* Password Input Field */}
-            <ThemedText style={styles.label}>Password</ThemedText>
+            {/* <ThemedText style={styles.label}>Password</ThemedText> */}
             <View style={styles.passwordContainer}>
               <TextInput
-                style={[styles.input, passwordError ? styles.inputError : (password && !passwordError ? styles.inputSuccess : null)]}
+                style={[styles.input, passwordFocused && styles.inputFocused, passwordError ? styles.inputError : (password && !passwordError ? styles.inputSuccess : null)]}
                 value={password}
                 onChangeText={(text) => {
                   setPassword(text);
                   if (passwordError) setPasswordError('');
                 }}
+                onFocus={() => setPasswordFocused(true)}
+                onBlur={() => setPasswordFocused(false)}
                 secureTextEntry={!showPassword}
-                placeholder="Create a password"
+                placeholder="Password"
               />
               <TouchableOpacity 
                 style={styles.eyeIcon}
@@ -172,7 +182,7 @@ export default function SignUpScreen() {
               >
                 <Ionicons 
                   name={showPassword ? 'eye-outline' : 'eye-off-outline'} 
-                  size={24} 
+                  size={20} 
                   color="#1A1D2E" 
                 />
               </TouchableOpacity>
@@ -190,17 +200,19 @@ export default function SignUpScreen() {
             ) : null}
             
             {/* Confirm Password Input Field */}
-            <ThemedText style={styles.label}>Confirm Password</ThemedText>
+            {/* <ThemedText style={styles.label}>Confirm Password</ThemedText> */}
             <View style={styles.passwordContainer}>
               <TextInput
-                style={[styles.input, confirmPasswordError ? styles.inputError : (confirmPassword && !confirmPasswordError ? styles.inputSuccess : null)]}
+                style={[styles.input, confirmPasswordFocused && styles.inputFocused, confirmPasswordError ? styles.inputError : (confirmPassword && !confirmPasswordError ? styles.inputSuccess : null)]}
                 value={confirmPassword}
                 onChangeText={(text) => {
                   setConfirmPassword(text);
                   if (confirmPasswordError) setConfirmPasswordError('');
                 }}
+                onFocus={() => setConfirmPasswordFocused(true)}
+                onBlur={() => setConfirmPasswordFocused(false)}
                 secureTextEntry={!showConfirmPassword}
-                placeholder="Confirm your password"
+                placeholder="Confirm Password"
               />
               <TouchableOpacity 
                 style={styles.eyeIcon}
@@ -208,7 +220,7 @@ export default function SignUpScreen() {
               >
                 <Ionicons 
                   name={showConfirmPassword ? 'eye-outline' : 'eye-off-outline'} 
-                  size={24} 
+                  size={20} 
                   color="#1A1D2E" 
                 />
               </TouchableOpacity>
@@ -230,8 +242,42 @@ export default function SignUpScreen() {
               style={styles.signUpButton} 
               onPress={handleSignUp}
             >
-              <ThemedText style={styles.signUpButtonText}>Create Account</ThemedText>
+              <ThemedText style={styles.signUpButtonText}>Register</ThemedText>
             </TouchableOpacity>
+            
+            {/* Divider Section */}
+            <View style={styles.dividerContainer}>
+              <View style={styles.dividerLine} />
+              <ThemedText style={styles.dividerText}>or register</ThemedText>
+              <View style={styles.dividerLine} />
+            </View>
+            
+            {/* Social Sign Up Options */}
+            <View style={styles.socialLoginContainer}>
+              <TouchableOpacity style={styles.socialButton}>
+                <Image 
+                  source={require('@/assets/auth/google.png')} 
+                  style={styles.socialIcon}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+              
+              <TouchableOpacity style={styles.socialButton}>
+                <Image 
+                  source={require('@/assets/auth/facebook.png')} 
+                  style={styles.socialIcon}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+              
+              <TouchableOpacity style={styles.socialButton}>
+                <Image 
+                  source={require('@/assets/auth/apple.png')} 
+                  style={styles.socialIcon}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+            </View>
             
             {/* Sign In Link */}
             <View style={styles.signInContainer}>
@@ -283,15 +329,15 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   title: {
-    fontSize: FontSizes.titleMd, // 24
-    fontWeight: 'bold',
+    fontSize: FontSizes.titleSm, // 24
+    fontWeight: '500',
     color: '#1A1D2E',
     marginBottom: 10,
   },
   subtitle: {
-    fontSize: FontSizes.md, // 14
+    fontSize: FontSizes.sm, // 14
     color: '#6B7280',
-    lineHeight: 22,
+    lineHeight: 15,
     marginBottom: 40,
   },
   label: {
@@ -300,7 +346,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   input: {
-    height: 58,
+    height: 50,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#E5E7EB',
@@ -313,8 +359,14 @@ const styles = StyleSheet.create({
   inputError: {
     borderWidth: 2,
     borderColor: '#EF4444',
+    color: '#EF4444',
   },
   inputSuccess: {
+    borderWidth: 2,
+    borderColor: '#10B981',
+    color: '#10B981',
+  },
+  inputFocused: {
     borderWidth: 2,
     borderColor: '#10B981',
   },
@@ -324,7 +376,7 @@ const styles = StyleSheet.create({
   eyeIcon: {
     position: 'absolute',
     right: 18,
-    top: 20,
+    top: 15,
   },
   errorMessageContainer: {
     flexDirection: 'row',
@@ -347,7 +399,7 @@ const styles = StyleSheet.create({
   },
   signUpButton: {
     backgroundColor: '#2D8A4B',
-    borderRadius: 12,
+    borderRadius: 52,
     height: 56,
     justifyContent: 'center',
     alignItems: 'center',
@@ -371,5 +423,49 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.md, // 14
     color: '#2D8A4B',
     fontWeight: '500',
+  },
+  errorIcon: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#EF4444',
+    color: '#FFFFFF',
+    fontSize: FontSizes.xs, // 10
+    fontWeight: 'bold',
+    textAlign: 'center',
+    lineHeight: 18,
+    marginRight: 8,
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#E5E7EB',
+  },
+  dividerText: {
+    fontSize: FontSizes.md, // 14
+    color: '#1A1D2E',
+    marginHorizontal: 15,
+  },
+  socialLoginContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 50,
+    gap: 20,
+  },
+  socialButton: {
+    width: 40,
+    height: 40,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  socialIcon: {
+    width: 24,
+    height: 24,
   },
 });

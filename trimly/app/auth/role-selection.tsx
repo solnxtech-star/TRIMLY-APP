@@ -29,6 +29,7 @@ export default function RoleSelectionScreen() {
         
         {/* Customer Button - Primary */}
         {/* @ts-ignore */}
+        <View style={{marginBottom: 45}}>
         <Link href={{ pathname: '/auth/getting-started', params: { role: 'customer' } }} style={styles.customerButton}>
           <ThemedText style={styles.customerButtonText}>Customer</ThemedText>
         </Link>
@@ -37,7 +38,8 @@ export default function RoleSelectionScreen() {
         {/* @ts-ignore */}
         <Link href={{ pathname: '/auth/getting-started', params: { role: 'vendor' } }} style={styles.vendorButton}>
           <ThemedText style={styles.vendorButtonText}>Vendor</ThemedText>
-        </Link>
+          </Link>
+          </View>
       </View>
     </ThemedView>
   );
@@ -70,28 +72,28 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#FFFFFF',
-    fontSize: FontSizes.titleMd, // 24
-    fontWeight: 'bold',
-    lineHeight: 44,
-    marginBottom: 12,
+    fontSize: FontSizes.titleSm, // 24
+    fontWeight: '500',
+    // lineHeight: 44,
+    // marginBottom: 12,
     textAlign: 'left',
   },
   description: {
     color: 'rgba(255, 255, 255, 0.85)',
-    fontSize: FontSizes.md, // 14
-    fontWeight: '500',
+    fontSize: FontSizes.sm, // 14
+    // fontWeight: '500',
     lineHeight: 26,
     textAlign: 'left',
-    marginBottom: 40,
+    marginBottom: 20,
   },
   customerButton: {
     width: '100%',
     height: 40,
-    borderRadius: 14,
+    borderRadius: 10,
     backgroundColor: '#00C853', // Vibrant green
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 10,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -102,7 +104,7 @@ const styles = StyleSheet.create({
     elevation: 5,
     textDecorationLine: 'none',
     textAlign: 'center',
-    paddingTop: 5
+    paddingTop: 8
   },
   customerButtonText: {
     color: '#FFFFFF',
@@ -112,7 +114,7 @@ const styles = StyleSheet.create({
   vendorButton: {
     width: '100%',
     height: 40,
-    borderRadius: 14,
+    borderRadius: 10,
     backgroundColor: 'transparent',
     borderColor: '#00C853', // Vibrant green border
     borderWidth: 2,

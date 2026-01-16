@@ -44,14 +44,14 @@ export default function GettingStartedScreen() {
         </Link>
         
         {/* Divider Section */}
-        <View style={styles.dividerContainer}>
+        {/* <View style={styles.dividerContainer}>
           <View style={styles.dividerLine} />
           <ThemedText style={styles.dividerText}>or continue with</ThemedText>
           <View style={styles.dividerLine} />
-        </View>
+        </View> */}
         
         {/* Social Login Options */}
-        <View style={styles.socialLoginContainer}>
+        {/* <View style={styles.socialLoginContainer}>
           <TouchableOpacity style={styles.socialButton}>
             <Image 
               source={require('@/assets/auth/google.png')} 
@@ -75,7 +75,7 @@ export default function GettingStartedScreen() {
               resizeMode="contain"
             />
           </TouchableOpacity>
-        </View>
+        </View> */}
       </View>
     </ThemedView>
   );
@@ -108,28 +108,28 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#FFFFFF',
-    fontSize: FontSizes.titleMd, // 24
-    fontWeight: 'bold',
-    lineHeight: 46,
-    marginBottom: 12,
+    fontSize: FontSizes.titleSm,
+    fontWeight: '500',
+    // lineHeight: 6,
+    // marginBottom: 12,
     textAlign: 'left'
   },
   description: {
     color: 'rgba(255, 255, 255, 0.85)',
-    fontSize: FontSizes.md, // 14
-    fontWeight: '500',
+    fontSize: FontSizes.sm, // 14
+    // fontWeight: '500',
     lineHeight: 22,
     textAlign: 'left',
-    marginBottom: 40,
+    marginBottom: 18,
   },
   loginButton: {
     width: '100%',
     height: 40,
-    borderRadius: 14,
+    borderRadius: 10,
     backgroundColor: '#00C853', // Vibrant green
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 10,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -144,14 +144,14 @@ const styles = StyleSheet.create({
   loginButtonText: {
     color: '#FFFFFF',
     fontSize: FontSizes.md, // 14
-    fontWeight: 'bold',
+    fontWeight: 400,
     letterSpacing: 0.8,
     textAlign: 'center'
   },
   signUpButton: {
     width: '100%',
     height: 40,
-    borderRadius: 14,
+    borderRadius: 10,
     backgroundColor: 'transparent',
     borderColor: '#00C853', // Vibrant green border
     borderWidth: 2,
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   signUpButtonText: {
     color: '#00C853', // Vibrant green text
     fontSize: FontSizes.md, // 14
-    fontWeight: 'bold',
+    // fontWeight: 'bold',
     letterSpacing: 0.8,
     textAlign: 'center',
   },

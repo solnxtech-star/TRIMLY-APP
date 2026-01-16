@@ -77,6 +77,7 @@ export default function SpecialForYou() {
 const styles = StyleSheet.create({
   container: {
     marginVertical: 20,
+    zIndex: 1
   },
   header: {
     flexDirection: 'row',
@@ -86,7 +87,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   title: {
-    fontSize: FontSizes.xl, // 18
+    fontSize: FontSizes.lg, // 18
     fontWeight: '700',
   },
   seeAllText: {

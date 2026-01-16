@@ -12,6 +12,8 @@ export default function Services() {
     { id: 3, name: 'Nails', icon: require('@/assets/icon/nails.png') },
     { id: 4, name: 'Facials & Skincare', icon: require('@/assets/icon/makeup.png') },
     { id: 5, name: 'Lashes & Brows', icon: require('@/assets/icon/lashes.png') },
+    { id: 6, name: 'Massage', icon: require('@/assets/icon/massage.png') },
+    { id: 7, name: 'Tattoo', icon: require('@/assets/icon/tattoo.png') },
   ];
   
   const handleSeeAll = () => {
@@ -62,7 +64,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   title: {
-    fontSize: FontSizes.xl, // 18
+    fontSize: FontSizes.lg, // 18
     fontWeight: '700',
   },
   seeAllText: {

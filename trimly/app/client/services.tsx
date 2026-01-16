@@ -51,7 +51,14 @@ export default function ServicesScreen() {
             onPress={() => router.push('/client/salons')}
           >
             <View style={[styles.iconContainer, { backgroundColor: 'gray' }]}>              
-              <Image source={service.icon} style={styles.serviceIcon} />
+              <Image 
+                source={service.icon} 
+                style={
+                  service.id === 5 || service.id === 6 // Hair Coloring (id 5) and Beard Trimming (id 6)
+                    ? styles.smallIcon
+                    : styles.serviceIcon
+                } 
+              />
             </View>
             <View style={styles.textContainer}>
               <ThemedText style={[styles.serviceName, { color: textColor }]}>{service.name}</ThemedText>
@@ -114,6 +121,10 @@ const styles = StyleSheet.create({
   serviceIcon: {
     width: 28,
     height: 28,
+  },
+  smallIcon: {
+    width: 20,
+    flex: 2/8
   },
   textContainer: {
     flex: 1,

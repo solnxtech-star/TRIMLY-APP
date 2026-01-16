@@ -33,6 +33,9 @@ export default function Salons() {
             style={styles.cardBackground}
             resizeMode="cover"
           />
+          <View style={styles.overlay}>
+            <ThemedText style={styles.comingSoonText}>Coming Soon!</ThemedText>
+          </View>
           <View style={styles.heartIconBackground}>
             <IconSymbol name="heart" size={20} color="#FFFFFF" style={styles.heartIcon} />
           </View>
@@ -48,6 +51,60 @@ export default function Salons() {
             style={styles.cardBackground}
             resizeMode="cover"
           />
+          <View style={styles.overlay}>
+            <ThemedText style={styles.comingSoonText}>Coming Soon!</ThemedText>
+          </View>
+          <View style={styles.overlay}>
+            <ThemedText style={styles.comingSoonText}>Coming Soon!</ThemedText>
+          </View>
+          <View style={styles.heartIconBackground}>
+            <IconSymbol name="heart" size={20} color="#FFFFFF" style={styles.heartIcon} />
+          </View>
+          <View style={styles.textOverlay}>
+            <ThemedText style={styles.salonName}>Slay Best Saloon</ThemedText>
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.card, styles.secondCard]} onPress={() => router.push('/client/salons')}>
+          <Image 
+            source={require('@/assets/stock/rated.png')} 
+            style={styles.cardBackground}
+            resizeMode="cover"
+          />
+          <View style={styles.overlay}>
+            <ThemedText style={styles.comingSoonText}>Coming Soon!</ThemedText>
+          </View>
+          <View style={styles.heartIconBackground}>
+            <IconSymbol name="heart" size={20} color="#FFFFFF" style={styles.heartIcon} />
+          </View>
+          <View style={styles.textOverlay}>
+            <ThemedText style={styles.salonName}>Slay Best Saloon</ThemedText>
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.card, styles.secondCard]} onPress={() => router.push('/client/salons')}>
+          <Image 
+            source={require('@/assets/stock/rated.png')} 
+            style={styles.cardBackground}
+            resizeMode="cover"
+          />
+          <View style={styles.overlay}>
+            <ThemedText style={styles.comingSoonText}>Coming Soon!</ThemedText>
+          </View>
+          <View style={styles.heartIconBackground}>
+            <IconSymbol name="heart" size={20} color="#FFFFFF" style={styles.heartIcon} />
+          </View>
+          <View style={styles.textOverlay}>
+            <ThemedText style={styles.salonName}>Slay Best Saloon</ThemedText>
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.card, styles.secondCard]} onPress={() => router.push('/client/salons')}>
+          <Image 
+            source={require('@/assets/stock/rated.png')} 
+            style={styles.cardBackground}
+            resizeMode="cover"
+          />
+          <View style={styles.overlay}>
+            <ThemedText style={styles.comingSoonText}>Coming Soon!</ThemedText>
+          </View>
           <View style={styles.heartIconBackground}>
             <IconSymbol name="heart" size={20} color="#FFFFFF" style={styles.heartIcon} />
           </View>
@@ -72,11 +129,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   title: {
-    fontSize: FontSizes.xl, // 18
+    fontSize: FontSizes.lg, 
     fontWeight: '700',
   },
   seeAllText: {
-    fontSize: FontSizes.md, // 14
+    fontSize: FontSizes.md, 
     fontWeight: '400',
     color: '#2D8659',
   },
@@ -88,7 +145,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   card: {
-    width: 240,
+    width: 300,
     height: 160,
     borderRadius: 16,
     position: 'relative',
@@ -124,6 +181,22 @@ const styles = StyleSheet.create({
   salonName: {
     fontSize: FontSizes.md, // 14
     fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  comingSoonText: {
+    fontSize: FontSizes.xxxl,
+    fontWeight: 'bold',
     color: '#FFFFFF',
   },
 });

@@ -13,6 +13,8 @@ export default function SignInScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [emailFocused, setEmailFocused] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
   
   // Get the role from the URL parameters
   const params = useLocalSearchParams();
@@ -76,40 +78,48 @@ export default function SignInScreen() {
         <ThemedText style={styles.subtitle}>Welcome back, enter your email and password to continue</ThemedText>
         
         {/* Email Input Field */}
-        <ThemedText style={styles.label}>Email</ThemedText>
+        {/* <ThemedText style={styles.label}>Email</ThemedText> */}
         <TextInput
-          style={[styles.input, emailError ? styles.inputError : (email && !emailError ? styles.inputSuccess : null)]}
+          style={[styles.input, emailFocused && styles.inputFocused, emailError ? styles.inputError : (email && !emailError ? styles.inputSuccess : null)]}
           value={email}
           onChangeText={(text) => {
             setEmail(text);
             if (emailError) setEmailError('');
           }}
+          onFocus={() => setEmailFocused(true)}
+          onBlur={() => setEmailFocused(false)}
           keyboardType="email-address"
           autoCapitalize="none"
+          placeholder='Email'
         />
         {emailError ? (
           <View style={styles.errorMessageContainer}>
             <ThemedText style={styles.errorIcon}>!</ThemedText>
             <ThemedText style={styles.errorMessage}>{emailError}</ThemedText>
           </View>
-        ) : email && !emailError ? (
-          <View style={styles.successMessageContainer}>
-            <Ionicons name="checkmark-circle" size={18} color="#10B981" />
-            <ThemedText style={styles.successMessage}>Valid email</ThemedText>
-          </View>
-        ) : null}
+        )
+        //   : email && !emailError ? (
+        //   <View style={styles.successMessageContainer}>
+        //     <Ionicons name="checkmark-circle" size={18} color="#10B981" />
+        //     <ThemedText style={styles.successMessage}>Valid email</ThemedText>
+        //   </View>
+        // )
+          : null}
         
         {/* Password Input Field */}
-        <ThemedText style={styles.label}>Password</ThemedText>
+        {/* <ThemedText style={styles.label}>Password</ThemedText> */}
         <View style={styles.passwordContainer}>
           <TextInput
-            style={[styles.input, styles.passwordInput, passwordError ? styles.inputError : (password && !passwordError ? styles.inputSuccess : null)]}
+            style={[styles.input, styles.passwordInput, passwordFocused && styles.inputFocused, passwordError ? styles.inputError : (password && !passwordError ? styles.inputSuccess : null)]}
             value={password}
             onChangeText={(text) => {
               setPassword(text);
               if (passwordError) setPasswordError('');
             }}
+            onFocus={() => setPasswordFocused(true)}
+            onBlur={() => setPasswordFocused(false)}
             secureTextEntry={!showPassword}
+            placeholder='Password'
           />
           <TouchableOpacity 
             style={styles.eyeIcon}
@@ -117,7 +127,7 @@ export default function SignInScreen() {
           >
             <Ionicons 
               name={showPassword ? 'eye-outline' : 'eye-off-outline'} 
-              size={24} 
+              size={20} 
               color="#1A1D2E" 
             />
           </TouchableOpacity>
@@ -127,12 +137,14 @@ export default function SignInScreen() {
             <ThemedText style={styles.errorIcon}>!</ThemedText>
             <ThemedText style={styles.errorMessage}>{passwordError}</ThemedText>
           </View>
-        ) : password && !passwordError ? (
-          <View style={styles.successMessageContainer}>
-            <Ionicons name="checkmark-circle" size={18} color="#10B981" />
-            <ThemedText style={styles.successMessage}>Valid password</ThemedText>
-          </View>
-        ) : null}
+        )
+          // : password && !passwordError ? (
+          // <View style={styles.successMessageContainer}>
+          //   <Ionicons name="checkmark-circle" size={18} color="#10B981" />
+          //   <ThemedText style={styles.successMessage}>Valid password</ThemedText>
+          // </View>
+          // )
+            : null}
         
 
         
@@ -211,16 +223,16 @@ const styles = StyleSheet.create({
     paddingTop: 80,
   },
   title: {
-    fontSize: FontSizes.titleMd, // 24
-    fontWeight: 'bold',
+    fontSize: FontSizes.titleSm,
+    fontWeight: '500',
     // color: '#1A1D2E',
-    marginBottom: 10,
+    marginBottom: 5,
     lineHeight: 40
   },
   subtitle: {
-    fontSize: FontSizes.md, // 14
+    fontSize: FontSizes.md,
     color: '#6B7280',
-    lineHeight: 22,
+    lineHeight: 15,
     marginBottom: 30,
   },
   label: {
@@ -229,7 +241,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   input: {
-    height: 58,
+    height: 50,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#E5E7EB',
@@ -242,8 +254,14 @@ const styles = StyleSheet.create({
   inputError: {
     borderWidth: 2,
     borderColor: '#EF4444',
+    color: '#EF4444',
   },
   inputSuccess: {
+    borderWidth: 2,
+    borderColor: '#10B981',
+    color: '#10B981',
+  },
+  inputFocused: {
     borderWidth: 2,
     borderColor: '#10B981',
   },
@@ -256,7 +274,7 @@ const styles = StyleSheet.create({
   eyeIcon: {
     position: 'absolute',
     right: 18,
-    top: 20,
+    top: 13,
   },
   errorMessageContainer: {
     flexDirection: 'row',
@@ -300,7 +318,7 @@ const styles = StyleSheet.create({
   loginButton: {
     backgroundColor: '#2D8A4B',
     borderRadius: 12,
-    height: 56,
+    height: 40,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 35,
@@ -354,11 +372,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   signUpText: {
-    fontSize: FontSizes.md, // 14
+    fontSize: FontSizes.lg,
     color: '#6B7280',
   },
   signUpLink: {
-    fontSize: FontSizes.md, // 14
+    fontSize: FontSizes.md, 
     color: '#2D8A4B',
     fontWeight: '500',
   },

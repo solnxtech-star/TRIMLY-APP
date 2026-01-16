@@ -223,7 +223,7 @@ export default function BusinessDetailsScreen() {
           style={styles.componentNavigator}
           contentContainerStyle={styles.componentNavigatorContent}
         >
-          {['Services', 'Specialist', 'Package', 'Gallery', 'Review'].map((tab) => (
+          {['Services', 'Specialist', 'Review', 'Gallery'].map((tab) => (
             <TouchableOpacity 
               key={tab}
               style={[styles.navTab, activeTab === tab && styles.activeTab]}
@@ -276,7 +276,7 @@ export default function BusinessDetailsScreen() {
             </>
           )}
           
-          {activeTab === 'Package' && (
+          /* {activeTab === 'Package' && (
             <>
               <ThemedText style={styles.tabTitle}>Packages ({packages.length})</ThemedText>
               {packages.map((pkg) => (
@@ -284,7 +284,6 @@ export default function BusinessDetailsScreen() {
                   <Image source={pkg.image} style={styles.packageImage} />
                   <View style={styles.packageInfo}>
                     <ThemedText style={styles.packageTitle}>{pkg.name}</ThemedText>
-                    {/* <View style={styles.packageMetaRow}> */}
                       <View style={styles.packageDurationContainer}>
                         <AntDesign name="clock-circle" size={16} color="#666666" />
                         <ThemedText style={styles.packageDuration}>{pkg.duration}</ThemedText>
@@ -307,7 +306,6 @@ export default function BusinessDetailsScreen() {
                     <View style={styles.packageBottomRow}>
                       <View style={styles.packagePriceContainer}>
                         <ThemedText style={styles.packagePrice}>{pkg.price}</ThemedText>
-                        {/* <ThemedText style={styles.packageOriginalPrice}>{pkg.originalPrice}</ThemedText> */}
                       </View>
                       <TouchableOpacity style={styles.bookNowButton} onPress={() => handleBookPackage(pkg.id)}>
                         <ThemedText style={styles.bookNowButtonText}>Book Now</ThemedText>
@@ -317,20 +315,7 @@ export default function BusinessDetailsScreen() {
                 </View>
               ))}
             </>
-          )}
-          
-          {activeTab === 'Gallery' && (
-            <>
-              <ThemedText style={styles.tabTitle}>Gallery ({galleryImages.length})</ThemedText>
-              <View style={styles.galleryGrid}>
-                {galleryImages.map((item) => (
-                  <View key={item.id} style={styles.galleryImageContainer}>
-                    <Image source={item.image} style={styles.galleryImage} />
-                  </View>
-                ))}
-              </View>
-            </>
-          )}
+          )} */
           
           {activeTab === 'Review' && (
             <>
@@ -358,6 +343,19 @@ export default function BusinessDetailsScreen() {
                   <ThemedText style={styles.reviewText}>{review.text}</ThemedText>
                 </View>
               ))}
+            </>
+          )}
+          
+          {activeTab === 'Gallery' && (
+            <>
+              <ThemedText style={styles.tabTitle}>Gallery ({galleryImages.length})</ThemedText>
+              <View style={styles.galleryGrid}>
+                {galleryImages.map((item) => (
+                  <View key={item.id} style={styles.galleryImageContainer}>
+                    <Image source={item.image} style={styles.galleryImage} />
+                  </View>
+                ))}
+              </View>
             </>
           )}
         </View>
@@ -428,12 +426,13 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.2)',
   },
   infoContainer: {
-    marginTop: 0,
+    marginTop: 15,
     paddingTop: 20,
-    borderTopLeftRadius: 40,
-    borderTopRightRadius: 40,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     paddingHorizontal: 16,
-    zIndex: 2
+    zIndex: 2,
+    backgroundColor: 'white'
   },
   indicator: {
     width: 60,
@@ -456,7 +455,6 @@ const styles = StyleSheet.create({
   locationContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    // marginBottom: 8,
   },
   locationText: {
     fontSize: 14,
@@ -477,8 +475,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingVertical: 16,
-    // borderBottomWidth: 1,
-    // borderBottomColor: '#E5E5E5',
   },
   actionButtonItem: {
     alignItems: 'center',
@@ -505,7 +501,7 @@ const styles = StyleSheet.create({
   },
   navTab: {
     paddingVertical: 8,
-    paddingHorizontal: 10,
+    paddingHorizontal: 5,
     marginRight: 20,
   },
   activeTab: {
@@ -527,7 +523,6 @@ const styles = StyleSheet.create({
   specialistCard: {
     width: '48%',
     borderRadius: 12,
-    // padding: 12,
     marginBottom: 16,
     borderWidth: 1,
     borderColor: '#E5E5E5',
@@ -659,7 +654,6 @@ const styles = StyleSheet.create({
   galleryImageContainer: {
     width: '48%',
     marginBottom: 12,
-    borderWidth: 1,
   },
   galleryImage: {
     width: '100%',
