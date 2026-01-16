@@ -179,7 +179,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:8000",
     'https://interconfessional-erna-unheaded.ngrok-free.dev'
 ]
-ALLOWED_HOSTS = ['.ngrok-free.dev', 'localhost', '127.0.0.1']
+# ALLOWED_HOSTS = ['.ngrok-free.dev', 'localhost', '127.0.0.1']
 
 from datetime import timedelta
 
