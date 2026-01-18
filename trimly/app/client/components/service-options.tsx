@@ -132,7 +132,7 @@ export default function ServiceOptionsScreen() {
               <ThemedText style={[styles.optionDescription, { color: textColor }]}>{option.description}</ThemedText>
               <View style={styles.optionDetails}>
                 <ThemedText style={[styles.price, { color: textColor }]}>{option.price}</ThemedText>
-                <ThemedText style={[styles.duration, { color: textColor }]}>{option.duration}</ThemedText>
+                <ThemedText style={[styles.duration]}>{option.duration}</ThemedText>
               </View>
             </View>
           ))}
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
   },
   title: {
-    fontSize: FontSizes.xl, // 18
+    fontSize: FontSizes.lg, // 18
     fontWeight: '700',
   },
   placeholder: {
@@ -209,16 +209,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    // marginBottom: 12,
   },
   optionName: {
-    fontSize: FontSizes.lg, // 16
+    fontSize: FontSizes.md, // 16
     fontWeight: '700',
-    marginBottom: 4,
+    // marginBottom: 4,
   },
   optionDescription: {
-    fontSize: FontSizes.md, // 14
-    marginBottom: 12,
+    fontSize: FontSizes.sm, // 14
+    // marginBottom: 12,
   },
   optionDetails: {
     flexDirection: 'row',
@@ -226,16 +226,17 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   price: {
-    fontSize: FontSizes.xl, // 18
+    fontSize: FontSizes.md, // 18
     fontWeight: '700',
     color: '#2D8A47',
   },
   duration: {
-    fontSize: FontSizes.md, // 14
+    fontSize: FontSizes.sm, // 14
+    color: 'green'
   },
   bookButton: {
     backgroundColor: '#2D8A47',
-    paddingVertical: 6,
+    paddingVertical: 2,
     paddingHorizontal: 12,
     borderRadius: 20,
     alignItems: 'center',

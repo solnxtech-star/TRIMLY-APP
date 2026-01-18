@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: FontSizes.lg, // 16
+    fontSize: FontSizes.md, // 16
     fontWeight: '600',
     marginLeft: 16,
   },
@@ -167,12 +167,12 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   mainHeader: {
-    fontSize: FontSizes.titleMd, // 24
+    fontSize: FontSizes.titleSm, // 24
     fontWeight: '700',
     marginBottom: 8,
   },
   subHeader: {
-    fontSize: FontSizes.md, // 14
+    fontSize: FontSizes.sm, // 14
   },
   formSection: {
     padding: 16,
@@ -184,11 +184,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   sectionTitle: {
-    fontSize: FontSizes.lg, // 16
+    fontSize: FontSizes.md, // 16
     fontWeight: '600',
   },
   optionalText: {
-    fontSize: FontSizes.md, // 14
+    fontSize: FontSizes.sm, // 14
     fontWeight: 'normal',
   },
   monthYearContainer: {
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   monthYearText: {
-    fontSize: FontSizes.md, // 14
+    fontSize: FontSizes.sm, // 14
     marginRight: 4,
   },
   dateContainer: {
@@ -208,18 +208,18 @@ const styles = StyleSheet.create({
   },
   dateItem: {
     alignItems: 'center',
-    padding: 12,
+    padding: 8,
     borderRadius: 12,
     minWidth: 60,
     borderWidth: 1
   },
   dayText: {
-    fontSize: FontSizes.md, // 14
+    fontSize: FontSizes.sm, // 14
     fontWeight: '600',
     marginBottom: 4,
   },
   dateText: {
-    fontSize: FontSizes.md, // 14
+    fontSize: FontSizes.sm, // 14
     fontWeight: '600',
   },
   timeGrid: {
@@ -232,13 +232,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     width: '30%',
-    padding: 12,
+    padding: 8,
     marginVertical: 6,
     borderRadius: 12,
     borderWidth: 1,
   },
   timeText: {
-    fontSize: FontSizes.md, // 14
+    fontSize: FontSizes.sm, // 14
     fontWeight: '600',
     marginLeft: 8,
   },
@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   textArea: {
-    fontSize: FontSizes.md, // 14
+    fontSize: FontSizes.sm, // 14
     paddingHorizontal: 16,
     paddingVertical: 12,
     minHeight: 100,
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   specialistName: {
-    fontSize: FontSizes.md, // 14
+    fontSize: FontSizes.sm, // 14
     fontWeight: '600',
     marginBottom: 4,
   },

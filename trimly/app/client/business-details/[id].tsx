@@ -362,7 +362,7 @@ export default function BusinessDetailsScreen() {
                     <View style={styles.specialistInfo}>
                       <ThemedText style={styles.specialistName}>{specialist.name}</ThemedText>
                       <View style={styles.specialistRating}>
-                        <IconSymbol name="star" size={16} color="#FFD700" />
+                        <IconSymbol name="star" size={12} color="#FFD700" />
                         <ThemedText style={styles.specialistRatingText}>{specialist.rating} <ThemedText style={{fontSize: 11}}>(49 Reviews)</ThemedText></ThemedText>
                       </View>
                     </View>
@@ -428,7 +428,7 @@ export default function BusinessDetailsScreen() {
                           <IconSymbol 
                             key={i} 
                             name="star" 
-                            size={16} 
+                            size={12} 
                             color={i < Math.floor(review.rating) ? '#FFD700' : '#E0E0E0'} 
                           />
                         ))}
@@ -605,7 +605,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#2D8A47',
   },
   navTabText: {
-    fontSize: 16,
+    fontSize: 13,
   },
   activeTabText: {
     color: '#2D8A47',
@@ -617,21 +617,22 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   specialistCard: {
-    width: '48%',
+    width: '47%',
     borderRadius: 12,
     marginBottom: 16,
     borderWidth: 1,
     borderColor: '#E5E5E5',
     zIndex: 2,
     overflow: 'hidden',
+    paddingBottom: 5
   },
   specialistImage: {
     width: '100%',
-    height: 140,
+    height: 100,
     marginBottom: 8,
   },
   specialistName: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     marginBottom: 4,
   },
@@ -640,7 +641,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   specialistRatingText: {
-    fontSize: 14,
+    fontSize: 12,
     marginLeft: 4,
   },
   specialistInfo: {
@@ -761,10 +762,11 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#E5E5E5'
+    borderColor: '#E5E5E5',
+    paddingVertical: 12
   },
   reviewDate: {
-    fontSize: 12,
+    fontSize: 11,
     textAlign: 'right',
   },
   reviewUserInfo: {
@@ -773,35 +775,35 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   reviewUserImage: {
-    width: 50,
-    height: 50,
+    width: 45,
+    height: 45,
     borderRadius: 25,
   },
   reviewUserNameRating: {
     marginLeft: 12,
   },
   reviewUserName: {
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: '600',
-    marginBottom: 4,
+    // marginBottom: 4,
   },
   reviewRating: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   reviewRatingText: {
-    fontSize: 14,
+    fontSize: 12,
     marginLeft: 4,
   },
   reviewText: {
-    fontSize: 14,
+    fontSize: 12,
     lineHeight: 20,
   },
   tabContent: {
     padding: 16,
   },
   tabTitle: {
-    fontSize: 20,
+    fontSize: 15,
     fontWeight: '700',
     marginBottom: 16,
   },
@@ -809,24 +811,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 14,
+    padding: 10,
     borderWidth: 1,
     borderRadius: 15,
     marginBottom: 12,
     borderColor: "#E5E5E5"
   },
   serviceName: {
-    fontSize: 18,
+    fontSize: 14,
   },
   bookButton: {
     backgroundColor: '#2D8A47',
     margin: 16,
-    paddingVertical: 16,
+    paddingVertical: 10,
     borderRadius: 12,
     alignItems: 'center',
   },
   bookButtonText: {
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: '600',
     color: '#FFFFFF',
   },
