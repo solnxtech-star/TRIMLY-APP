@@ -3,7 +3,7 @@ import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, useNavigation } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AntDesign } from '@expo/vector-icons';
 import { useThemeColor } from '@/hooks/use-theme-color';
@@ -11,6 +11,7 @@ import { FontSizes } from '@/constants/theme';
 
 export default function ServiceOptionsScreen() {
   const router = useRouter();
+  const navigation = useNavigation();
   const { serviceId, source } = useLocalSearchParams();
   const [selectedFilter, setSelectedFilter] = useState('All');
 
@@ -71,7 +72,14 @@ export default function ServiceOptionsScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor }]}> 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <TouchableOpacity style={styles.backButton} onPress={() => {
+          // Check if we can go back, otherwise navigate to home
+          if (navigation.canGoBack()) {
+            router.back();
+          } else {
+            router.push('/client/dashboard');
+          }
+        }}>
           <AntDesign name="left" size={17} color={textColor} />
         </TouchableOpacity>
         <ThemedText style={[styles.title, { color: textColor }]}>{service.name}</ThemedText>

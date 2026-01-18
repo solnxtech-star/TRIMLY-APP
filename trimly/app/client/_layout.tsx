@@ -56,6 +56,13 @@ export default function ClientLayout() {
         }}
       />
       <Tabs.Screen
+        name="featured-vendors-list"
+        options={{
+          href: null,
+          // tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
         name="services"
         options={{
           href: null,

@@ -43,7 +43,7 @@ export default function Salons() {
             <View style={styles.salonInfoContainer}>
               <ThemedText style={styles.salonName}>Slay Best Saloon</ThemedText>
               <View style={styles.ratingPill}>
-                <IconSymbol name="star.fill" size={12} color="#FFD700" />
+                <IconSymbol name="star.fill" size={12} color="yellow" />
                 <ThemedText style={styles.ratingText}>4.8</ThemedText>
               </View>
             </View>

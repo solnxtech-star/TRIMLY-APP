@@ -80,11 +80,18 @@ export default function SignInScreen() {
         {/* Email Input Field */}
         {/* <ThemedText style={styles.label}>Email</ThemedText> */}
         <TextInput
-          style={[styles.input, emailFocused && styles.inputFocused, emailError ? styles.inputError : (email && !emailError ? styles.inputSuccess : null)]}
+          style={[styles.input, emailFocused && styles.inputFocused, emailError ? styles.inputError : (email && !emailError && email.length > 0 ? styles.inputSuccess : null)]}
           value={email}
           onChangeText={(text) => {
             setEmail(text);
-            if (emailError) setEmailError('');
+            // Real-time validation as user types
+            if (!text) {
+              setEmailError('Email is required');
+            } else if (!validateEmail(text)) {
+              setEmailError('Please enter a valid email address');
+            } else {
+              setEmailError('');
+            }
           }}
           onFocus={() => setEmailFocused(true)}
           onBlur={() => setEmailFocused(false)}
@@ -110,11 +117,18 @@ export default function SignInScreen() {
         {/* <ThemedText style={styles.label}>Password</ThemedText> */}
         <View style={styles.passwordContainer}>
           <TextInput
-            style={[styles.input, styles.passwordInput, passwordFocused && styles.inputFocused, passwordError ? styles.inputError : (password && !passwordError ? styles.inputSuccess : null)]}
+            style={[styles.input, styles.passwordInput, passwordFocused && styles.inputFocused, passwordError ? styles.inputError : (password && !passwordError && password.length > 0 ? styles.inputSuccess : null)]}
             value={password}
             onChangeText={(text) => {
               setPassword(text);
-              if (passwordError) setPasswordError('');
+              // Real-time validation as user types
+              if (!text) {
+                setPasswordError('Password is required');
+              } else if (!validatePassword(text)) {
+                setPasswordError('Password must be at least 7 characters');
+              } else {
+                setPasswordError('');
+              }
             }}
             onFocus={() => setPasswordFocused(true)}
             onBlur={() => setPasswordFocused(false)}
@@ -202,7 +216,7 @@ export default function SignInScreen() {
         
         {/* Sign Up Link */}
         <View style={styles.signUpContainer}>
-          <ThemedText style={styles.signUpText}>Don't have an account? </ThemedText>
+          <ThemedText style={styles.signUpText}>Don&#39;t have an account? </ThemedText>
           <Link href={{ pathname: '/auth/sign-up', params: { role } }}>
             <ThemedText style={styles.signUpLink}>Create account</ThemedText>
           </Link>

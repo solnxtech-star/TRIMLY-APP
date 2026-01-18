@@ -8,7 +8,7 @@ export default function FeaturedVendors() {
   const router = useRouter();
   
   const handleSeeAll = () => {
-    router.push('/client/salons');
+    router.push('/client/featured-vendors-list');
   };
   
   return (

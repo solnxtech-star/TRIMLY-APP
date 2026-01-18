@@ -53,11 +53,8 @@ export default function ServicesScreen() {
             <View style={[styles.iconContainer, { backgroundColor: 'gray' }]}>              
               <Image 
                 source={service.icon} 
-                style={
-                  service.id === 5 || service.id === 6 // Hair Coloring (id 5) and Beard Trimming (id 6)
-                    ? styles.smallIcon
-                    : styles.serviceIcon
-                } 
+                style={styles.serviceIcon}
+                resizeMode="contain"
               />
             </View>
             <View style={styles.textContainer}>
@@ -122,10 +119,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
   },
-  smallIcon: {
-    width: 20,
-    flex: 2/8
-  },
+
   textContainer: {
     flex: 1,
   },

@@ -4,6 +4,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useThemeColor } from '@/hooks/use-theme-color';
 import { AntDesign } from '@expo/vector-icons';
 
 export default function BusinessDetailsScreen() {
@@ -11,6 +12,13 @@ export default function BusinessDetailsScreen() {
   const { id } = useLocalSearchParams();
   const [isFavorite, setIsFavorite] = useState(false);
   const [activeTab, setActiveTab] = useState('Services');
+  
+  // Theme colors for packages section
+  const backgroundColor = useThemeColor({}, 'background');
+  const textColor = useThemeColor({}, 'text');
+  const cardBackgroundColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'background');
+  const borderColor = useThemeColor({ light: '#E5E5E5', dark: '#424242' }, 'text');
+  const secondaryTextColor = useThemeColor({ light: '#666666', dark: '#CCCCCC' }, 'text');
 
   // Sample business data - in a real app this would come from an API
   const businessImages = [
@@ -164,7 +172,8 @@ export default function BusinessDetailsScreen() {
         </View>
 
         {/* Business Info */}
-        <View style={styles.infoContainer}>
+
+        <ThemedView style={styles.infoContainer}>
           {/* iOS-style indicator */}
           <View style={styles.indicator} />
           
@@ -180,7 +189,7 @@ export default function BusinessDetailsScreen() {
             <AntDesign name="clock-circle" size={16} color="#666666" />
             <ThemedText style={styles.hoursText}>{business.hours}</ThemedText>
           </View>
-        </View>
+        </ThemedView>
 
         {/* Action Buttons */}
         <View style={styles.actionButtonsRow}>
@@ -214,6 +223,93 @@ export default function BusinessDetailsScreen() {
             </TouchableOpacity>
             <ThemedText style={styles.actionButtonText}>Share</ThemedText>
           </View>
+        </View>
+
+        {/* Packages Section */}
+        <View style={[styles.packagesSection, { backgroundColor: backgroundColor }]}> 
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.packagesScrollContent}
+          >
+            {packages.map((pkg) => (
+              <View key={pkg.id} style={[styles.packageCardHorizontal, { backgroundColor: cardBackgroundColor, borderColor: borderColor }]}> 
+                {/* Best Deal Badge */}
+                <View style={styles.badge}>
+                  <ThemedText style={styles.badgeIcon}>🔥</ThemedText>
+                  <ThemedText style={styles.badgeText}>BEST DEAL</ThemedText>
+                </View>
+
+                <View style={styles.packageCardContent}>
+                  {/* Image Section with Discount Badge */}
+                  <View style={styles.packageImageContainer}>
+                    <Image
+                      source={pkg.image}
+                      style={styles.packageImageHorizontal}
+                    />
+                    <View style={styles.discountBadge}>
+                      <ThemedText style={styles.saveText}>Save</ThemedText>
+                      <ThemedText style={styles.percentText}>{pkg.discount.replace('% off', '')}%</ThemedText>
+                    </View>
+                  </View>
+
+                  {/* Content Section */}
+                  <View style={styles.packageContentHorizontal}>
+                    <ThemedText style={[styles.packageTitleHorizontal, { color: textColor }]}>{pkg.name}</ThemedText>
+                    <ThemedText style={[styles.packageSubtitle, { color: secondaryTextColor }]}>{pkg.description}</ThemedText>
+
+                    {/* Services List */}
+                    <View style={styles.servicesList}>
+                      {pkg.services.map((service, index) => (
+                        <View key={index} style={styles.serviceItemHorizontal}>
+                          <ThemedText style={[styles.checkmark, { color: '#2D7A3E' }]}>✓</ThemedText>
+                          <ThemedText style={[styles.serviceText, { color: textColor }]}>{service}</ThemedText>
+                        </View>
+                      ))}
+                    </View>
+
+                    {/* Provider Info */}
+                    <View style={[styles.providerContainer, { borderTopColor: borderColor }]}> 
+                      <Image
+                        source={require('@/assets/stock/img.png')}
+                        style={styles.avatar}
+                      />
+                      <ThemedText style={[styles.providerName, { color: textColor }]}>{pkg.staffName}</ThemedText>
+                      <ThemedText style={[styles.rating, { color: secondaryTextColor }]}>{pkg.staffRating}</ThemedText>
+                      <ThemedText style={styles.star}>⭐</ThemedText>
+                      <ThemedText style={[styles.reviews, { color: secondaryTextColor }]}>49 Review</ThemedText>
+                    </View>
+
+                    {/* Pricing */}
+                    <View style={styles.pricingContainer}>
+                      <ThemedText style={[styles.oldPrice, { color: secondaryTextColor }]}>{pkg.originalPrice}</ThemedText>
+                      <ThemedText style={[styles.arrow, { color: secondaryTextColor }]}>→</ThemedText>
+                      <ThemedText style={[styles.newPrice, { color: '#2D7A3E' }]}>{pkg.price}</ThemedText>
+                    </View>
+
+                    <View style={[styles.savingsContainer, { backgroundColor: useThemeColor({ light: '#F5F1E8', dark: '#2D2D2D' }, 'background') }]}> 
+                      <ThemedText style={[styles.savingsText, { color: secondaryTextColor }]}> 
+                        You save <ThemedText style={[styles.savingsAmount, { color: textColor }]}>₦{(parseInt(pkg.originalPrice.replace('₦', '')) - parseInt(pkg.price.replace('₦', ''))).toLocaleString()}</ThemedText> ({pkg.discount})
+                      </ThemedText>
+                    </View>
+
+                    {/* Footer with Validity and CTA */}
+                    <View style={styles.footer}>
+                      <View style={styles.validityContainer}>
+                        <ThemedText style={[styles.validityIcon, { color: secondaryTextColor }]}>⏱</ThemedText>
+                        <ThemedText style={[styles.validityText, { color: secondaryTextColor }]}> 
+                          Valid until{'\n'}Dec 31
+                        </ThemedText>
+                      </View>
+                      <TouchableOpacity style={[styles.ctaButton, { backgroundColor: '#2D7A3E' }]} onPress={() => handleBookPackage(pkg.id)}>
+                        <ThemedText style={styles.ctaText}>Book Promo Now</ThemedText>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
+              </View>
+            ))}
+          </ScrollView>
         </View>
 
         {/* Component Navigator */}
@@ -276,7 +372,7 @@ export default function BusinessDetailsScreen() {
             </>
           )}
           
-          /* {activeTab === 'Package' && (
+           {activeTab === 'Package' && (
             <>
               <ThemedText style={styles.tabTitle}>Packages ({packages.length})</ThemedText>
               {packages.map((pkg) => (
@@ -315,7 +411,7 @@ export default function BusinessDetailsScreen() {
                 </View>
               ))}
             </>
-          )} */
+          )} 
           
           {activeTab === 'Review' && (
             <>
@@ -432,7 +528,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     paddingHorizontal: 16,
     zIndex: 2,
-    backgroundColor: 'white'
+    // backgroundColor: 'white'
   },
   indicator: {
     width: 60,
@@ -733,5 +829,215 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#FFFFFF',
+  },
+  // Packages Section Styles
+  packagesSection: {
+    paddingVertical: 12,
+    backgroundColor: '#f5f5f5',
+  },
+  packagesScrollContent: {
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
+  packageCardHorizontal: {
+    width: 270,
+    backgroundColor: 'white',
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+    marginRight: 16,
+    borderWidth: 2
+  },
+  packageCardContent: {
+    flex: 1,
+  },
+  packageImageContainer: {
+    position: 'relative',
+    backgroundColor: '#D4E8D4',
+  },
+  packageImageHorizontal: {
+    width: '100%',
+    height: 150,
+    resizeMode: 'cover',
+  },
+  discountBadge: {
+    position: 'absolute',
+    bottom: 15,
+    left: 15,
+    backgroundColor: '#2D7A3E',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  saveText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  percentText: {
+    color: 'white',
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  packageContentHorizontal: {
+    padding: 12,
+  },
+  packageTitleHorizontal: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1a1a1a',
+    marginBottom: 4,
+  },
+  packageSubtitle: {
+    fontSize: 11,
+    color: '#666',
+    marginBottom: 8,
+    lineHeight: 14,
+  },
+  servicesList: {
+    marginBottom: 8,
+  },
+  serviceItemHorizontal: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  checkmark: {
+    color: '#2D7A3E',
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginRight: 6,
+  },
+  serviceText: {
+    fontSize: 12,
+    color: '#333',
+  },
+  providerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    paddingTop: 6,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+  },
+  avatar: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    marginRight: 6,
+  },
+  providerName: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#333',
+    marginRight: 8,
+  },
+  rating: {
+    fontSize: 10,
+    color: '#666',
+    marginRight: 2,
+  },
+  star: {
+    fontSize: 10,
+    marginRight: 2,
+  },
+  reviews: {
+    fontSize: 10,
+    color: '#666',
+  },
+  pricingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  oldPrice: {
+    fontSize: 14,
+    color: '#999',
+    textDecorationLine: 'line-through',
+    marginRight: 6,
+  },
+  arrow: {
+    fontSize: 14,
+    color: '#999',
+    marginRight: 6,
+  },
+  newPrice: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#2D7A3E',
+  },
+  savingsContainer: {
+    backgroundColor: '#F5F1E8',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 6,
+    marginBottom: 8,
+  },
+  savingsText: {
+    fontSize: 10,
+    color: '#666',
+  },
+  savingsAmount: {
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  validityContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  validityIcon: {
+    fontSize: 12,
+    marginRight: 4,
+    color: '#999',
+  },
+  validityText: {
+    fontSize: 10,
+    color: '#999',
+    lineHeight: 12,
+  },
+  ctaButton: {
+    backgroundColor: '#2D7A3E',
+    paddingVertical: 5,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+  },
+  ctaText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  badge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E89B2E',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+    marginBottom: -47,
+    zIndex: 1,
+    marginLeft: 12,
+    marginTop: 15,
+  },
+  badgeIcon: {
+    fontSize: 14,
+    marginRight: 4,
+  },
+  badgeText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 10,
+    letterSpacing: 0.5,
   },
 });

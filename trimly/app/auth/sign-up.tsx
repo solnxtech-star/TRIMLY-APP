@@ -112,11 +112,16 @@ export default function SignUpScreen() {
             {/* Name Input Field */}
             {/* <ThemedText style={styles.label}>Full Name</ThemedText> */}
             <TextInput
-              style={[styles.input, nameFocused && styles.inputFocused, nameError ? styles.inputError : (name && !nameError ? styles.inputSuccess : null)]}
+              style={[styles.input, nameFocused && styles.inputFocused, nameError ? styles.inputError : (name && !nameError && name.length > 0 ? styles.inputSuccess : null)]}
               value={name}
               onChangeText={(text) => {
                 setName(text);
-                if (nameError) setNameError('');
+                // Real-time validation as user types
+                if (!text) {
+                  setNameError('Name is required');
+                } else {
+                  setNameError('');
+                }
               }}
               onFocus={() => setNameFocused(true)}
               onBlur={() => setNameFocused(false)}
@@ -137,11 +142,18 @@ export default function SignUpScreen() {
             {/* Email Input Field */}
             {/* <ThemedText style={styles.label}>Email</ThemedText> */}
             <TextInput
-              style={[styles.input, emailFocused && styles.inputFocused, emailError ? styles.inputError : (email && !emailError ? styles.inputSuccess : null)]}
+              style={[styles.input, emailFocused && styles.inputFocused, emailError ? styles.inputError : (email && !emailError && email.length > 0 ? styles.inputSuccess : null)]}
               value={email}
               onChangeText={(text) => {
                 setEmail(text);
-                if (emailError) setEmailError('');
+                // Real-time validation as user types
+                if (!text) {
+                  setEmailError('Email is required');
+                } else if (!validateEmail(text)) {
+                  setEmailError('Please enter a valid email address');
+                } else {
+                  setEmailError('');
+                }
               }}
               onFocus={() => setEmailFocused(true)}
               onBlur={() => setEmailFocused(false)}
@@ -165,11 +177,18 @@ export default function SignUpScreen() {
             {/* <ThemedText style={styles.label}>Password</ThemedText> */}
             <View style={styles.passwordContainer}>
               <TextInput
-                style={[styles.input, passwordFocused && styles.inputFocused, passwordError ? styles.inputError : (password && !passwordError ? styles.inputSuccess : null)]}
+                style={[styles.input, passwordFocused && styles.inputFocused, passwordError ? styles.inputError : (password && !passwordError && password.length > 0 ? styles.inputSuccess : null)]}
                 value={password}
                 onChangeText={(text) => {
                   setPassword(text);
-                  if (passwordError) setPasswordError('');
+                  // Real-time validation as user types
+                  if (!text) {
+                    setPasswordError('Password is required');
+                  } else if (!validatePassword(text)) {
+                    setPasswordError('Password must be at least 7 characters');
+                  } else {
+                    setPasswordError('');
+                  }
                 }}
                 onFocus={() => setPasswordFocused(true)}
                 onBlur={() => setPasswordFocused(false)}
@@ -203,11 +222,18 @@ export default function SignUpScreen() {
             {/* <ThemedText style={styles.label}>Confirm Password</ThemedText> */}
             <View style={styles.passwordContainer}>
               <TextInput
-                style={[styles.input, confirmPasswordFocused && styles.inputFocused, confirmPasswordError ? styles.inputError : (confirmPassword && !confirmPasswordError ? styles.inputSuccess : null)]}
+                style={[styles.input, confirmPasswordFocused && styles.inputFocused, confirmPasswordError ? styles.inputError : (confirmPassword && !confirmPasswordError && confirmPassword.length > 0 ? styles.inputSuccess : null)]}
                 value={confirmPassword}
                 onChangeText={(text) => {
                   setConfirmPassword(text);
-                  if (confirmPasswordError) setConfirmPasswordError('');
+                  // Real-time validation as user types
+                  if (!text) {
+                    setConfirmPasswordError('Please confirm your password');
+                  } else if (password !== text) {
+                    setConfirmPasswordError('Passwords do not match');
+                  } else {
+                    setConfirmPasswordError('');
+                  }
                 }}
                 onFocus={() => setConfirmPasswordFocused(true)}
                 onBlur={() => setConfirmPasswordFocused(false)}
