@@ -66,7 +66,7 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'cloudinary',
     
-    # 'anymail',
+    'anymail',
 
 ]
 
@@ -256,18 +256,26 @@ REST_AUTH = {
 
 
 
-# For development: uses mailbox sandbox
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend' 
-# Mailtrap Sandbox SMTP Credentials
-EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
-EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")   # From Mailtrap Inbox Settings
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")  # From Mailtrap Inbox Settings
-EMAIL_PORT = os.getenv("EMAIL_PORT")
-EMAIL_USE_TLS = True
-EMAIL_USE_SSL = False
+# # For development: uses mailbox sandbox
+# EMAIL_BACKEND = '"anymail.backends.mailtrap.EmailBackend"' 
+# # Mailtrap Sandbox SMTP Credentials
+# EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
+# EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")   # From Mailtrap Inbox Settings
+# EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")  # From Mailtrap Inbox Settings
+# EMAIL_PORT = os.getenv("EMAIL_PORT")
+# EMAIL_USE_TLS = True
+# EMAIL_USE_SSL = False
 
 # This can be anything in Sandbox mode
 DEFAULT_FROM_EMAIL = "Trimly <support@trimly.app>"
+ANYMAIL = {
+    "MAILTRAP_API_TOKEN": "ade4aa48e3f33bf64ef6c6fb3ccf391d",
+    "MAILTRAP_SANDBOX_ID": "2931144", # From your Inbox URL
+}
+
+# IMPORTANT: Even with the API, Mailtrap Sandbox usually lets you 
+# skip domain verification, but you MUST use the token found 
+# specifically in the 'Inbox Settings' -> 'API' tab, NOT the general 'API Tokens' tab.
 
 # In production, you would replace this with something like:
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
