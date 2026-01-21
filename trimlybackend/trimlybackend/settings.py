@@ -257,7 +257,7 @@ REST_AUTH = {
 
 
 # # For development: uses mailbox sandbox
-# EMAIL_BACKEND = '"anymail.backends.mailtrap.EmailBackend"' 
+EMAIL_BACKEND = "anymail.backends.mailtrap.EmailBackend" 
 # # Mailtrap Sandbox SMTP Credentials
 # EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
 # EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")   # From Mailtrap Inbox Settings
