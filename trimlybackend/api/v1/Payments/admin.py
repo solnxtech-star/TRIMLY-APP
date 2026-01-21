@@ -15,3 +15,4 @@ for model in app_config.get_models():
     except Exception as e:
         # Handle cases where a model might not be registered (rare, but safe)
         print(f"Could not register {model.__name__}: {e}")
+

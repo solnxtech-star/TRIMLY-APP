@@ -65,14 +65,15 @@ class FlutterwaveService:
         return response.json()
     
     @staticmethod
-    def initiate_transfer(account_bank, account_number, amount, subaccount, reference):
+    def initiate_transfer(account_bank, account_number, amount, reference):
         """
         Generates a Flutterwave hosted payment link.
         """
         url = f"{FlutterwaveService.BASE_URL}/transfers"
         headers = {
             "Authorization": f"Bearer {settings.FLW_SECRET_KEY}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "X-Scenario-Key": "scenario:successful"
         }
         
 
@@ -81,8 +82,8 @@ class FlutterwaveService:
             "account_number": account_number,
             "amount": float(amount),
             "currency": "NGN",
-            "debit_subaccount" : subaccount,
-            "reference" : reference
+            "reference" : reference,
+            "callback_url" : "https://interconfessional-erna-unheaded.ngrok-free.dev/api/v1/payments/transfer-webhook/"
             
         }
         

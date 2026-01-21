@@ -54,23 +54,11 @@ class BookingViewSet(ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(customer=self.request.user)
 
-    @action(detail=True, methods=["post"])
-    def confirm(self, request, pk=None):
-        booking = self.get_object()
+    def get_serializer_class(self):
+        if self.action in ['complete', 'cancel']:
+            return None  # This hides all those unnecessary fields in Swagger/Postman
+        return BookingSerializer
 
-        if booking.status != "pending":
-            return Response(
-                {"detail": "Only pending bookings can be confirmed."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        booking.status = "confirmed"
-        booking.save(update_fields=["status"])
-
-        return Response(
-            {"detail": "Booking confirmed."},
-            status=status.HTTP_200_OK
-        )
 
     @action(detail=True, methods=["post"])
     def cancel(self, request, pk=None):

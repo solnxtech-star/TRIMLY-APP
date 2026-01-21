@@ -80,6 +80,11 @@ class CustomRegisterSerializer(RegisterSerializer):
         data['username'] = data.get('email', '')
         data = super().validate(data)
         return data
+    
+    def validate_email(self, email):
+        if User.objects.filter(email=email).exists():
+            raise serializers.ValidationError("A user with this email is already registered.")
+        return email
 
     def validate_role(self, value):
         """Prevent admin role assignment, default to customer"""
@@ -117,5 +122,3 @@ class EmailLoginSerializer(LoginSerializer):
         attrs['username'] = attrs.get('email')
         return super().validate(attrs)
     
-class WithdrawalRequestSerializer(serializers.Serializer):
-    amount = serializers.DecimalField(max_digits=12, decimal_places=2, min_value=500.00)

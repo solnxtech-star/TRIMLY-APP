@@ -189,61 +189,67 @@ class RequestWithdrawalView(GenericAPIView):
         user = request.user
         wallet = get_object_or_404(Wallet, user=user)
 
-        # 2. Logic: Check balance
         if wallet.available_balance < amount:
             return Response({"error": "Insufficient funds"}, status=400)
 
-        # 3. Create our unique Reference
-        # We combine 'WD' with the client's ID to make it unique
-        my_reference = f"WD-{client_id}"
+        # 1. Create the command reference
+        my_reference = f"WD-{client_id}_PMCKDU_1"
 
-        # 4. The Database "Lock"
         try:
             with transaction.atomic():
-                # A. Deduct money from DB immediately
-                wallet.available_balance -= amount
-                wallet.save()
-
-                # B. Try to create the record. 
-                # If 'my_reference' already exists in the DB, this line triggers an IntegrityError
-                WithdrawalRequest.objects.create(
-                    wallet=wallet,
-                    amount=amount,
-                    reference=my_reference,
-                    status='pending'
-                )
-
-                # C. Record in your Transaction model (as requested)
-                Transaction.objects.create(
-                    wallet=wallet,
-                    amount=amount,
-                    tx_type='withdrawal', # Money going out
-                    tx_ref=my_reference,
-                    status='pending'
-                )
-
-                # D. Tell Flutterwave to send the money
-                # We send 'my_reference' so FLW also knows it's a unique request
+                # 2. Call Flutterwave FIRST
                 profile = user.individual_vendor_profile or user.salon_owner_profile
                 flw_resp = FlutterwaveService.initiate_transfer(
                     account_bank=profile.bank_code,
                     account_number=profile.account_number,
                     amount=amount,
-                    subaccount=profile.flw_subaccount_id,
                     reference=my_reference 
                 )
 
+                # 3. Check if Flutterwave accepted it
                 if flw_resp.get('status') != 'success':
-                    # If the API fails, we "Raise" an error to cancel the DB changes (Rollback)
-                    raise Exception("Flutterwave API failed to process transfer")
+                    error_msg = flw_resp.get('message', 'API Error')
+                    raise ValueError(f"Flutterwave Error: {error_msg}")
 
-            return Response({"message": "Transfer successful", "ref": my_reference})
+                # 4. NOW extract the ID and create records
+                # Since we are inside 'with transaction.atomic()', if anything 
+                # below fails, the money won't be deducted.
+                flw_id = flw_resp.get('data', {}).get('id')
+
+                # A. Deduct money
+                wallet.available_balance -= amount
+                wallet.save()
+
+                # B. Create Withdrawal Record with the ID
+                WithdrawalRequest.objects.create(
+                    wallet=wallet,
+                    amount=amount,
+                    reference=my_reference,
+                    status='pending',
+                    flw_transfer_id=flw_id  # Use the ID we just got
+                )
+
+                # C. Create Transaction Record
+                Transaction.objects.create(
+                    wallet=wallet,
+                    amount=amount,
+                    tx_type='withdrawal',
+                    tx_ref=my_reference,
+                    status='pending'
+                )
+
+            return Response({
+                "message": "Transfer initiated. Webhook will trigger in 60s.", 
+                "ref": my_reference,
+                "flw_id": flw_id
+            })
 
         except IntegrityError:
-            # This happens if the user tries to use the same request_id twice
-            return Response({"error": "This withdrawal has already been processed."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Duplicate reference. Try a new request ID."}, status=400)
+        except ValueError as e:
+            return Response({"error": str(e)}, status=400)
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": f"Something went wrong: {str(e)}"}, status=400)
         
    
 class TransferWebhookView(APIView):
@@ -257,7 +263,7 @@ class TransferWebhookView(APIView):
 
         data = request.data
         # 2. Look for the reference WE generated (e.g., WD-abc-123)
-        reference = data.get('reference')
+        reference = data["transfer"].get("reference")
         
         # 3. Find the matching records in your DB
         withdrawal = WithdrawalRequest.objects.filter(reference=reference).first()
@@ -267,7 +273,7 @@ class TransferWebhookView(APIView):
             return Response(status=200) # Stop here if not our transaction
 
         # 4. Handle Success
-        if data.get('status') == 'SUCCESSFUL':
+        if data["transfer"].get("status") == 'SUCCESSFUL':
             withdrawal.status = 'successful'
             transaction_record.status = 'completed'
             withdrawal.save()
@@ -275,7 +281,7 @@ class TransferWebhookView(APIView):
             # The Barber now sees "Completed" in the app
 
         # 5. Handle Failure (CRITICAL)
-        elif data.get('status') == 'FAILED':
+        elif data["transfer"].get("status") == 'FAILED':
             with transaction.atomic():
                 withdrawal.status = 'failed'
                 transaction_record.status = 'failed'

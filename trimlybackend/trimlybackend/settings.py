@@ -31,6 +31,7 @@ ALLOWED_HOSTS = ["*"]
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -48,6 +49,8 @@ INSTALLED_APPS = [
     'api.v1.Search',
 
     #third party packages
+    
+    'channels',
     'rest_framework',
     'django.contrib.sites', 
     #Authentication Packages
@@ -62,9 +65,21 @@ INSTALLED_APPS = [
     'django_filters',
     'cloudinary_storage',
     'cloudinary',
+    
     # 'anymail',
 
 ]
+
+ASGI_APPLICATION = 'trimlybackend.asgi.application'
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
+
 SITE_ID = 1 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
@@ -223,6 +238,7 @@ ACCOUNT_SIGNUP_FIELDS = [
     'password2*',
 ]
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+ACCOUNT_ADAPTER = 'trimlybackend.adapters.BackgroundEmailAdapter'
 
 REST_AUTH = {
     # 1. CRITICAL: Tells dj-rest-auth to issue JWTs instead of basic tokens
