@@ -728,28 +728,12 @@ paths:
         required: true
       tags:
       - bookings
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Booking'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Booking'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/Booking'
-        required: true
       security:
       - cookieAuth: []
       - jwtAuth: []
       responses:
         '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Booking'
-          description: ''
+          description: No response body
   /api/v1/bookings/{id}/complete/:
     post:
       operationId: bookings_complete_create
@@ -762,62 +746,12 @@ paths:
         required: true
       tags:
       - bookings
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Booking'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Booking'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/Booking'
-        required: true
       security:
       - cookieAuth: []
       - jwtAuth: []
       responses:
         '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Booking'
-          description: ''
-  /api/v1/bookings/{id}/confirm/:
-    post:
-      operationId: bookings_confirm_create
-      description: Handles bookings for all users (salon, vendors, users)
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
-      tags:
-      - bookings
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Booking'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Booking'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/Booking'
-        required: true
-      security:
-      - cookieAuth: []
-      - jwtAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Booking'
-          description: ''
+          description: No response body
   /api/v1/category/:
     get:
       operationId: category_list
@@ -967,9 +901,27 @@ paths:
       responses:
         '204':
           description: No response body
-  /api/v1/payments/payments/create_subaccounts/:
+  /api/v1/conversations/initiate/{target_id}/:
     post:
-      operationId: payments_payments_create_subaccounts_create
+      operationId: conversations_initiate_create
+      parameters:
+      - in: path
+        name: target_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - conversations
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/payments/create_subaccounts/:
+    post:
+      operationId: payments_create_subaccounts_create
       tags:
       - payments
       requestBody:
@@ -994,9 +946,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/SubAccount'
           description: ''
-  /api/v1/payments/payments/initialize/:
+  /api/v1/payments/initialize/:
     post:
-      operationId: payments_payments_initialize_create
+      operationId: payments_initialize_create
       tags:
       - payments
       requestBody:
@@ -1021,14 +973,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaymentInit'
           description: ''
-  /api/v1/payments/payments/webhook/:
-    post:
-      operationId: payments_payments_webhook_create
-      tags:
-      - payments
-      responses:
-        '200':
-          description: No response body
   /api/v1/payments/transfer-webhook/:
     post:
       operationId: payments_transfer_webhook_create
@@ -1038,6 +982,14 @@ paths:
       - cookieAuth: []
       - jwtAuth: []
       - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/payments/webhook/:
+    post:
+      operationId: payments_webhook_create
+      tags:
+      - payments
       responses:
         '200':
           description: No response body
@@ -2703,7 +2655,7 @@ components:
         flw_subaccount_id:
           type: string
           nullable: true
-          maxLength: 15
+          maxLength: 40
         bank_code:
           type: string
           nullable: true
@@ -3083,7 +3035,8 @@ components:
       type: object
       properties:
         booking_id:
-          type: integer
+          type: string
+          format: uuid
           description: The ID of the booking to pay for.
       required:
       - booking_id
@@ -3156,7 +3109,7 @@ components:
         flw_subaccount_id:
           type: string
           nullable: true
-          maxLength: 15
+          maxLength: 50
         bank_code:
           type: string
           nullable: true

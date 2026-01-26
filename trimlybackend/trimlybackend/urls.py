@@ -37,6 +37,7 @@ urlpatterns = [
     path('api/v1/', include('api.v1.Vendor.urls')),
     path('api/v1/', include('api.v1.Category.urls')),
     path('api/v1/', include('api.v1.Bookings.urls')),
+    path('api/v1/', include('api.v1.Chat.urls')),
     path('api/v1/payments/', include('api.v1.Payments.urls')),
     path('api/v1/search/', include('api.v1.Search.urls')),
     path('api/v1/toggle-status/', toggle_availability, name='toggle-availability'),
