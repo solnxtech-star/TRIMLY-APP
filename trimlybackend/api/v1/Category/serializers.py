@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ServiceCategory
-        fields = "__all__"
+        fields = ("id", "name", "created_at")
         read_only_fields = ["id", "created_at"]
 
 class GallerySerializer(serializers.ModelSerializer):

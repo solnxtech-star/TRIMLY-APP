@@ -38,3 +38,138 @@ class EmailRegisterView(RegisterView):
 
 
 EmailRegisterView = register_schema(EmailRegisterView)
+
+from rest_framework import status
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from allauth.account.models import EmailAddress
+from .serializers import (
+    VerifyEmailOTPSerializer, 
+    RequestPasswordResetOTPSerializer,
+    VerifyPasswordResetOTPSerializer,
+    ResendOTPSerializer
+)
+from drf_spectacular.utils import extend_schema, OpenApiResponse
+
+class VerifyEmailOTPView(APIView):
+    """Verify email using OTP"""
+    permission_classes = [AllowAny]
+    
+    @extend_schema(
+        request=VerifyEmailOTPSerializer,
+        responses={
+            200: OpenApiResponse(description='Email verified successfully'),
+            400: OpenApiResponse(description='Invalid OTP or validation error'),
+        },
+        description="Verify email address using the 6-digit OTP code sent to the user's email",
+        tags=['auth']
+    )
+    def post(self, request):
+        serializer = VerifyEmailOTPSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.validated_data['user']
+            otp = serializer.validated_data['otp_object']
+            
+            # Get or create EmailAddress and mark as verified
+            email_address, created = EmailAddress.objects.get_or_create(
+                user=user,
+                email=user.email,
+                defaults={'primary': True, 'verified': True}
+            )
+            
+            if not created:
+                email_address.verified = True
+                email_address.save()
+            
+            # Mark OTP as used
+            otp.is_used = True
+            otp.save()
+            
+            return Response({
+                'message': 'Email verified successfully'
+            }, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class RequestPasswordResetOTPView(APIView):
+    """Request OTP for password reset - send OTP to email"""
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        request=RequestPasswordResetOTPSerializer,
+        responses={
+            200: OpenApiResponse(description='Password reset OTP sent to email'),
+            400: OpenApiResponse(description='Validation error'),
+        },
+        description="Request a password reset OTP. A 6-digit code will be sent to the provided email address if it exists.",
+        tags=['auth']
+    )
+    def post(self, request):
+        serializer = RequestPasswordResetOTPSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                'message': 'If the email exists, a password reset code has been sent.'
+            }, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class VerifyPasswordResetOTPView(APIView):
+    """Verify OTP and reset password"""
+    permission_classes = [AllowAny]
+    @extend_schema(
+        request=VerifyPasswordResetOTPSerializer,
+        responses={
+            200: OpenApiResponse(description='Password reset successfully'),
+            400: OpenApiResponse(description='Invalid OTP or validation error'),
+        },
+        description="Verify the OTP code and set a new password",
+        tags=['auth']
+    )
+    def post(self, request):
+        serializer = VerifyPasswordResetOTPSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.validated_data['user']
+            otp = serializer.validated_data['otp_object']
+            new_password = serializer.validated_data['new_password']
+            
+            # Set new password
+            user.set_password(new_password)
+            user.save()
+            
+            # Mark OTP as used
+            otp.is_used = True
+            otp.save()
+            
+            return Response({
+                'message': 'Password reset successfully'
+            }, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ResendOTPView(APIView):
+    """Resend OTP for email verification or password reset"""
+    permission_classes = [AllowAny]
+    @extend_schema(
+        request=ResendOTPSerializer,
+        responses={
+            200: OpenApiResponse(description='OTP resent successfully'),
+            400: OpenApiResponse(description='Validation error'),
+        },
+        description="Resend OTP code for either email verification or password reset",
+        tags=['auth']
+    )
+
+    def post(self, request):
+        serializer = ResendOTPSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                'message': 'OTP has been resent to your email'
+            }, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

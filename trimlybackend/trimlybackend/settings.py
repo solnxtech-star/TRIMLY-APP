@@ -65,8 +65,8 @@ INSTALLED_APPS = [
     'django_filters',
     'cloudinary_storage',
     'cloudinary',
-    
     'anymail',
+    'silk',
 
 ]
 
@@ -94,6 +94,7 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 MIDDLEWARE = [
+    'silk.middleware.SilkyMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
@@ -237,8 +238,14 @@ ACCOUNT_SIGNUP_FIELDS = [
     'password1*',
     'password2*',
 ]
+ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = True
+ACCOUNT_LOGIN_BY_CODE_ENABLED = True
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_ADAPTER = 'trimlybackend.adapters.BackgroundEmailAdapter'
+
+# Don't send allauth's default emails
+ACCOUNT_EMAIL_CONFIRMATION_HMAC = False
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 1
 
 REST_AUTH = {
     # 1. CRITICAL: Tells dj-rest-auth to issue JWTs instead of basic tokens
@@ -310,3 +317,6 @@ CLOUDINARY_STORAGE = {
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 FLW_SECRET_HASH = os.getenv("FLW_SECRET_HASH")
 FLW_SECRET_KEY = os.getenv("FLW_SECRET_KEY")
+
+SILKY_PYTHON_PROFILER = True
+SILKY_PYTHON_PROFILER_BINARY = True

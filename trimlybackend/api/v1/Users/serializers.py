@@ -1,11 +1,14 @@
 from rest_framework import serializers
 from api.v1.Vendor.models import IndividualVendorProfile
-from .models import User
+from .models import OTP, User
 from api.v1.Salons.models import SalonOwnerProfile
 from dj_rest_auth.registration.serializers import RegisterSerializer
 from django.db import transaction
 from django.contrib.auth import get_user_model
 from dj_rest_auth.serializers import LoginSerializer
+from api.v1.utils.otp_generator import send_otp_email
+from allauth.account.models import EmailAddress
+from django.core.mail import send_mail
 
 
 User = get_user_model()
@@ -68,6 +71,7 @@ class UserDetailSerializer(serializers.ModelSerializer):
 class CustomRegisterSerializer(RegisterSerializer):
     role = serializers.ChoiceField(choices=User.ROLE_CHOICES)
     phone_number = serializers.CharField(required=False, allow_blank=True)
+    
 
     def get_fields(self):
         """Remove username field from schema and form"""
@@ -104,9 +108,156 @@ class CustomRegisterSerializer(RegisterSerializer):
         user.role = self.validated_data.get("role")
         user.phone_number = self.validated_data.get("phone_number", "")
         user.save(update_fields=["role", "phone_number"])
+        user.save()
+        
+        # Generate and send OTP
+        otp = OTP.objects.create(
+            user=user,
+            code=OTP.generate_code(),
+            otp_type='email_verification'
+        )
+        
+        # Send OTP via email
+        send_otp_email(user, otp.code)
         
         return user
 
+
+class VerifyEmailOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    otp = serializers.CharField(max_length=6)
+    
+    def validate(self, data):
+        try:
+            user = User.objects.get(email=data['email'])
+        except User.DoesNotExist:
+            raise serializers.ValidationError("User not found")
+        
+        try:
+            otp = OTP.objects.filter(
+                user=user,
+                code=data['otp'],
+                otp_type='email_verification',
+                is_used=False
+            ).latest('created_at')
+        except OTP.DoesNotExist:
+            raise serializers.ValidationError("Invalid OTP")
+        
+        if not otp.is_valid():
+            raise serializers.ValidationError("OTP has expired")
+        
+        data['user'] = user
+        data['otp_object'] = otp
+        return data
+
+
+class RequestPasswordResetOTPSerializer(serializers.Serializer):
+    """Request OTP for password reset"""
+    email = serializers.EmailField()
+    
+    def validate_email(self, value):
+        # Check if user exists (but don't reveal if they don't for security)
+        self.user = User.objects.filter(email=value).first()
+        return value
+    
+    def save(self):
+        if self.user:
+            # Generate OTP
+            otp = OTP.objects.create(
+                user=self.user,
+                code=OTP.generate_code(),
+                otp_type='password_reset'
+            )
+            
+            # Send OTP via email
+            send_mail(
+                'Reset Your Password',
+                f'Your password reset code is: {otp.code}\nThis code expires in 5 minutes.',
+                'noreply@trimly.com',
+                [self.user.email],
+                fail_silently=False,
+            )
+
+
+class VerifyPasswordResetOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    otp = serializers.CharField(max_length=6)
+    new_password = serializers.CharField(write_only=True, min_length=8)
+    
+    def validate(self, data):
+        try:
+            user = User.objects.get(email=data['email'])
+        except User.DoesNotExist:
+            raise serializers.ValidationError("User not found")
+        
+        try:
+            otp = OTP.objects.filter(
+                user=user,
+                code=data['otp'],
+                otp_type='password_reset',
+                is_used=False
+            ).latest('created_at')
+        except OTP.DoesNotExist:
+            raise serializers.ValidationError("Invalid OTP")
+        
+        if not otp.is_valid():
+            raise serializers.ValidationError("OTP has expired")
+        
+        data['user'] = user
+        data['otp_object'] = otp
+        return data
+
+
+class ResendOTPSerializer(serializers.Serializer):
+    """Resend OTP for email verification or password reset"""
+    email = serializers.EmailField()
+    otp_type = serializers.ChoiceField(choices=['email_verification', 'password_reset'])
+    
+    def validate(self, data):
+        try:
+            user = User.objects.get(email=data['email'])
+            data['user'] = user
+        except User.DoesNotExist:
+            raise serializers.ValidationError("User not found")
+        
+        # Check if email is already verified for email_verification type
+        if data['otp_type'] == 'email_verification':
+            email_address = EmailAddress.objects.filter(
+                user=user,
+                email=user.email
+            ).first()
+            
+            if email_address and email_address.verified:
+                raise serializers.ValidationError("Email already verified")
+        
+        return data
+    
+    def save(self):
+        user = self.validated_data['user']
+        otp_type = self.validated_data['otp_type']
+        
+        # Generate new OTP
+        otp = OTP.objects.create(
+            user=user,
+            code=OTP.generate_code(),
+            otp_type=otp_type
+        )
+        
+        # Send appropriate email
+        if otp_type == 'email_verification':
+            subject = 'Verify Your Email'
+            message = f'Your verification code is: {otp.code}\nThis code expires in 5 minutes.'
+        else:
+            subject = 'Reset Your Password'
+            message = f'Your password reset code is: {otp.code}\nThis code expires in 5 minutes.'
+        
+        send_mail(
+            subject,
+            message,
+            'noreply@trimly.com',
+            [user.email],
+            fail_silently=False,
+        )
 
 class EmailLoginSerializer(LoginSerializer):
     email = serializers.EmailField(required=True, allow_blank=False)
