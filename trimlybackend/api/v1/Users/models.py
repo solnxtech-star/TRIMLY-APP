@@ -3,8 +3,9 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from .managers import CustomUserManager
 import uuid
-from datetime import timezone, timedelta
-from api.v1.utils import otp_generator
+from datetime import  timedelta
+from django.utils import timezone
+
 
 class User(AbstractUser):
     ROLE_CHOICES = [
