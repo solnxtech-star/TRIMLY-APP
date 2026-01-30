@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     'api.v1.Users',
     'api.v1.Vendor',
     'api.v1.Search',
+    'funcs',
+
 
     #third party packages
     
@@ -66,7 +68,8 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'cloudinary',
     'anymail',
-    'silk',
+
+    
 
 ]
 
@@ -94,7 +97,8 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 MIDDLEWARE = [
-    'silk.middleware.SilkyMiddleware',
+    # 'funcs.middleware.ResponseTimeMiddleware',
+    # 'funcs.middleware.DBQueryCountMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
@@ -318,5 +322,7 @@ DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 FLW_SECRET_HASH = os.getenv("FLW_SECRET_HASH")
 FLW_SECRET_KEY = os.getenv("FLW_SECRET_KEY")
 
-SILKY_PYTHON_PROFILER = True
-SILKY_PYTHON_PROFILER_BINARY = True
+INTERNAL_IPS = [
+    "127.0.0.1",
+   
+]

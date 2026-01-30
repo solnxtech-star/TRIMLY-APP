@@ -8,6 +8,7 @@ from api.v1.Users.views import GoogleLogin, VerifyEmailOTPView, VerifyPasswordRe
 from api.v1.Search.views import toggle_availability
 
 
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     # Enables: Login, Logout, Password Reset, and User Details
@@ -36,9 +37,9 @@ urlpatterns = [
     path('redoc/', SpectacularRedocView.as_view(), name="redoc"),
     path('swagger-schema/', SpectacularAPIView.as_view(), name="schema"),
 ]
-if settings.DEBUG:
-    urlpatterns += [
-        path('silk/', include('silk.urls', namespace='silk')),
-    ]
+# if settings.DEBUG:
+#     urlpatterns += [
+#         path('__debug__/', include('debug_toolbar.urls')),
+#     ]+ urlpatterns
 
 

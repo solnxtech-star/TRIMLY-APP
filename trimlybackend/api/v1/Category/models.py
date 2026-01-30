@@ -2,10 +2,13 @@ import uuid
 from django.db import models
 from cloudinary.models import CloudinaryField
 from django.core.exceptions import ValidationError
+from cloudinary.models import CloudinaryField
 
 class ServiceCategory(models.Model):
     
     name = models.CharField(max_length=255)
+    category_imsage = CloudinaryField('image', folder='category_img/salon_profile', overwrite=True, resource_type="image", null=True, blank = True)
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
