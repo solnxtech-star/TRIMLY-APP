@@ -97,8 +97,8 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 MIDDLEWARE = [
-    # 'funcs.middleware.ResponseTimeMiddleware',
-    # 'funcs.middleware.DBQueryCountMiddleware',
+    'funcs.middleware.ResponseTimeMiddleware',
+    'funcs.middleware.DBQueryCountMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
@@ -142,7 +142,7 @@ load_dotenv()
 DATABASES = {
     'default': dj_database_url.config(
         default=os.getenv("DATABASE_URL"),
-        conn_max_age=600,
+        conn_max_age=60,
         ssl_require=True
     )
 }
@@ -225,6 +225,8 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.MultiPartParser', # <--- This allows images!
     ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 100
 }
 
 # =========================
@@ -324,5 +326,6 @@ FLW_SECRET_KEY = os.getenv("FLW_SECRET_KEY")
 
 INTERNAL_IPS = [
     "127.0.0.1",
-   
+
 ]
+
