@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'api.v1.Vendor',
     'api.v1.Search',
     'funcs',
+    'silk',
 
 
     #third party packages
@@ -97,6 +98,7 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 MIDDLEWARE = [
+    # 'silk.middleware.SilkyMiddleware',
     'funcs.middleware.ResponseTimeMiddleware',
     'funcs.middleware.DBQueryCountMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -324,8 +326,7 @@ DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 FLW_SECRET_HASH = os.getenv("FLW_SECRET_HASH")
 FLW_SECRET_KEY = os.getenv("FLW_SECRET_KEY")
 
-INTERNAL_IPS = [
-    "127.0.0.1",
-
-]
-
+SILKY_PYTHON_PROFILER = True
+SILKY_MAX_RECORDED_REQUESTS = 1000
+SILKY_MAX_RECORDED_REQUESTS_CHECK_PERCENT = 10
+SILKY_SAVE_BODY = False  # <--- This is the big one! Stop saving huge JSON blobs.
