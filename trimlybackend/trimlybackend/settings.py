@@ -98,7 +98,7 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 MIDDLEWARE = [
-    # 'silk.middleware.SilkyMiddleware',
+    'silk.middleware.SilkyMiddleware',
     'funcs.middleware.ResponseTimeMiddleware',
     'funcs.middleware.DBQueryCountMiddleware',
     'django.middleware.security.SecurityMiddleware',

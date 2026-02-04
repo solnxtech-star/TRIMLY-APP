@@ -13,6 +13,12 @@ class GallerySerializer(serializers.ModelSerializer):
         model = Gallery
         fields = ("id", "salon", "vendor", "caption","image", "created_at")
         read_only_fields = ("id", "salon", "vendor", "created_at")
+        def validate(self, data):
+            salon = data["salon"]
+            vendor = data["vendor"]
+            if vendor and salon or not vendor or not salon:
+                raise serializers.ValidationError("must choose one provider")
+            return data
 
     
 class AvailaibilitySerializer(serializers.ModelSerializer):

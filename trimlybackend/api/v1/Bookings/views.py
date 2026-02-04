@@ -6,7 +6,7 @@ from api.v1.Users.permissions import IsBookingOwnerOrProvider , BookingActionPer
 from .models import Booking
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter
-from .serializers import BookingSerializer
+from .serializers import BookingSerializer, BookingDetailSerializer
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
@@ -37,19 +37,27 @@ class BookingViewSet(ModelViewSet):
         user = self.request.user
 
         if user.role == "admin":
-            return Booking.objects.all()
+            queryset = Booking.objects.all()
 
-        if user.role == "salon_owner":
-            return Booking.objects.filter(
+        elif user.role == "salon_owner":
+            queryset =  Booking.objects.filter(
                 salon_service__salon__owner=user
             )
 
-        if user.role == "individual_vendor":
-            return Booking.objects.filter(
+        elif user.role == "individual_vendor":
+            queryset =  Booking.objects.filter(
                 vendor_service__vendor__worker=user
             )
 
-        return Booking.objects.filter(customer=user)
+        else:
+           queryset =  Booking.objects.filter(customer=user)
+        if self.action == 'retrieve':
+            queryset = queryset.select_related(
+                'customer',
+                'salon_service__salon',
+                'vendor_service__vendor__worker',
+            )
+        return queryset
 
     def perform_create(self, serializer):
         serializer.save(customer=self.request.user)
@@ -57,7 +65,10 @@ class BookingViewSet(ModelViewSet):
     def get_serializer_class(self):
         if self.action in ['complete', 'cancel']:
             return None  # This hides all those unnecessary fields in Swagger/Postman
-        return BookingSerializer
+        elif self.action == "retrieve":
+            return BookingDetailSerializer
+        else:
+            return BookingSerializer
 
 
     @action(detail=True, methods=["post"])

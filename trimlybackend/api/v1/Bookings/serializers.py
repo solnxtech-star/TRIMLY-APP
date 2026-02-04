@@ -18,7 +18,7 @@ class BookingSerializer(serializers.ModelSerializer):
             'id', 'customer', 'salon_service', 'vendor_service', 
             'date', 'start_time', 'end_time', 'status'
         ]
-        read_only_Fields = ['status']
+        read_only_Fields = ['id', 'status', ]
 
     def validate(self, data):
         salon_service = data.get('salon_service')
@@ -72,3 +72,21 @@ class BookingSerializer(serializers.ModelSerializer):
         
         # Now call super().create which will successfully return the object
         return super().create(validated_data)
+    
+    
+class BookingDetailSerializer(serializers.ModelSerializer):
+    customer_name = serializers.CharField(source='customer.username', read_only=True)
+    customer_email = serializers.EmailField(source='customer.email', read_only=True)
+    
+    # Salon booking details
+    salon_name = serializers.CharField(source='salon_service.salon.name', read_only=True, allow_null=True)
+    salon_address = serializers.CharField(source='salon_service.salon.address', read_only=True, allow_null=True)
+    service_name = serializers.CharField(source='salon_service.name', read_only=True, allow_null=True)
+    
+    # Vendor booking details
+    vendor_name = serializers.CharField(source='vendor_service.vendor.business_name', read_only=True, allow_null=True)
+    vendor_service_name = serializers.CharField(source='vendor_service.name', read_only=True, allow_null=True)
+    
+    class Meta:
+        model = Booking
+        fields = ["customer_name", "customer_email", "salon_name", "salon_address", "service_name", "vendor_name", "vendor_service_name"]

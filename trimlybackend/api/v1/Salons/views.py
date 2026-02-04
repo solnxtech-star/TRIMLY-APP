@@ -26,7 +26,6 @@ class SalonViewset(viewsets.ModelViewSet):
             'owner',
             'category'
         ).prefetch_related(
-            # Salon Services with categories
             Prefetch(
                 'salon_services',
                 queryset=SalonServices.objects.prefetch_related('categories')
@@ -59,7 +58,7 @@ class SalonServicesListCreateAPIView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         salon_id = self.kwargs["id"]
-        return SalonServices.objects.prefetch_related("categories").filter(salon_id=salon_id)
+        return SalonServices.objects.select_related("categories").filter(salon_id=salon_id)
     def perform_create(self, serializer):
         salon = get_object_or_404(SalonProfile, id = self.kwargs["id"])
         serializer.save(salon=salon)
@@ -90,7 +89,7 @@ class SalonGalleryUploadAPIView(generics.ListCreateAPIView):
     serializer_class = GallerySerializer
     parser_classes = (parsers.MultiPartParser, parsers.FormParser)
     def get_queryset(self):
-        return Gallery.objects.filter(salon_id=self.kwargs["salon_id"])
+        return Gallery.objects.select_related("salon").filter(salon_id=self.kwargs["salon_id"])
 
     def perform_create(self, serializer):
         salon = get_object_or_404(SalonProfile, salon_id=self.kwargs["salon_id"])
