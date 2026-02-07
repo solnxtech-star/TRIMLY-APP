@@ -12,7 +12,7 @@ from api.v1.Category.models import Gallery, Availability
 from django.core.exceptions import ValidationError as DjangoValidationError
 
 class SalonServicesSerializer(serializers.ModelSerializer):
-    categories = CategorySerializer(many=True)
+    categories = CategorySerializer(many=True, read_only=True)
     class Meta:
         model = SalonServices
         fields = ('salon', 'name', 'description', 'price', 'duration_minutes', 'categories')
@@ -21,7 +21,7 @@ class SalonServicesSerializer(serializers.ModelSerializer):
 
 class SalonProfileSerializer(serializers.ModelSerializer):
     salon_services = SalonServicesSerializer(many=True, read_only=True)
-    category = CategorySerializer(read_only=True) # Usually a salon has 1 category
+    categories = CategorySerializer(many=True, read_only=True) # Usually a salon has 1 category
     salon_portfolio = GallerySerializer(many=True, read_only=True)
 
     salon_reviews = ReviewSerializer(many=True, read_only=True, source='reviews') 
@@ -29,7 +29,7 @@ class SalonProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalonProfile
         fields = (
-            "id", "owner", "name", "category", "about", "address", 
+            "id", "owner", "name", "categories", "about", "address", 
             "latitude", "longitude", "profile_pic", "salon_portfolio", 
             "links", "created_at", "is_open", "salon_services", "salon_reviews"
         )

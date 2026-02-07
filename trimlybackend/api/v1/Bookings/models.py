@@ -33,7 +33,7 @@ class Booking(models.Model):
         related_name="bookings",
     )
 
-    date = models.DateField()
+    date = models.DateField(db_index=True)
     start_time = models.TimeField()
     end_time = models.TimeField()
     payment_reference = models.CharField(max_length=20, null=True, blank=True)
@@ -41,13 +41,13 @@ class Booking(models.Model):
         max_length=20,
         choices=[
             ("pending", "Pending"),
-            ("confirmed", "Confirmed"),
             ("completed", "Completed"),
             ("cancelled", "Cancelled"),
         ],
-        default="pending",
+        default="pending",db_index=True
     )
     vendor_payout_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    is_rated = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

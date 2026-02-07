@@ -58,7 +58,7 @@ class PaymentWebhookView(APIView):
                 return Response({"status": "error", "message": "Booking not found"}, status=200)
 
             total_amount = Decimal(str(amount))
-            vendor_share = total_amount * Decimal('0.90')
+            vendor_share = total_amount * Decimal('0.85')
         
             with transaction.atomic():
                 # 3. GET OR CREATE TRANSACTION (Prevent double-crediting)
@@ -106,6 +106,7 @@ class RegisterBankDetailsView(GenericAPIView):
             if user.role not in ['individual_vendor', 'salon_owner']:
                 return Response({"error": "Only vendors and salons can register bank details."}, status=403)
 
+            
             # Call Flutterwave
             flw_response = FlutterwaveService.create_subaccount(serializer.validated_data)
 
@@ -115,24 +116,28 @@ class RegisterBankDetailsView(GenericAPIView):
                     sub_id = flw_response['data']['subaccount_id']
                     bank_code = flw_response['data']['account_bank']
                     account_number = flw_response['data']['account_number']
-
                     
                     if user.role == 'individual_vendor':
                         profile = user.individual_vendor_profile
                     elif user.role == 'salon_owner':
                         profile = user.salon_owner_Profile
-                  
-                    
+                        e
                     profile.flw_subaccount_id = sub_id
                     profile.bank_code = bank_code
                     profile.account_number = account_number
                     profile.save()
 
+                    wallet, created = Wallet.objects.get_or_create(user=user)
+                    if created:
+                        wallet.save()
+
+
+
                 return Response({
                     "message": "Bank details registered successfully",
                     "subaccount_id": sub_id
                 }, status=status.HTTP_201_CREATED)
-
+    
             return Response(flw_response, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

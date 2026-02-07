@@ -32,6 +32,7 @@ urlpatterns = [
     path('api/v1/payments/', include('api.v1.Payments.urls')),
     path('api/v1/search/', include('api.v1.Search.urls')),
     path('api/v1/toggle-status/', toggle_availability, name='toggle-availability'),
+    path('api/v1/reviews/', include('api.v1.Reviews.urls')),
     #documentation
     path('swagger/', SpectacularSwaggerView.as_view(), name="schema"),
     path('redoc/', SpectacularRedocView.as_view(), name="redoc"),

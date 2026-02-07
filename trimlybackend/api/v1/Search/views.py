@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework.views import APIView
+from rest_framework.generics import GenericAPIView
 from django.db.models import Q, Avg, Value, FloatField
 from django.db.models.functions import Coalesce
 from itertools import chain
@@ -12,7 +12,7 @@ from rest_framework.decorators import api_view
 from rest_framework import status
 
 
-class GlobalMarketplaceSearchAPIView(APIView):
+class GlobalMarketplaceSearchAPIView(GenericAPIView):
     def get(self, request):
         query = request.query_params.get('q', '') 
         lat = request.query_params.get('lat')

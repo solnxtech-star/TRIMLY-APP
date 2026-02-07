@@ -16,7 +16,7 @@ class BookingSerializer(serializers.ModelSerializer):
         model = Booking
         fields = [
             'id', 'customer', 'salon_service', 'vendor_service', 
-            'date', 'start_time', 'end_time', 'status'
+            'date', 'start_time', 'end_time', 'status', 'payment_reference', 'is_rated','created_at'
         ]
         read_only_Fields = ['id', 'status', ]
 
@@ -25,6 +25,7 @@ class BookingSerializer(serializers.ModelSerializer):
         vendor_service = data.get('vendor_service')
         date = data.get('date')
         start_time = data.get('start_time')
+        status = data.get("status")
 
         if not (salon_service or vendor_service):
             raise serializers.ValidationError("You must select a service.")
@@ -33,15 +34,15 @@ class BookingSerializer(serializers.ModelSerializer):
 
         if date < timezone.now().date():
             raise serializers.ValidationError("You cannot book an appointment in the past.")
+        
+        if status:
+            raise serializers.ValidationError("you cannot insert status manually")
 
         service = salon_service or vendor_service
         start_datetime = datetime.combine(date, start_time)
         end_datetime = start_datetime + timedelta(minutes=service.duration_minutes)
         calculated_end_time = end_datetime.time()
         
-        # --- CHANGE HERE ---
-        # Do NOT put end_time in the data dict if it is read_only. 
-        # Instead, store it as a temporary attribute on the serializer instance.
         self.calculated_end_time = calculated_end_time
 
         provider = salon_service.salon if salon_service else vendor_service.vendor
@@ -67,16 +68,15 @@ class BookingSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
-        # Manually inject the end_time that we calculated in the validate method
         validated_data['end_time'] = self.calculated_end_time
         
-        # Now call super().create which will successfully return the object
+
         return super().create(validated_data)
     
     
 class BookingDetailSerializer(serializers.ModelSerializer):
     customer_name = serializers.CharField(source='customer.username', read_only=True)
-    customer_email = serializers.EmailField(source='customer.email', read_only=True)
+
     
     # Salon booking details
     salon_name = serializers.CharField(source='salon_service.salon.name', read_only=True, allow_null=True)
@@ -84,9 +84,9 @@ class BookingDetailSerializer(serializers.ModelSerializer):
     service_name = serializers.CharField(source='salon_service.name', read_only=True, allow_null=True)
     
     # Vendor booking details
-    vendor_name = serializers.CharField(source='vendor_service.vendor.business_name', read_only=True, allow_null=True)
+    vendor_name = serializers.CharField(source='vendor_service.vendor.worker.username', read_only=True, allow_null=True)
     vendor_service_name = serializers.CharField(source='vendor_service.name', read_only=True, allow_null=True)
     
     class Meta:
         model = Booking
-        fields = ["customer_name", "customer_email", "salon_name", "salon_address", "service_name", "vendor_name", "vendor_service_name"]
+        fields = ["customer_name", "salon_name", "salon_address", "service_name", "vendor_name", "vendor_service_name"]

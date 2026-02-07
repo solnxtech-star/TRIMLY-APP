@@ -1,7 +1,7 @@
-from django.urls import path
-from .views import CreateReviewView
+from rest_framework.routers import DefaultRouter
+from .views import ReviewViewset
 
-urlpatterns = [
-    # Endpoint to submit a review
-    path('reviews/create/', CreateReviewView.as_view(), name='create-review'),
-]
+router = DefaultRouter()
+router.register("", ReviewViewset, basename="reviews")
+
+urlpatterns = router.urls

@@ -58,7 +58,7 @@ class SalonServicesListCreateAPIView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         salon_id = self.kwargs["id"]
-        return SalonServices.objects.select_related("categories").filter(salon_id=salon_id)
+        return SalonServices.objects.prefetch_related("categories").filter(salon_id=salon_id)
     def perform_create(self, serializer):
         salon = get_object_or_404(SalonProfile, id = self.kwargs["id"])
         serializer.save(salon=salon)
@@ -174,7 +174,7 @@ class SalonSlotsAPIView(APIView):
     """
     permission_classes = [AllowAny] # Customers don't need to be logged in to browse
 
-    def get(self, request, vendor_id):
+    def get(self, request, salon_id, *args, **kwargs):
         date_str = request.query_params.get('date')
         duration = int(request.query_params.get('duration', 60)) # Default 60 mins
         
@@ -182,12 +182,12 @@ class SalonSlotsAPIView(APIView):
             return Response({"error": "Date is required"}, status=400)
             
         date = datetime.strptime(date_str, '%Y-%m-%d').date()
-        salon = get_object_or_404(salon, id=self.kwargs["salon_id"])
+        salon = get_object_or_404(SalonProfile, id=self.kwargs["salon_id"])
         
         slots = get_available_slots(salon, date, duration)
         
         return Response({
-            "salon_id": vendor_id,
+            "salon_id": salon_id,
             "date": date_str,
             "slots": slots
         })
