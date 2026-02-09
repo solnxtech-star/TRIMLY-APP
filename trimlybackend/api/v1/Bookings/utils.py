@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 from api.v1.Category.models import Availability, AvailabilityException
+from api.v1.Vendor.models import IndividualVendorProfile
+from api.v1.Salons.models import SalonProfile
 from .models import Booking
 from django.db import models
 
@@ -10,32 +12,41 @@ def get_available_slots(provider, date, service_duration):
     """
     # 1. Get the weekday (0=Monday, 6=Sunday)
     weekday = date.weekday()
+    
 
-    # 2. Check general availability rules for this day
-    avail = Availability.objects.filter(salon=provider, day_of_week=weekday).first()
+
+# 1. Setup provider-specific filter keys
+    if isinstance(provider, SalonProfile):
+        lookup = {'salon': provider}
+        booking_q = models.Q(salon_service__salon=provider)
+    elif isinstance(provider, IndividualVendorProfile):
+        lookup = {'vendor': provider}
+        booking_q = models.Q(vendor_service__vendor=provider)
+    else:
+        return [] # Handle unknown provider types safely
+
+    # 2. Check general availability rules
+    # The **lookup unpacks to salon=provider or vendor=provider
+    avail = Availability.objects.filter(day_of_week=weekday, **lookup).first()
     if not avail:
-        return [] # Not working this day
+        return [] 
 
     # 3. Check for Exceptions (e.g., Holiday or changed hours)
-    exception = AvailabilityException.objects.filter(salon=provider, date=date).first()
-    
+    exception = AvailabilityException.objects.filter(date=date, **lookup).first()
+
     if exception:
         if not exception.is_available:
-            return [] # Vendor took the day off
-        start_time = exception.start_time
-        end_time = exception.end_time
+            return [] 
+        start_time, end_time = exception.start_time, exception.end_time
     else:
-        start_time = avail.start_time
-        end_time = avail.end_time
+        start_time, end_time = avail.start_time, avail.end_time
 
-    # 4. Fetch existing bookings for this day
+    # 4. Fetch existing bookings
     existing_bookings = Booking.objects.filter(
         date=date,
         status__in=['pending', 'confirmed']
-    ).filter(
-        # This handles your dynamic provider logic
-        models.Q(salon_service__salon=provider) | models.Q(vendor_service__vendor=provider)
-    )
+    ).filter(booking_q)
+
 
     # 5. Generate Potential Slots (e.g., every 30 minutes)
     slots = []

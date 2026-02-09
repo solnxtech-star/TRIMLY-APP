@@ -13,6 +13,7 @@ from rest_framework import status
 
 
 class GlobalMarketplaceSearchAPIView(GenericAPIView):
+    serializer_class = UnifiedSearchSerializer
     def get(self, request):
         query = request.query_params.get('q', '') 
         lat = request.query_params.get('lat')

@@ -4,52 +4,45 @@ from api.v1.Reviews.models import Review
 from api.v1.Reviews.serializers import ReviewSerializer
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
+from django_filters.rest_framework import DjangoFilterBackend
+
 class ReviewViewset(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ["salon", "vendor"]
 
     def get_queryset(self):
         user = self.request.user
-        queryset = Review.objects.select_related("customer", "vendor", "salon").all()
-        salon_id = self.request.query_params.get('salonId')
-        vendor_id = self.request.query_params.get('vendorId')
+        if not user.is_authenticated:
+            return Review.objects.none()
 
-        # 3. Apply filters if the params exist
-        if salon_id:
-            queryset = queryset.filter(salon_id=salon_id)
-        elif vendor_id:
-            queryset = queryset.filter(vendor_id=vendor_id)
-        if user.role == "salon_owner" :
+        if user.role == "salon_owner":
             return Review.objects.filter(salon__owner=user)
-        
-        # 2. If the user is a Vendor, show only their reviews
-        if user.role == "individual_vendor":
+        elif user.role == "individual_vendor":
             return Review.objects.filter(vendor__worker=user)
-        else: 
-            return queryset
-
-  
         
+        # Customers see all reviews
+        return Review.objects.all().select_related("customer", "vendor", "salon")
+
     def get_permissions(self):
-        if self.action in ["CREATE"]:
-            self.permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
-        if self.action in ["DELETE", "UPDATE"]:
-            self.permission_classes = [permissions.IsAdminUser]
-        else:
-            self.permission_classes = [permissions.AllowAny]
-        return super().get_permissions()
+        # Action names must be lowercase
+        if self.action == "create":
+            return [permissions.IsAuthenticated()]
+        if self.action in ["update", "partial_update", "destroy"]:
+            return [permissions.IsAdminUser()]
+        return [permissions.AllowAny()]
     
     def perform_create(self, serializer):
-        serializer.save(customer=self.request.user)
-        provider = serializer.validated_data["salon"] or serializer.validated_data["vendor"]
-        associated_booking = Booking.objects.filter(customer=self.request.user).last()
-        if associated_booking:
-            associated_booking.get_vendor_user == provider or associated_booking.get_vendor_user == provider
-            associated_booking.status = True
-            associated_booking.save()
-        else: 
-            raise serializers.ValidationError({"detail" : "no associated booking"})
+        user = self.request.user
+        if user.role != "customer":
+            raise serializers.ValidationError("Only customers can leave reviews.")
         
-            
+        # Save review and update the booking status in one go
+        booking = serializer.context.get('associated_booking')
+        serializer.save(customer=user)
         
+        if booking:
+            booking.is_rated = True
+            booking.save()
 
         

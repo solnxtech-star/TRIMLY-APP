@@ -2,14 +2,19 @@ from datetime import datetime
 from django.shortcuts import get_object_or_404
 from api.v1.Category.models import Availability, AvailabilityException, Gallery
 from api.v1.Category.serializers import AvailabilityExceptionSerializer, AvailaibilitySerializer, GallerySerializer
+from api.v1.Reviews.models import Review
 from .models import IndividualVendorProfile, VendorServices
-from .serializers import VendorSerializer, VendorServicesSerializer
+from .serializers import SlotResponseSerializer, VendorSerializer, VendorServicesSerializer, VendorDetailSerializer
 from rest_framework import generics, viewsets, permissions, parsers
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from api.v1.Users.permissions import IsAdminVendorOrReadOnly, IsAdminOrVendorServiceObject, IsVendorAvailabilityOwner, IsOwnerOfTargetProvider
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from api.v1.Bookings.utils import get_available_slots
+from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.types import OpenApiTypes
+from django.db.models import Prefetch, Count, Avg, Value, FloatField
+from django.db.models.functions import Coalesce 
 
 class VendorServicesListCreateAPIView(generics.ListCreateAPIView):
     """
@@ -19,7 +24,7 @@ class VendorServicesListCreateAPIView(generics.ListCreateAPIView):
     permission_classes = [IsAdminVendorOrReadOnly]
     def get_queryset(self):
         vendor_id = self.kwargs["id"]
-        return VendorServices.objects.filter(vendor_id=vendor_id)
+        return VendorServices.objects.prefetch_related("categories").filter(vendor_id=vendor_id)
     def perform_create(self, serializer):
         return serializer.save(vendor=self.request.user)
 
@@ -30,7 +35,7 @@ class VendorServicesRetrieveUpdateDeleteAPIView(generics.RetrieveUpdateDestroyAP
     serializer_class = VendorServicesSerializer
     permission_classes = [IsAdminOrVendorServiceObject]
     def get_queryset(self):
-        qs = VendorServices.objects.filter(vendor_id = self.kwargs["vendor_id"])
+        qs = VendorServices.objects.prefetch_related("categories").filter(vendor_id = self.kwargs["vendor_id"])
 
         return qs
 
@@ -38,8 +43,29 @@ class VendorViewset(viewsets.ModelViewSet):
     """"
     A viewset for viewing and editing vendor instances.
     """
-    queryset = IndividualVendorProfile.objects.all()
     serializer_class = VendorSerializer
+    def get_queryset(self):
+        return IndividualVendorProfile.objects.select_related(
+            'worker',
+            'category'
+        ).prefetch_related(
+            Prefetch(
+                'vendor_services',
+                queryset=VendorServices.objects.prefetch_related('categories')
+            ),
+            Prefetch(
+                'reviews',
+                queryset=Review.objects.select_related('customer')
+            ),
+            'vendor_portfolio'
+        ).annotate(
+            review_count=Count('reviews'),
+            average_rating=Coalesce(
+                Avg('reviews__rating'), 
+                Value(0.0), 
+                output_field=FloatField()
+            )
+        ).order_by("-average_rating")
 
     def get_permissions(self):
         if self.action in ["list", "retrieve"]:
@@ -51,6 +77,11 @@ class VendorViewset(viewsets.ModelViewSet):
 
         return [permission() for permission in permission_classes]
     
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return VendorDetailSerializer
+        else:
+            return VendorSerializer
 
     
 class VendorGalleryUploadAPIView(generics.ListCreateAPIView):
@@ -149,6 +180,22 @@ class VendorSlotsAPIView(APIView):
     Handles returning Available slots to the user
     """
     permission_classes = [AllowAny] # Customers don't need to be logged in to browse
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name='date', 
+                description='Date to check availability (YYYY-MM-DD)', 
+                required=True, 
+                type=OpenApiTypes.DATE
+            ),
+            OpenApiParameter(
+                name='duration', 
+                description='enter duration for slot', 
+                required=False, 
+                type=OpenApiTypes.INT
+            ),
+        ],
+        responses={200: SlotResponseSerializer(many=True)})
 
     def get(self, request, vendor_id):
         date_str = request.query_params.get('date')

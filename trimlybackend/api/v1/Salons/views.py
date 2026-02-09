@@ -8,19 +8,24 @@ from api.v1.Bookings.utils import get_available_slots
 from api.v1.Reviews.models import Review
 from .models import SalonProfile, SalonServices
 from api.v1.Category.models import AvailabilityException, Gallery, Availability
-from .serializers import SalonProfileSerializer, SalonServicesSerializer
+from .serializers import SalonProfileSerializer, SalonServicesSerializer, SalonDetailSerializer,SlotResponseSerializer
 from api.v1.Users import permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Count, Avg, Value, FloatField
+from django.db.models.functions import Coalesce 
+from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.types import OpenApiTypes
+
 #check for permisions to update or delet the corect slaon ownerr
 
 class SalonViewset(viewsets.ModelViewSet):
     """"
     A viewset for viewing and editing salon instances."""
-    queryset = SalonProfile.objects.all()
+
     serializer_class = SalonProfileSerializer
     
+
     def get_queryset(self):
         return SalonProfile.objects.select_related(
             'owner',
@@ -35,7 +40,15 @@ class SalonViewset(viewsets.ModelViewSet):
                 queryset=Review.objects.select_related('customer')
             ),
             'salon_portfolio'
-        )
+        ).annotate(
+            review_count=Count('reviews'),
+            average_rating=Coalesce(
+                Avg('reviews__rating'), 
+                Value(0.0), 
+                output_field=FloatField()
+            )
+        ).order_by("-average_rating")
+    
     def get_permissions(self):
         """
         Instantiates and returns the list of permissions that this view requires.
@@ -49,6 +62,11 @@ class SalonViewset(viewsets.ModelViewSet):
         return [permission() for permission in permission_classes]
     def perform_create(self, serializer):
         return serializer.save(owner=self.request.user)
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return SalonDetailSerializer
+        else:
+            return SalonProfileSerializer
   
 class SalonServicesListCreateAPIView(generics.ListCreateAPIView):
     """
@@ -111,6 +129,7 @@ class SalonAvailabilityListCreateAPIView(generics.ListCreateAPIView):
     Instantiates and Returns Salon Avalaibility
     """
     serializer_class = AvailaibilitySerializer
+    permission_classes = [permissions.IsOwnerOfTargetProvider]
 
     def get_queryset(self):
         return Availability.objects.filter(
@@ -120,12 +139,6 @@ class SalonAvailabilityListCreateAPIView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         serializer.save(salon_id=self.kwargs["id"])
 
-    def get_permissions(self):
-        if self.request.method == "GET":
-            permission_classes = [AllowAny]
-        else:
-            permission_classes = [permissions.IsAdminOrSalonOwnerObject]
-        return [p() for p in permission_classes]
     
 
 
@@ -135,7 +148,7 @@ class SalonAvailabilityRetrieveUpdateDeleteAPIView(
     Instantiates and Returns Salon Avalaibility objects(Id)
     """
     serializer_class = AvailaibilitySerializer
-    permission_classes = [permissions.IsAdminOrSalonServiceOwnerObject]
+    permission_classes = [permissions.IsAdminOrSalonOwnerObject]
     def get_queryset(self):
         qs = Availability.objects.filter(salon_id = self.kwargs["salon_id"])
         return qs
@@ -145,6 +158,7 @@ class SalonAvailabilityExceptionListCreateAPIView(generics.ListCreateAPIView):
     """
     Instantiates and Returns Salon Avalaibility Exception
     """
+
     serializer_class = AvailabilityExceptionSerializer
     permission_classes = [permissions.IsOwnerOfTargetProvider]
 
@@ -162,7 +176,7 @@ class SalonAvailabilityExceptionRetrieveAPIView(generics.RetrieveUpdateDestroyAP
     Instantiates and Returns Salon Avalaibility Exception object (id)
     """
     serializer_class = AvailabilityExceptionSerializer
-    permission_classes = [permissions.IsSalonAvailabilityOwner]
+    permission_classes = [permissions.IsSalonAvailabilityOwnerObj]
 
     def get_queryset(self):
         return AvailabilityException.objects.filter(
@@ -174,10 +188,27 @@ class SalonSlotsAPIView(APIView):
     """
     permission_classes = [AllowAny] # Customers don't need to be logged in to browse
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name='date', 
+                description='Date to check availability (YYYY-MM-DD)', 
+                required=True, 
+                type=OpenApiTypes.DATE
+            ),
+            OpenApiParameter(
+                name='duration', 
+                description='enter duration for slot', 
+                required=False, 
+                type=OpenApiTypes.INT
+            ),
+        ],
+        responses={200: SlotResponseSerializer(many=True)})
+    
+
     def get(self, request, salon_id, *args, **kwargs):
         date_str = request.query_params.get('date')
-        duration = int(request.query_params.get('duration', 60)) # Default 60 mins
-        
+        duration = int(request.query_params.get('duration', 60))
         if not date_str:
             return Response({"error": "Date is required"}, status=400)
             
@@ -191,3 +222,4 @@ class SalonSlotsAPIView(APIView):
             "date": date_str,
             "slots": slots
         })
+    
