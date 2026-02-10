@@ -1,23 +1,47 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { StyleSheet, View, TextInput, TouchableOpacity, ScrollView, Image, Alert } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { FontSizes } from '@/constants/theme';
+import authService from '@/services/authService';
+import { User } from '@/types/auth.types';
 
 export default function EditProfileScreen() {
-  const [name, setName] = useState('Alex Briggs');
-  const [email, setEmail] = useState('Alexbg@gmail.com');
-  const [phone, setPhone] = useState('+2348165234875');
-  const [dob, setDob] = useState('01/05/98');
+  const [user, setUser] = useState<User | null>(null);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [dob, setDob] = useState('');
   const [gender, setGender] = useState('Female');
   
-  // Get theme colors
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
-  const borderColor = useThemeColor({}, 'border');
+  const borderColor = '#E5E7EB';
   const inputBackgroundColor = useThemeColor({ light: '#FFFFFF', dark: '#2a2a2a' }, 'background');
+  
+  useEffect(() => {
+    loadUser();
+  }, []);
+  
+  const loadUser = async () => {
+    try {
+      const userData = await authService.getCachedUser();
+      console.log('Edit profile loaded user:', userData);
+      setUser(userData);
+      setName(`${userData?.first_name || ''} ${userData?.last_name || ''}`.trim());
+      setEmail(userData?.email || '');
+      setPhone(userData?.phone_number || '');
+    } catch (error) {
+      console.error('Failed to load user:', error);
+    }
+  };
+  
+  const displayName = user?.first_name && user?.last_name 
+    ? `${user.first_name} ${user.last_name}` 
+    : user?.email || 'User';
+  const displayEmail = user?.email || '';
 
   const genders = ['Male', 'Female', 'Other'];
 
@@ -164,6 +188,24 @@ const styles = StyleSheet.create({
     backgroundColor: '#2D8659',
     justifyContent: 'center',
     alignItems: 'center',
+    marginRight: 16,
+  },
+  avatarText: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  userInfo: {
+    flex: 1,
+  },
+  userName: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  userEmail: {
+    fontSize: 14,
+    color: '#6B6B6B',
   },
   formContainer: {
     flex: 1,

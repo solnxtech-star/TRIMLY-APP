@@ -1,11 +1,32 @@
-import { StyleSheet, View, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { useState, useEffect } from 'react';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { useRouter } from 'expo-router';
 import { FontSizes } from '@/constants/theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import vendorService from '@/services/vendorService';
+import { Vendor } from '@/types/salon.types';
 
 export default function FeaturedVendors() {
   const router = useRouter();
+  const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    fetchVendors();
+  }, []);
+  
+  const fetchVendors = async () => {
+    try {
+      const response = await vendorService.listVendors({ limit: '5' });
+      console.log('Featured vendors loaded:', response.results.length);
+      setVendors(response.results);
+    } catch (error) {
+      console.error('Failed to fetch vendors:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   
   const handleSeeAll = () => {
     router.push('/client/featured-vendors-list');
@@ -20,104 +41,52 @@ export default function FeaturedVendors() {
         </TouchableOpacity>
       </View>
       
-      <ScrollView 
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="small" color="#2D8659" />
+        </View>
+      ) : vendors.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <ThemedText style={styles.emptyText}>No vendors available</ThemedText>
+        </View>
+      ) : (
+        <ScrollView 
         horizontal 
         showsHorizontalScrollIndicator={false}
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Vendor Card 1 */}
-        {/* <TouchableOpacity style={styles.card} onPress={() => router.push('/client/business-details/2')}>
-          <Image 
-            source={require('@/assets/images/4.jpg')} 
-            style={styles.cardBackground}
-            resizeMode="cover"
-          />
-          <View style={styles.textOverlay}>
-            <ThemedText style={styles.vendorName}>Vendor Name</ThemedText>
-            <View style={styles.ratingContainer}>
-              <ThemedText style={styles.rating}>★ 4.8</ThemedText>
+        {vendors.map((vendor) => (
+          <TouchableOpacity 
+            key={vendor.id} 
+            style={[styles.card, styles.secondCard]} 
+            onPress={() => router.push(`/client/business-details/${vendor.id}`)}
+          >
+            {vendor.gallery && vendor.gallery.length > 0 ? (
+              <Image 
+                source={{ uri: vendor.gallery[0].image }}
+                style={styles.cardBackground}
+                resizeMode="cover"
+              />
+            ) : (
+              <View style={[styles.cardBackground, { backgroundColor: '#E5E7EB' }]} />
+            )}
+            <View style={styles.textOverlay}>
+              <ThemedText style={styles.vendorName} numberOfLines={1}>
+                {vendor.worker || 'Vendor'}
+              </ThemedText>
+              <View style={styles.ratingContainer}>
+                <MaterialCommunityIcons name='star' size={11} color='yellow' />
+                <ThemedText style={styles.rating}>{vendor.rating || 0}</ThemedText>
+              </View>
+              <ThemedText style={styles.duration}>
+                {vendor.is_available ? 'Online' : 'Offline'}
+              </ThemedText>
             </View>
-          </View>
-        </TouchableOpacity> */}
-        
-        {/* Vendor Card 2 */}
-        <TouchableOpacity style={[styles.card, styles.secondCard]} onPress={() => router.push('/client/business-details/3')}>
-          <Image 
-            source={require('@/assets/images/4.jpg')} 
-            style={styles.cardBackground}
-            resizeMode="cover"
-          />
-          <View style={styles.textOverlay}>
-            <ThemedText style={styles.vendorName}>Another Vendor</ThemedText>
-            <View style={styles.ratingContainer}>
-              <MaterialCommunityIcons name='star' size={11} color='yellow' />
-              <ThemedText style={styles.rating}>4.5</ThemedText>
-            </View>
-          <ThemedText style={styles.duration}>Online</ThemedText>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.card, styles.secondCard]} onPress={() => router.push('/client/business-details/3')}>
-          <Image 
-            source={require('@/assets/images/3.jpg')} 
-            style={styles.cardBackground}
-            resizeMode="cover"
-          />
-          <View style={styles.textOverlay}>
-            <ThemedText style={styles.vendorName}>Another Vendor</ThemedText>
-            <View style={styles.ratingContainer}>
-              <MaterialCommunityIcons name='star' size={11} color='yellow' />
-              <ThemedText style={styles.rating}>4.5</ThemedText>
-            </View>
-          <ThemedText style={styles.duration}>Online</ThemedText>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.card, styles.secondCard]} onPress={() => router.push('/client/business-details/3')}>
-          <Image 
-            source={require('@/assets/images/4.jpg')} 
-            style={styles.cardBackground}
-            resizeMode="cover"
-          />
-          <View style={styles.textOverlay}>
-            <ThemedText style={styles.vendorName}>Another Vendor</ThemedText>
-            <View style={styles.ratingContainer}>
-              <MaterialCommunityIcons name='star' size={11} color='yellow' />
-              <ThemedText style={styles.rating}>4.5</ThemedText>
-            </View>
-          <ThemedText style={styles.duration}>Online</ThemedText>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.card, styles.secondCard]} onPress={() => router.push('/client/business-details/3')}>
-          <Image 
-            source={require('@/assets/images/3.jpg')} 
-            style={styles.cardBackground}
-            resizeMode="cover"
-          />
-          <View style={styles.textOverlay}>
-            <ThemedText style={styles.vendorName}>Another Vendor</ThemedText>
-            <View style={styles.ratingContainer}>
-              <MaterialCommunityIcons name='star' size={11} color='yellow' />
-              <ThemedText style={styles.rating}>4.5</ThemedText>
-            </View>
-          <ThemedText style={styles.duration}>Online</ThemedText>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.card, styles.secondCard]} onPress={() => router.push('/client/business-details/3')}>
-          <Image 
-            source={require('@/assets/images/4.jpg')} 
-            style={styles.cardBackground}
-            resizeMode="cover"
-          />
-          <View style={styles.textOverlay}>
-            <ThemedText style={styles.vendorName}>Another Vendor</ThemedText>
-            <View style={styles.ratingContainer}>
-              <MaterialCommunityIcons name='star' size={11} color='yellow' />
-              <ThemedText style={styles.rating}>4.5</ThemedText>
-            </View>
-          <ThemedText style={styles.duration}>Online</ThemedText>
-          </View>
-        </TouchableOpacity>
+          </TouchableOpacity>
+        ))}
       </ScrollView>
+      )}
     </View>
   );
 }
@@ -228,5 +197,17 @@ const styles = StyleSheet.create({
   },
   textcontent: {
     paddingVertical: 2
-  }
+  },
+  loadingContainer: {
+    paddingVertical: 40,
+    alignItems: 'center',
+  },
+  emptyContainer: {
+    paddingVertical: 40,
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: FontSizes.md,
+    color: '#6B6B6B',
+  },
 });

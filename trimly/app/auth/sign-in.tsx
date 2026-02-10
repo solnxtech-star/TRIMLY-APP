@@ -1,13 +1,15 @@
 import { useState } from 'react';
-import { StyleSheet, TextInput, View, TouchableOpacity, Alert, Image } from 'react-native';
+import { StyleSheet, TextInput, View, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Link, useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { FontSizes } from '@/constants/theme';
+import authService from '@/services/authService';
+import CustomAlert from '@/components/CustomAlert';
 
 export default function SignInScreen() {
-  const [email, setEmail] = useState('amy@gmail.com');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -15,6 +17,12 @@ export default function SignInScreen() {
   const [passwordError, setPasswordError] = useState('');
   const [emailFocused, setEmailFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
+  const [alertConfig, setAlertConfig] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+    buttons: Array<{ text: string; onPress?: () => void; style?: 'default' | 'cancel' | 'destructive' }>;
+  }>({ visible: false, title: '', message: '', buttons: [] });
   
   // Get the role from the URL parameters
   const params = useLocalSearchParams();
@@ -29,14 +37,12 @@ export default function SignInScreen() {
     return password.length >= 7;
   };
 
-  const handleSignIn = () => {
-    // Reset errors
+  const handleSignIn = async () => {
     setEmailError('');
     setPasswordError('');
     
     let isValid = true;
     
-    // Validate email
     if (!email) {
       setEmailError('Email is required');
       isValid = false;
@@ -45,7 +51,6 @@ export default function SignInScreen() {
       isValid = false;
     }
     
-    // Validate password
     if (!password) {
       setPasswordError('Password is required');
       isValid = false;
@@ -56,17 +61,57 @@ export default function SignInScreen() {
     
     if (isValid) {
       setIsLoading(true);
-      // Simulate API call
-      setTimeout(() => {
-        setIsLoading(false);
-        // Navigate to the appropriate dashboard based on the selected role
-        if (role === 'vendor') {
+      console.log('Starting login with email:', email);
+      
+      try {
+        const response = await authService.login({
+          email: email.trim(),
+          password,
+        });
+        
+        console.log('Login successful, user role:', response.user.role);
+        
+        // Navigate to appropriate dashboard based on user's role
+        if (response.user.role === 'salon_owner' || response.user.role === 'vendor') {
           router.replace('/business/dashboard');
         } else {
-          // Default to client dashboard for customer role or any other case
           router.replace('/client/dashboard');
         }
-      }, 1000);
+      } catch (error: any) {
+        console.error('Login failed:', error);
+        setIsLoading(false);
+        
+        let errorMessage = error.message || 'Login failed. Please try again.';
+        let errorTitle = 'Login Failed';
+        
+        if (error.data) {
+          if (error.data.email) {
+            setEmailError(Array.isArray(error.data.email) ? error.data.email[0] : error.data.email);
+          }
+          if (error.data.password) {
+            setPasswordError(Array.isArray(error.data.password) ? error.data.password[0] : error.data.password);
+          }
+          if (error.data.non_field_errors) {
+            const nonFieldError = Array.isArray(error.data.non_field_errors) 
+              ? error.data.non_field_errors[0] 
+              : error.data.non_field_errors;
+            
+            if (nonFieldError.toLowerCase().includes('not verified')) {
+              errorTitle = 'Email Not Verified';
+              errorMessage = 'Please verify your email address before logging in. Check your inbox for the verification link.';
+            } else {
+              setPasswordError(nonFieldError);
+            }
+          }
+        }
+        
+        setAlertConfig({
+          visible: true,
+          title: errorTitle,
+          message: errorMessage,
+          buttons: [{ text: 'OK', onPress: () => setAlertConfig(prev => ({ ...prev, visible: false })) }],
+        });
+      }
     }
   };
 
@@ -222,6 +267,14 @@ export default function SignInScreen() {
           </Link>
         </View>
       </ThemedView>
+      
+      <CustomAlert
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        buttons={alertConfig.buttons}
+        onDismiss={() => setAlertConfig(prev => ({ ...prev, visible: false }))}
+      />
     </ThemedView>
   );
 }

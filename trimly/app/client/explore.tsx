@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { StyleSheet, View, TouchableOpacity, Image } from 'react-native';
+import { useState, useEffect } from 'react';
+import { StyleSheet, View, TouchableOpacity, Image, ActivityIndicator, FlatList, RefreshControl } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { CustomSafeAreaView } from '@/components/custom-safe-area-view';
@@ -7,16 +7,68 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useRouter } from 'expo-router';
 import { FontSizes } from '@/constants/theme';
+import salonService from '@/services/salonService';
+import { Salon } from '@/types/salon.types';
 
 export default function ExploreScreen() {
   const router = useRouter();
-  const [selectedStore, setSelectedStore] = useState<any>(null);
+  const [selectedStore, setSelectedStore] = useState<Salon | null>(null);
+  const [salons, setSalons] = useState<Salon[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   // Get theme colors
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const cardBackgroundColor = useThemeColor({ light: '#f5f5f5', dark: '#1a1a1a' }, 'background');
-  const borderColor = useThemeColor({}, 'border');
+  const borderColor = '#E5E7EB';
+  
+  // Fetch salons on component mount
+  useEffect(() => {
+    fetchSalons();
+  }, []);
+  
+  const fetchSalons = async () => {
+    try {
+      setError(null);
+      const response = await salonService.listSalons({ limit: 20 });
+      
+      console.log('=== SALONS DATA (Explore Screen) ===');
+      console.log('Total salons loaded:', response.results.length);
+      console.log('Full response:', JSON.stringify(response, null, 2));
+      console.log('Salons array:', JSON.stringify(response.results, null, 2));
+      
+      // Log individual salon details
+      response.results.forEach((salon, index) => {
+        console.log(`\n--- Salon ${index + 1} ---`);
+        console.log('ID:', salon.id);
+        console.log('Name:', salon.name);
+        console.log('Owner:', salon.owner);
+        console.log('Category:', salon.category);
+        console.log('Address:', salon.address);
+        console.log('Location:', salon.location);
+        console.log('Is Open:', salon.is_open);
+        console.log('Rating:', salon.rating);
+        console.log('Review Count:', salon.review_count);
+        console.log('Services:', salon.services);
+        console.log('Gallery:', salon.gallery);
+      });
+      
+      setSalons(response.results);
+    } catch (err: any) {
+      console.error('Failed to fetch salons:', err);
+      setError(err.message || 'Failed to load salons');
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  };
+  
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    fetchSalons();
+  };
   
   // Sample store data with images
   const stores = [
@@ -70,20 +122,43 @@ export default function ExploreScreen() {
     }
   ];
   
+  // Show loading state
+  if (isLoading) {
+    return (
+      <CustomSafeAreaView edges="top" style={[styles.container, { backgroundColor }]}>
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color="#2D8A47" />
+          <ThemedText style={[styles.loadingText, { color: textColor }]}>Loading salons...</ThemedText>
+        </View>
+      </CustomSafeAreaView>
+    );
+  }
+  
+  // Show error state
+  if (error && salons.length === 0) {
+    return (
+      <CustomSafeAreaView edges="top" style={[styles.container, { backgroundColor }]}>
+        <View style={styles.centerContainer}>
+          <IconSymbol name="exclamationmark.triangle" size={48} color="#EF4444" />
+          <ThemedText style={[styles.errorText, { color: textColor }]}>{error}</ThemedText>
+          <TouchableOpacity style={styles.retryButton} onPress={fetchSalons}>
+            <ThemedText style={styles.retryButtonText}>Retry</ThemedText>
+          </TouchableOpacity>
+        </View>
+      </CustomSafeAreaView>
+    );
+  }
+  
   const handleExploreAllPress = () => {
     router.push('/client/components/map');
   };
   
-  const handleLocationPress = (storeId: number) => {
-    // Find the store that corresponds to this location
-    const store = stores.find(s => s.id === storeId);
-    if (store) {
-      setSelectedStore(store);
-    }
+  const handleLocationPress = (salon: Salon) => {
+    setSelectedStore(salon);
   };
   
-  const handleStoreItemPress = (storeId: number) => {
-    router.push(`/client/business-details/${storeId}` as `${string}/${number}`);
+  const handleStoreItemPress = (salonId: string) => {
+    router.push(`/client/business-details/${salonId}`);
   };
   
   const closeStoreItem = () => {
@@ -106,7 +181,7 @@ export default function ExploreScreen() {
         <View style={styles.lagosArea}>
           <TouchableOpacity
             style={[styles.locationPin, styles.location1]}
-            onPress={() => handleLocationPress(1)}
+            onPress={() => handleLocationPress(salons[0] || stores[0] as any)}
           >
             <View style={styles.pinIcon} />
             <ThemedText style={[styles.locationName, { color: textColor }]}>Oshodi-Isolo</ThemedText>
@@ -114,7 +189,7 @@ export default function ExploreScreen() {
           
           <TouchableOpacity
             style={[styles.locationPin, styles.location2]}
-            onPress={() => handleLocationPress(2)}
+            onPress={() => handleLocationPress(salons[1] || stores[1] as any)}
           >
             <View style={styles.pinIcon} />
             <ThemedText style={[styles.locationName, { color: textColor }]}>Mushin</ThemedText>
@@ -122,7 +197,7 @@ export default function ExploreScreen() {
           
           <TouchableOpacity
             style={[styles.locationPin, styles.location3]}
-            onPress={() => handleLocationPress(3)}
+            onPress={() => handleLocationPress(salons[2] || stores[2] as any)}
           >
             <View style={styles.pinIcon} />
             <ThemedText style={[styles.locationName, { color: textColor }]}>Surulere</ThemedText>
@@ -130,7 +205,7 @@ export default function ExploreScreen() {
           
           <TouchableOpacity
             style={[styles.locationPin, styles.location4]}
-            onPress={() => handleLocationPress(4)}
+            onPress={() => handleLocationPress(salons[3] || stores[3] as any)}
           >
             <View style={styles.pinIcon} />
             <ThemedText style={[styles.locationName, { color: textColor }]}>Ikeja</ThemedText>
@@ -142,34 +217,50 @@ export default function ExploreScreen() {
           <View style={[styles.storeItemContainer, { backgroundColor: backgroundColor }]}>
             <TouchableOpacity 
               style={[styles.storeCard, { 
-                backgroundColor: selectedStore.isFeatured ? cardBackgroundColor : cardBackgroundColor,
-                borderColor: selectedStore.isFeatured ? '#2D8659' : borderColor
+                backgroundColor: cardBackgroundColor,
+                borderColor: borderColor
               }]}
               onPress={() => handleStoreItemPress(selectedStore.id)}
             >
               <View style={styles.cardContent}>
-                <Image source={selectedStore.image} style={styles.storeImage} />
+                {selectedStore.gallery && selectedStore.gallery.length > 0 ? (
+                  <Image source={{ uri: selectedStore.gallery[0].image }} style={styles.storeImage} />
+                ) : (
+                  <View style={[styles.storeImage, { backgroundColor: '#E5E7EB' }]} />
+                )}
                 <View style={styles.infoSection}>
                   <View style={styles.nameRow}>
                     <ThemedText style={[styles.storeName, { color: textColor }]}>{selectedStore.name}</ThemedText>
                     <View style={styles.statusBadge}>
-                      <ThemedText style={[styles.statusText, { color: '#2D8659' }]}>{selectedStore.status}</ThemedText>
+                      <ThemedText style={[styles.statusText, { color: '#2D8659' }]}>Open</ThemedText>
                     </View>
                   </View>
                   
                   <View style={styles.ratingRow}>
                     <IconSymbol name="star" size={16} color="#FFC107" />
-                    <ThemedText style={[styles.ratingText, { color: textColor }]}>{selectedStore.rating}</ThemedText>
-                    <ThemedText style={[styles.reviewText, { color: textColor }]}>({selectedStore.reviews} Reviews)</ThemedText>
+                    <ThemedText style={[styles.ratingText, { color: textColor }]}>{selectedStore.rating || 0}</ThemedText>
+                    <ThemedText style={[styles.reviewText, { color: textColor }]}>({selectedStore.review_count || 0} Reviews)</ThemedText>
                   </View>
                   
-                  <ThemedText style={[styles.servicesText, { color: textColor }]}>{selectedStore.services}</ThemedText>
+                  <ThemedText style={[styles.servicesText, { color: textColor }]} numberOfLines={1}>
+                    {selectedStore.services && selectedStore.services.length > 0
+                      ? selectedStore.services.slice(0, 3).map(s => s.name).join('.')
+                      : 'Services available'}
+                  </ThemedText>
                   
                   <View style={styles.bottomRow}>
-                    <ThemedText style={[styles.priceText, { color: '#2D8659' }]}>{selectedStore.price}</ThemedText>
+                    <ThemedText style={[styles.priceText, { color: '#2D8659' }]}>
+                      {selectedStore.services && selectedStore.services.length > 0 ? (() => {
+                        const prices = selectedStore.services.map(s => parseFloat(s.price)).filter(p => !isNaN(p));
+                        return prices.length > 0 
+                          ? `₦${Math.min(...prices)} - ₦${Math.max(...prices)}`
+                          : 'Contact for pricing';
+                      })()
+                        : 'Contact for pricing'}
+                    </ThemedText>
                     <View style={styles.locationRow}>
                       <IconSymbol name="location" size={14} color={textColor} />
-                      <ThemedText style={[styles.distanceText, { color: textColor }]}>{selectedStore.distance}</ThemedText>
+                      <ThemedText style={[styles.distanceText, { color: textColor }]}>{selectedStore.location}</ThemedText>
                     </View>
                   </View>
                 </View>
@@ -377,6 +468,35 @@ const styles = StyleSheet.create({
   },
   exploreButtonText: {
     fontSize: FontSizes.lg, // 16
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: FontSizes.md,
+    fontWeight: '500',
+  },
+  errorText: {
+    marginTop: 16,
+    fontSize: FontSizes.md,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  retryButton: {
+    marginTop: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    backgroundColor: '#2D8A47',
+    borderRadius: 12,
+  },
+  retryButtonText: {
+    fontSize: FontSizes.md,
     fontWeight: '600',
     color: '#FFFFFF',
   },

@@ -1,26 +1,33 @@
 import { useState } from 'react';
-import { StyleSheet, TextInput, View, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Alert, Image } from 'react-native';
+import { StyleSheet, TextInput, View, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Image, ActivityIndicator } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Link, useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { FontSizes } from '@/constants/theme';
+import authService from '@/services/authService';
+import { UserRole } from '@/types/auth.types';
+import CustomAlert from '@/components/CustomAlert';
 
 export default function SignUpScreen() {
-  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [nameError, setNameError] = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
-  const [nameFocused, setNameFocused] = useState(false);
   const [emailFocused, setEmailFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
   const [confirmPasswordFocused, setConfirmPasswordFocused] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [alertConfig, setAlertConfig] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+    buttons: Array<{ text: string; onPress?: () => void; style?: 'default' | 'cancel' | 'destructive' }>;
+  }>({ visible: false, title: '', message: '', buttons: [] });
   
   // Get the role from the URL parameters
   const params = useLocalSearchParams();
@@ -35,22 +42,13 @@ export default function SignUpScreen() {
     return password.length >= 7;
   };
 
-  const handleSignUp = () => {
-    // Reset errors
-    setNameError('');
+  const handleSignUp = async () => {
     setEmailError('');
     setPasswordError('');
     setConfirmPasswordError('');
     
     let isValid = true;
     
-    // Validate name
-    if (!name) {
-      setNameError('Name is required');
-      isValid = false;
-    }
-    
-    // Validate email
     if (!email) {
       setEmailError('Email is required');
       isValid = false;
@@ -59,7 +57,6 @@ export default function SignUpScreen() {
       isValid = false;
     }
     
-    // Validate password
     if (!password) {
       setPasswordError('Password is required');
       isValid = false;
@@ -68,7 +65,6 @@ export default function SignUpScreen() {
       isValid = false;
     }
     
-    // Validate confirm password
     if (!confirmPassword) {
       setConfirmPasswordError('Please confirm your password');
       isValid = false;
@@ -78,11 +74,69 @@ export default function SignUpScreen() {
     }
     
     if (isValid) {
-      // Navigate to verify email screen
-      router.replace({
-        pathname: '/auth/verify-email',
-        params: { role, email }
-      });
+      setIsLoading(true);
+      console.log('Starting registration with role:', role);
+      
+      try {
+        const apiRole = role === 'vendor' ? 'salon_owner' : (role as UserRole);
+        console.log('Mapped role:', apiRole);
+        
+        const response = await authService.register({
+          email: email.trim(),
+          password1: password,
+          password2: confirmPassword,
+          role: apiRole,
+          phone_number: '',
+        });
+        
+        console.log('Registration API response:', response);
+        
+        // Auto-login after successful registration
+        try {
+          console.log('Attempting auto-login...');
+          const loginResponse = await authService.login({
+            email: email.trim(),
+            password: password,
+          });
+          
+          console.log('Auto-login successful:', loginResponse);
+          
+          // Navigate to verify-email screen
+          router.replace('/auth/verify-email');
+        } catch (loginError: any) {
+          console.error('Auto-login failed:', loginError);
+          // If auto-login fails, still go to verify email screen
+          router.replace('/auth/verify-email');
+        }
+      } catch (error: any) {
+        console.error('Registration failed:', error);
+        setIsLoading(false);
+        
+        if (error.data) {
+          if (error.data.email) {
+            setEmailError(Array.isArray(error.data.email) ? error.data.email[0] : error.data.email);
+          }
+          if (error.data.password1) {
+            setPasswordError(Array.isArray(error.data.password1) ? error.data.password1[0] : error.data.password1);
+          }
+          if (error.data.password2) {
+            setConfirmPasswordError(Array.isArray(error.data.password2) ? error.data.password2[0] : error.data.password2);
+          }
+          if (error.data.non_field_errors) {
+            const nonFieldError = Array.isArray(error.data.non_field_errors) 
+              ? error.data.non_field_errors[0] 
+              : error.data.non_field_errors;
+            setPasswordError(nonFieldError);
+          }
+        }
+        
+        setAlertConfig({
+          visible: true,
+          title: 'Registration Failed',
+          message: error.message || 'Registration failed. Please try again.',
+          buttons: [{ text: 'OK', onPress: () => setAlertConfig(prev => ({ ...prev, visible: false })) }],
+        });
+      }
     }
   };
 
@@ -109,38 +163,7 @@ export default function SignUpScreen() {
             <ThemedText style={styles.title}>Create Account</ThemedText>
             <ThemedText style={styles.subtitle}>Insert your details to create your account in minutes and start enjoying our services</ThemedText>
             
-            {/* Name Input Field */}
-            {/* <ThemedText style={styles.label}>Full Name</ThemedText> */}
-            <TextInput
-              style={[styles.input, nameFocused && styles.inputFocused, nameError ? styles.inputError : (name && !nameError && name.length > 0 ? styles.inputSuccess : null)]}
-              value={name}
-              onChangeText={(text) => {
-                setName(text);
-                // Real-time validation as user types
-                if (!text) {
-                  setNameError('Name is required');
-                } else {
-                  setNameError('');
-                }
-              }}
-              onFocus={() => setNameFocused(true)}
-              onBlur={() => setNameFocused(false)}
-              placeholder="Enter your full name"
-            />
-            {nameError ? (
-              <View style={styles.errorMessageContainer}>
-                <ThemedText style={styles.errorIcon}>!</ThemedText>
-                <ThemedText style={styles.errorMessage}>{nameError}</ThemedText>
-              </View>
-            ) : name && !nameError ? (
-              <View style={styles.successMessageContainer}>
-                <Ionicons name="checkmark-circle" size={18} color="#10B981" />
-                <ThemedText style={styles.successMessage}>Valid name</ThemedText>
-              </View>
-            ) : null}
-            
             {/* Email Input Field */}
-            {/* <ThemedText style={styles.label}>Email</ThemedText> */}
             <TextInput
               style={[styles.input, emailFocused && styles.inputFocused, emailError ? styles.inputError : (email && !emailError && email.length > 0 ? styles.inputSuccess : null)]}
               value={email}
@@ -265,10 +288,15 @@ export default function SignUpScreen() {
             
             {/* Sign Up Button */}
             <TouchableOpacity 
-              style={styles.signUpButton} 
+              style={[styles.signUpButton, isLoading && styles.signUpButtonDisabled]} 
               onPress={handleSignUp}
+              disabled={isLoading}
             >
-              <ThemedText style={styles.signUpButtonText}>Register</ThemedText>
+              {isLoading ? (
+                <ActivityIndicator color="#FFFFFF" size="small" />
+              ) : (
+                <ThemedText style={styles.signUpButtonText}>Register</ThemedText>
+              )}
             </TouchableOpacity>
             
             {/* Divider Section */}
@@ -315,6 +343,14 @@ export default function SignUpScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+      
+      <CustomAlert
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        buttons={alertConfig.buttons}
+        onDismiss={() => setAlertConfig(prev => ({ ...prev, visible: false }))}
+      />
     </ThemedView>
   );
 }
@@ -431,6 +467,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 20,
     marginBottom: 40,
+  },
+  signUpButtonDisabled: {
+    backgroundColor: '#9CA3AF',
+    opacity: 0.6,
   },
   signUpButtonText: {
     color: '#FFFFFF',

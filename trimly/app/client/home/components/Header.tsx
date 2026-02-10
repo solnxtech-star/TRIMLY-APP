@@ -1,9 +1,31 @@
+import { useState, useEffect } from 'react';
 import { StyleSheet, View, Image } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { FontSizes } from '@/constants/theme';
+import authService from '@/services/authService';
+import { User } from '@/types/auth.types';
 
 export default function Header() {
+  const [user, setUser] = useState<User | null>(null);
+  
+  useEffect(() => {
+    loadUser();
+  }, []);
+  
+  const loadUser = async () => {
+    try {
+      const userData = await authService.getCachedUser();
+      console.log('Header loaded user:', userData);
+      setUser(userData);
+    } catch (error) {
+      console.error('Failed to load user:', error);
+    }
+  };
+  
+  const displayName = user?.first_name && user?.last_name 
+    ? `${user.first_name} ${user.last_name}` 
+    : user?.email || 'User';
   return (
     <View style={styles.container}>
       <View style={styles.leftSection}>
@@ -13,7 +35,7 @@ export default function Header() {
         />
         <View style={styles.textStack}>
           <ThemedText style={styles.welcomeText}>Welcome Back</ThemedText>
-          <ThemedText style={styles.nameText}>Mr Clemz</ThemedText>
+          <ThemedText style={styles.nameText}>{displayName}</ThemedText>
         </View>
       </View>
       

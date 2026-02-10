@@ -1,11 +1,32 @@
-import { StyleSheet, View, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { useState, useEffect } from 'react';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useRouter } from 'expo-router';
 import { FontSizes } from '@/constants/theme';
+import salonService from '@/services/salonService';
+import { Salon } from '@/types/salon.types';
 
 export default function Salons() {
   const router = useRouter();
+  const [salons, setSalons] = useState<Salon[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    fetchSalons();
+  }, []);
+  
+  const fetchSalons = async () => {
+    try {
+      const response = await salonService.listSalons({ limit: 5 });
+      console.log('Salons component loaded:', response.results.length);
+      setSalons(response.results);
+    } catch (error) {
+      console.error('Failed to fetch salons:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSeeAll = () => {
     router.push('/client/salons');
@@ -20,104 +41,52 @@ export default function Salons() {
         </TouchableOpacity>
       </View>
       
-      <ScrollView 
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="small" color="#2D8659" />
+        </View>
+      ) : salons.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <ThemedText style={styles.emptyText}>No salons available</ThemedText>
+        </View>
+      ) : (
+        <ScrollView 
         horizontal 
         showsHorizontalScrollIndicator={false}
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Salon Card 1 */}
-        <TouchableOpacity style={styles.card} onPress={() => router.push('/client/salons')}>
-          <Image 
-            source={require('@/assets/stock/service.jpg')} 
-            style={styles.cardBackground}
-            resizeMode="cover"
-          />
-          <View style={styles.overlay}>
-            <ThemedText style={styles.comingSoonText}>Coming Soon!</ThemedText>
-          </View>
-          <View style={styles.heartIconBackground}>
-            <IconSymbol name="heart" size={20} color="#FFFFFF" style={styles.heartIcon} />
-          </View>
-          <View style={styles.textOverlay}>
-            <View style={styles.salonInfoContainer}>
-              <ThemedText style={styles.salonName}>Slay Best Saloon</ThemedText>
-              <View style={styles.ratingPill}>
-                <IconSymbol name="star.fill" size={12} color="yellow" />
-                <ThemedText style={styles.ratingText}>4.8</ThemedText>
+        {salons.map((salon) => (
+          <TouchableOpacity 
+            key={salon.id} 
+            style={styles.card} 
+            onPress={() => router.push(`/client/business-details/${salon.id}`)}
+          >
+            {salon.gallery && salon.gallery.length > 0 ? (
+              <Image 
+                source={{ uri: salon.gallery[0].image }} 
+                style={styles.cardBackground}
+                resizeMode="cover"
+              />
+            ) : (
+              <View style={[styles.cardBackground, { backgroundColor: '#E5E7EB' }]} />
+            )}
+            <View style={styles.heartIconBackground}>
+              <IconSymbol name="heart" size={20} color="#FFFFFF" style={styles.heartIcon} />
+            </View>
+            <View style={styles.textOverlay}>
+              <View style={styles.salonInfoContainer}>
+                <ThemedText style={styles.salonName} numberOfLines={1}>{salon.name}</ThemedText>
+                <View style={styles.ratingPill}>
+                  <IconSymbol name="star.fill" size={12} color="#FFD700" />
+                  <ThemedText style={styles.ratingText}>{salon.rating || 0}</ThemedText>
+                </View>
               </View>
             </View>
-          </View>
-        </TouchableOpacity>
-        
-        {/* Salon Card 2 */}
-        <TouchableOpacity style={[styles.card, styles.secondCard]} onPress={() => router.push('/client/salons')}>
-          <Image 
-            source={require('@/assets/stock/rated.png')} 
-            style={styles.cardBackground}
-            resizeMode="cover"
-          />
-          <View style={styles.overlay}>
-            <ThemedText style={styles.comingSoonText}>Coming Soon!</ThemedText>
-          </View>
-          <View style={styles.heartIconBackground}>
-            <IconSymbol name="heart" size={20} color="#FFFFFF" style={styles.heartIcon} />
-          </View>
-          <View style={styles.textOverlay}>
-            <View style={styles.salonInfoContainer}>
-              <ThemedText style={styles.salonName}>Slay Best Saloon</ThemedText>
-              <View style={styles.ratingPill}>
-                <IconSymbol name="star.fill" size={12} color="#FFD700" />
-                <ThemedText style={styles.ratingText}>4.7</ThemedText>
-              </View>
-            </View>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.card, styles.secondCard]} onPress={() => router.push('/client/salons')}>
-          <Image 
-            source={require('@/assets/stock/rated.png')} 
-            style={styles.cardBackground}
-            resizeMode="cover"
-          />
-          <View style={styles.overlay}>
-            <ThemedText style={styles.comingSoonText}>Coming Soon!</ThemedText>
-          </View>
-          <View style={styles.heartIconBackground}>
-            <IconSymbol name="heart" size={20} color="#FFFFFF" style={styles.heartIcon} />
-          </View>
-          <View style={styles.textOverlay}>
-            <View style={styles.salonInfoContainer}>
-              <ThemedText style={styles.salonName}>Slay Best Saloon</ThemedText>
-              <View style={styles.ratingPill}>
-                <IconSymbol name="star.fill" size={12} color="#FFD700" />
-                <ThemedText style={styles.ratingText}>4.9</ThemedText>
-              </View>
-            </View>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.card, styles.secondCard]} onPress={() => router.push('/client/salons')}>
-          <Image 
-            source={require('@/assets/stock/rated.png')} 
-            style={styles.cardBackground}
-            resizeMode="cover"
-          />
-          <View style={styles.overlay}>
-            <ThemedText style={styles.comingSoonText}>Coming Soon!</ThemedText>
-          </View>
-          <View style={styles.heartIconBackground}>
-            <IconSymbol name="heart" size={20} color="#FFFFFF" style={styles.heartIcon} />
-          </View>
-          <View style={styles.textOverlay}>
-            <View style={styles.salonInfoContainer}>
-              <ThemedText style={styles.salonName}>Slay Best Saloon</ThemedText>
-              <View style={styles.ratingPill}>
-                <IconSymbol name="star.fill" size={12} color="#FFD700" />
-                <ThemedText style={styles.ratingText}>4.6</ThemedText>
-              </View>
-            </View>
-          </View>
-        </TouchableOpacity>
+          </TouchableOpacity>
+        ))}
       </ScrollView>
+      )}
     </View>
   );
 }
@@ -223,5 +192,17 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.sm,
     fontWeight: '600',
     color: '#000000',
+  },
+  loadingContainer: {
+    paddingVertical: 40,
+    alignItems: 'center',
+  },
+  emptyContainer: {
+    paddingVertical: 40,
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: FontSizes.md,
+    color: '#6B6B6B',
   },
 });

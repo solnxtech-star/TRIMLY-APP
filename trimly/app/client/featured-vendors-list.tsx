@@ -1,101 +1,83 @@
-import { StyleSheet, View, FlatList, TouchableOpacity, Image } from 'react-native';
+import { useState, useEffect } from 'react';
+import { StyleSheet, View, FlatList, TouchableOpacity, Image, ActivityIndicator, RefreshControl } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { router } from 'expo-router';
 import { FontSizes } from '@/constants/theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-
-// Define the featured vendor type
-type FeaturedVendor = {
-  id: number;
-  name: string;
-  rating: number;
-  status: string;
-  image: any; // In a real app, this would be a more specific type
-};
+import vendorService from '@/services/vendorService';
+import { Vendor } from '@/types/salon.types';
 
 export default function FeaturedVendorsListScreen() {
-  // Sample featured vendor data - in a real app, this would come from an API or state management
-  const featuredVendors: FeaturedVendor[] = [
-    {
-      id: 1,
-      name: 'Premium Salon',
-      rating: 4.8,
-      status: 'Online',
-      image: require('@/assets/images/4.jpg'),
-    },
-    {
-      id: 2,
-      name: 'Luxury Hair Studio',
-      rating: 4.7,
-      status: 'Offline',
-      image: require('@/assets/images/3.jpg'),
-    },
-    {
-      id: 3,
-      name: 'Elite Barber Shop',
-      rating: 4.9,
-      status: 'Online',
-      image: require('@/assets/images/4.jpg'),
-    },
-    {
-      id: 4,
-      name: 'Beauty Paradise',
-      rating: 4.6,
-      status: 'Online',
-      image: require('@/assets/images/3.jpg'),
-    },
-    {
-      id: 5,
-      name: 'Modern Grooming Co.',
-      rating: 4.5,
-      status: 'Offline',
-      image: require('@/assets/images/4.jpg'),
-    },
-    {
-      id: 6,
-      name: 'Style Haven',
-      rating: 4.9,
-      status: 'Online',
-      image: require('@/assets/images/3.jpg'),
-    },
-    {
-      id: 7,
-      name: 'Chic Cuts',
-      rating: 4.4,
-      status: 'Online',
-      image: require('@/assets/images/4.jpg'),
-    },
-    {
-      id: 8,
-      name: 'Urban Styles',
-      rating: 4.7,
-      status: 'Offline',
-      image: require('@/assets/images/3.jpg'),
-    },
-  ];
+  const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  
+  useEffect(() => {
+    fetchVendors();
+  }, []);
+  
+  const fetchVendors = async () => {
+    try {
+      const response = await vendorService.listVendors({ limit: '50' });
+      console.log('=== VENDORS DATA ===');
+      console.log('Total vendors loaded:', response.results.length);
+      console.log('Full response:', JSON.stringify(response, null, 2));
+      console.log('Vendors array:', JSON.stringify(response.results, null, 2));
+      
+      // Log individual vendor details
+      response.results.forEach((vendor, index) => {
+        console.log(`\n--- Vendor ${index + 1} ---`);
+        console.log('ID:', vendor.id);
+        console.log('Worker ID:', vendor.worker);
+        console.log('Bio:', vendor.bio);
+        console.log('Rating:', vendor.rating);
+        console.log('Is Available:', vendor.is_available);
+        console.log('Is Active:', vendor.is_active);
+        console.log('Address:', vendor.address);
+        console.log('Gallery:', vendor.gallery);
+        console.log('Services:', vendor.services);
+      });
+      
+      setVendors(response.results);
+    } catch (error) {
+      console.error('Failed to fetch vendors:', error);
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  };
+  
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    fetchVendors();
+  };
 
-  const renderVendor = ({ item }: { item: FeaturedVendor }) => (
+  const renderVendor = ({ item }: { item: Vendor }) => (
     <TouchableOpacity 
       style={styles.vendorCard} 
       onPress={() => router.push(`/client/business-details/${item.id}`)}
     >
-      <Image 
-        source={item.image} 
-        style={styles.cardBackground}
-        resizeMode="cover"
-      />
+      {item.gallery && item.gallery.length > 0 ? (
+        <Image 
+          source={{ uri: item.gallery[0].image }} 
+          style={styles.cardBackground}
+          resizeMode="cover"
+        />
+      ) : (
+        <View style={[styles.cardBackground, { backgroundColor: '#E5E7EB' }]} />
+      )}
       <View style={styles.textOverlay}>
-        <ThemedText style={styles.vendorName}>{item.name}</ThemedText>
+        <ThemedText style={styles.vendorName} numberOfLines={1}>{item.worker || 'Vendor'}</ThemedText>
         <View style={styles.ratingContainer}>
           <MaterialCommunityIcons name='star' size={12} color='yellow' />
-          <ThemedText style={styles.rating}>{item.rating}</ThemedText>
+          <ThemedText style={styles.rating}>{item.rating || 0}</ThemedText>
         </View>
         <ThemedText style={[
           styles.status, 
-          { color: item.status === 'Online' ? 'green' : 'gray' }
+          { color: item.is_available ? 'green' : 'gray' }
         ]}>
-          {item.status}
+          {item.is_available ? 'Online' : 'Offline'}
         </ThemedText>
       </View>
     </TouchableOpacity>
@@ -111,15 +93,29 @@ export default function FeaturedVendorsListScreen() {
         <View style={{ width: 60 }} /> {/* Spacer for alignment */}
       </View>
       
-      <FlatList
-        data={featuredVendors}
-        renderItem={renderVendor}
-        keyExtractor={(item) => item.id.toString()}
-        numColumns={2}
-        contentContainerStyle={styles.listContainer}
-        columnWrapperStyle={styles.columnWrapper}
-        showsVerticalScrollIndicator={false}
-      />
+      {isLoading ? (
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color="#2D8659" />
+        </View>
+      ) : (
+        <FlatList
+          data={vendors}
+          renderItem={renderVendor}
+          keyExtractor={(item) => item.id}
+          numColumns={2}
+          contentContainerStyle={styles.listContainer}
+          columnWrapperStyle={styles.columnWrapper}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} colors={['#2D8659']} />
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <ThemedText style={styles.emptyText}>No vendors found</ThemedText>
+            </View>
+          }
+        />
+      )}
     </ThemedView>
   );
 }
@@ -223,5 +219,20 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 11,
     left: 8,
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  emptyText: {
+    fontSize: FontSizes.md,
+    color: '#9CA3AF',
   },
 });

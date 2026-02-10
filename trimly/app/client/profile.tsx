@@ -1,27 +1,57 @@
-import { StyleSheet, View, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { useState, useEffect } from 'react';
+import { StyleSheet, View, TouchableOpacity, ScrollView } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useRouter } from 'expo-router';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import authService from '@/services/authService';
+import { User } from '@/types/auth.types';
+import CustomAlert from '@/components/CustomAlert';
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [alertConfig, setAlertConfig] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+    buttons: Array<{ text: string; onPress?: () => void; style?: 'default' | 'cancel' | 'destructive' }>;
+  }>({ visible: false, title: '', message: '', buttons: [] });
   
-  // Get theme colors
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const borderColor = useThemeColor({}, 'tabIconDefault');
+  
+  useEffect(() => {
+    loadUser();
+  }, []);
+  
+  const loadUser = async () => {
+    try {
+      const userData = await authService.getCachedUser();
+      console.log('Profile loaded user:', userData);
+      setUser(userData);
+    } catch (error) {
+      console.error('Failed to load user:', error);
+    }
+  };
+  
+  const displayName = user?.first_name && user?.last_name 
+    ? `${user.first_name} ${user.last_name}` 
+    : user?.email || 'User';
+  const displayEmail = user?.email || '';
 
   const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Logout', style: 'destructive', onPress: () => router.replace('/onboarding/welcome') }
-      ]
-    );
+    setAlertConfig({
+      visible: true,
+      title: 'Logout',
+      message: 'Are you sure you want to logout?',
+      buttons: [
+        { text: 'Cancel', style: 'cancel', onPress: () => setAlertConfig(prev => ({ ...prev, visible: false })) },
+        { text: 'Logout', style: 'destructive', onPress: () => router.replace('/onboarding/welcome') },
+      ],
+    });
   };
 
   const menuItems = [
@@ -69,6 +99,14 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+      
+      <CustomAlert
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        buttons={alertConfig.buttons}
+        onDismiss={() => setAlertConfig(prev => ({ ...prev, visible: false }))}
+      />
     </ThemedView>
   );
 }
