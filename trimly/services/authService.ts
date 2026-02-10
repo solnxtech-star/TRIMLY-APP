@@ -4,6 +4,10 @@ import {
   RegisterResponse,
   LoginRequest,
   LoginResponse,
+  ConfirmOtpRequest,
+  ConfirmOtpResponse,
+  ResendOtpRequest,
+  ResendOtpResponse,
   PasswordChangeRequest,
   PasswordResetRequest,
   PasswordResetConfirmRequest,
@@ -24,9 +28,9 @@ class AuthService {
    * @param data - Registration data (email, password, role, etc.)
    * @returns Registration response with verification message
    */
-  async register(data: RegisterRequest): Promise<{ detail: string }> {
+  async register(data: RegisterRequest): Promise<RegisterResponse> {
     try {
-      const response = await apiClient.post<{ detail: string }>(
+      const response = await apiClient.post<RegisterResponse>(
         '/auth/registration/',
         data,
         false
@@ -38,6 +42,44 @@ class AuthService {
       return response;
     } catch (error) {
       console.error('Registration error:', error);
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Confirm OTP for email verification
+   * @param data - OTP confirmation data
+   * @returns Success message
+   */
+  async confirmOtp(data: ConfirmOtpRequest): Promise<ConfirmOtpResponse> {
+    try {
+      const response = await apiClient.post<ConfirmOtpResponse>(
+        '/auth/registration/confirm-otp/',
+        data,
+        false
+      );
+      return response;
+    } catch (error) {
+      console.error('Confirm OTP error:', error);
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Resend OTP for email verification or password reset
+   * @param data - Resend OTP data
+   * @returns Success message
+   */
+  async resendOtp(data: ResendOtpRequest): Promise<ResendOtpResponse> {
+    try {
+      const response = await apiClient.post<ResendOtpResponse>(
+        '/auth/resend-otp/',
+        data,
+        false
+      );
+      return response;
+    } catch (error) {
+      console.error('Resend OTP error:', error);
       throw this.handleError(error);
     }
   }
@@ -104,7 +146,13 @@ class AuthService {
     try {
       // Call logout endpoint (optional - clears token on backend)
       try {
-        await apiClient.post('/auth/logout/', {}, true);
+        await apiClient.request('/auth/logout/', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+          },
+          body: undefined // Send empty body as requested
+        }, true);
       } catch (error) {
         console.warn('Logout API call failed, continuing with local logout');
       }

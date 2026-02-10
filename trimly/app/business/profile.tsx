@@ -6,6 +6,7 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { useColorScheme } from 'react-native';
 import { router } from 'expo-router';
 import LogoutConfirmationModal from './profile/logout-confirmation-modal';
+import authService from '@/services/authService';
 
 const { width } = Dimensions.get('window');
 
@@ -133,8 +134,15 @@ const BusinessProfile = () => {
       <LogoutConfirmationModal 
         visible={showLogoutModal} 
         onClose={() => setShowLogoutModal(false)} 
-        onConfirm={() => {
-          router.push('/auth/sign-in');
+        onConfirm={async () => {
+          try {
+            await authService.logout();
+            router.replace('/auth/sign-in');
+          } catch (error) {
+            console.error('Logout failed:', error);
+            // Force navigation even if API call fails
+            router.replace('/auth/sign-in');
+          }
           setShowLogoutModal(false);
         }} 
       />

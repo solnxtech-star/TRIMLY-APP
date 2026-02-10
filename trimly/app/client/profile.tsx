@@ -49,7 +49,19 @@ export default function ProfileScreen() {
       message: 'Are you sure you want to logout?',
       buttons: [
         { text: 'Cancel', style: 'cancel', onPress: () => setAlertConfig(prev => ({ ...prev, visible: false })) },
-        { text: 'Logout', style: 'destructive', onPress: () => router.replace('/onboarding/welcome') },
+        { 
+          text: 'Logout', 
+          style: 'destructive', 
+          onPress: async () => {
+            try {
+              await authService.logout();
+              router.replace('/auth/sign-in');
+            } catch (error) {
+              console.error('Logout failed:', error);
+              router.replace('/auth/sign-in');
+            }
+          } 
+        },
       ],
     });
   };

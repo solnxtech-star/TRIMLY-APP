@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { StyleSheet, TextInput, View, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Image, ActivityIndicator } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Link, useLocalSearchParams, router } from 'expo-router';
@@ -91,23 +92,20 @@ export default function SignUpScreen() {
         
         console.log('Registration API response:', response);
         
-        // Auto-login after successful registration
+        // Save credentials for auto-login after verification
         try {
-          console.log('Attempting auto-login...');
-          const loginResponse = await authService.login({
-            email: email.trim(),
-            password: password,
-          });
-          
-          console.log('Auto-login successful:', loginResponse);
-          
-          // Navigate to verify-email screen
-          router.replace('/auth/verify-email');
-        } catch (loginError: any) {
-          console.error('Auto-login failed:', loginError);
-          // If auto-login fails, still go to verify email screen
-          router.replace('/auth/verify-email');
+          await AsyncStorage.setItem('temp_email', email.trim());
+          await AsyncStorage.setItem('temp_password', password);
+        } catch (storageError) {
+          console.error('Failed to save temp credentials:', storageError);
         }
+
+        // Navigate to verify-email screen
+        router.replace({
+          pathname: '/auth/verify-email',
+          params: { email: email.trim(), role }
+        });
+        
       } catch (error: any) {
         console.error('Registration failed:', error);
         setIsLoading(false);

@@ -69,7 +69,29 @@ export interface RegisterRequest {
   password1: string;
   password2: string;
   role: UserRole;
-  phone_number: string;
+  phone_number?: string;
+}
+
+// Confirm OTP request
+export interface ConfirmOtpRequest {
+  email: string;
+  otp: string;
+}
+
+// Resend OTP request
+export interface ResendOtpRequest {
+  email: string;
+  otp_type: 'email_verification' | 'password_reset';
+}
+
+// Resend OTP response
+export interface ResendOtpResponse {
+  message: string;
+}
+
+// Confirm OTP response
+export interface ConfirmOtpResponse {
+  message: string;
 }
 
 // Login request
@@ -78,15 +100,17 @@ export interface LoginRequest {
   password: string;
 }
 
-// Login/Registration response (same structure)
+// Login response
 export interface LoginResponse {
   access: string;
   refresh: string;
   user: User;
 }
 
-// Alias for backward compatibility
-export type RegisterResponse = LoginResponse;
+// Registration response
+export interface RegisterResponse {
+  detail: string;
+}
 
 // Token refresh request
 export interface TokenRefreshRequest {
