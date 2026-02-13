@@ -18,7 +18,7 @@ class BookingSerializer(serializers.ModelSerializer):
             'id', 'customer', 'salon_service', 'vendor_service', 
             'date', 'start_time', 'end_time', 'status', 'payment_reference', 'is_rated','created_at'
         ]
-        read_only_Fields = ['id', 'status', ]
+        read_only_Fields = ['id', 'status','is_rated' ]
 
     def validate(self, data):
         salon_service = data.get('salon_service')
@@ -26,6 +26,7 @@ class BookingSerializer(serializers.ModelSerializer):
         date = data.get('date')
         start_time = data.get('start_time')
         status = data.get("status")
+        is_rated = data.get("is_rated")
 
         if not (salon_service or vendor_service):
             raise serializers.ValidationError("You must select a service.")
@@ -37,6 +38,8 @@ class BookingSerializer(serializers.ModelSerializer):
         
         if status:
             raise serializers.ValidationError("you cannot insert status manually")
+        if is_rated:
+            raise serializers.ValidationError("you cannot insert this field manually")
 
         service = salon_service or vendor_service
         start_datetime = datetime.combine(date, start_time)

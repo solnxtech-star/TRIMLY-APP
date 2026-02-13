@@ -11,6 +11,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
 from django.db import transaction
+from .tasks import send_booking_notifications, send_reminder_task
+from datetime import timedelta
 
 class BookingViewSet(ModelViewSet):
     """
@@ -59,9 +61,33 @@ class BookingViewSet(ModelViewSet):
             )
         return queryset
 
-    def perform_create(self, serializer):
-        serializer.save(customer=self.request.user)
 
+    def perform_create(self, serializer):
+        with transaction.atomic():
+            booking = serializer.save(customer=self.request.user)
+            booking_id = booking.id  # ✅ Capture ID immediately
+            
+            # Use the captured booking_id variable
+            transaction.on_commit(lambda: send_booking_notifications.delay(booking_id))
+        
+        # Send reminder (this works because it's outside the lambda)
+        reminder_time = booking.created_at + timedelta(minutes=1)
+        
+        if booking.vendor_service:
+            vendor_email = booking.vendor_service.vendor.worker.email
+        else:
+            vendor_email = booking.salon_service.salon.owner.email
+        
+        send_reminder_task.apply_async(
+            args=[
+                booking.customer.email, 
+                vendor_email, 
+                booking.customer.username, 
+                booking.date, 
+                booking.start_time
+            ],
+            eta=reminder_time
+        )
     def get_serializer_class(self):
         if self.action in ['complete', 'cancel']:
             return None  # This hides all those unnecessary fields in Swagger/Postman

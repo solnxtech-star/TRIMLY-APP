@@ -15,7 +15,7 @@ class VendorSerializer(serializers.ModelSerializer):
         model = IndividualVendorProfile
         fields = ["id", "worker", "category", "date_of_birth", 
                   "bio", "profile_pic", "years_of_experience", 
-                  "Gender", "latitude", "longitude", "address", "flw_subaccount_id", 
+                  "Gender", "location", "address", "flw_subaccount_id", 
                   "bank_code", "account_number", "total_earnings", "is_active", "is_available"]
         read_only_fields = ["vendor", "id", "is_active", "is_available" ]
 
@@ -30,7 +30,7 @@ class VendorDetailSerializer(serializers.ModelSerializer):
         model = IndividualVendorProfile
         fields = [
             "id", "worker", "category", "date_of_birth", "bio", "profile_pic", 
-            "years_of_experience", "Gender", "latitude", "longitude", "address", "flw_subaccount_id", 
+            "years_of_experience", "Gender", "location", "address", "flw_subaccount_id", 
             "bank_code", "account_number", "total_earnings", "is_active", "is_available",
             "vendor_services", "vendor_portfolio", "vendor_reviews", "review_count", "average_rating"
         ]

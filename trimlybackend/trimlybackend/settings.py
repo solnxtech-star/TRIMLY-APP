@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     #third party packages
     
     'channels',
+    'django.contrib.gis',
     'rest_framework',
     'django.contrib.sites', 
     #Authentication Packages
@@ -141,15 +142,28 @@ from dotenv import load_dotenv
 
 load_dotenv()  
 
-DATABASES = {
-    'default': dj_database_url.config(
-        default=os.getenv("DATABASE_URL"),
-        conn_max_age=60,
-        ssl_require=True
-    )
+import dj_database_url
+
+# 1. Parse the URL from your environment
+db_config = dj_database_url.config(
+    default=os.getenv("DATABASE_URL"),
+    # Set to 0 to immediately release connections back to the pooler
+    # This is critical for Supabase Free Tier
+    conn_max_age=0, 
+    ssl_require=True
+)
+
+# 2. Force the PostGIS engine for your Salon/Marketplace geography fields
+db_config['ENGINE'] = 'django.contrib.gis.db.backends.postgis'
+
+# 3. Add specific timeouts to prevent "hanging" connections
+db_config['OPTIONS'] = {
+    'connect_timeout': 10,
 }
 
-
+DATABASES = {
+    'default': db_config
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -330,3 +344,40 @@ SILKY_PYTHON_PROFILER = True
 SILKY_MAX_RECORDED_REQUESTS = 1000
 SILKY_MAX_RECORDED_REQUESTS_CHECK_PERCENT = 10
 SILKY_SAVE_BODY = False  # <--- This is the big one! Stop saving huge JSON blobs.
+
+import os
+
+import os
+
+if os.name == 'nt':  # Windows
+    GDAL_LIBRARY_PATH = r'C:\OSGeo4W\bin\gdal312.dll'
+    GEOS_LIBRARY_PATH = r'C:\OSGeo4W\bin\geos_c.dll'
+    
+    # Add OSGeo4W to PATH
+    osgeo_path = r'C:\OSGeo4W\bin'
+    if osgeo_path not in os.environ['PATH']:
+        os.environ['PATH'] = osgeo_path + ';' + os.environ['PATH']
+# --- Celery Configuration ---
+
+# 1. The "Broker" is where tasks are stored before a worker picks them up.
+# Use your Memurai/Redis local address.
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
+
+# 2. The "Backend" stores the result (success/fail) of the tasks.
+CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
+
+# 3. Timezone and Serialization
+CELERY_TIMEZONE = "UTC"  # Or your local timezone
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_ACCEPT_CONTENT = ['json']
+
+# 4. Windows Specifics: Prevent common memory leaks/hangs
+CELERY_WORKER_MAX_TASKS_PER_CHILD = 100 
+CELERY_TASK_ALWAYS_EAGER = False  # Set to True for testing without a worker
+
+# 5. Task discovery configuration
+# This ensures Celery finds 'tasks.py' in all your apps automatically.
+CELERY_IMPORTS = (
+    'api.v1.Bookings.tasks',  # Replace 'your_app_name' with your actual app name
+)

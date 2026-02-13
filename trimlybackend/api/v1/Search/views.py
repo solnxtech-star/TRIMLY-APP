@@ -1,75 +1,65 @@
 from django.shortcuts import render
 from rest_framework.generics import GenericAPIView
-from django.db.models import Q, Avg, Value, FloatField
-from django.db.models.functions import Coalesce
-from itertools import chain
 from rest_framework.response import Response
-from api.v1.Salons.models import SalonProfile
-from api.v1.Vendor.models import IndividualVendorProfile
 from api.v1.Search.search_service import apply_geospatial_filter
-from api.v1.Search.serializers import UnifiedSearchSerializer
+from api.v1.Search.serializers import MarketplaceSearchSerializer
 from rest_framework.decorators import api_view
 from rest_framework import status
-
+from .models import MarketplaceSearch
+from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.types import OpenApiTypes
 
 class GlobalMarketplaceSearchAPIView(GenericAPIView):
-    serializer_class = UnifiedSearchSerializer
+    serializer_class = MarketplaceSearchSerializer
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(name='q', description='Search text', required=False, type=OpenApiTypes.STR),
+            OpenApiParameter(name='lat', description='Latitude', required=False, type=OpenApiTypes.FLOAT),
+            OpenApiParameter(name='lon', description='Longitude', required=False, type=OpenApiTypes.FLOAT),
+            OpenApiParameter(name='service', description='Category ID', required=False, type=OpenApiTypes.INT),
+            OpenApiParameter(name='rating', description='Minimum rating', required=False, type=OpenApiTypes.FLOAT),
+        ]
+    )
+
     def get(self, request):
+        # 1. Capture Inputs
         query = request.query_params.get('q', '') 
         lat = request.query_params.get('lat')
         lon = request.query_params.get('lon')
-        service_id = request.query_params.get('service')
+        category_id = request.query_params.get('service')
         min_rating = request.query_params.get('rating', 0)
 
-        # 1. Base query for Salons
-        salons = SalonProfile.objects.annotate(avg_rating=Avg('reviews__rating'))
+        # 2. Base QuerySet on the View
+        results = MarketplaceSearch.objects.all()
+
+        # 3. Filtering Logic (Database Level)
+        if query:
+            results = results.filter(search_text__icontains=query)
         
-        # 2. Base query for Individual Vendors
-        vendors = IndividualVendorProfile.objects.annotate(avg_rating=Avg('reviews__rating'))
+        if category_id:
+            results = results.filter(category_id=category_id)
+            
+        if min_rating:
+            results = results.filter(avg_rating__gte=float(min_rating))
 
-        # 3. Apply Keyword & Rating Filters
-        salon_filters = (Q(name__icontains=query) | Q(about__icontains=query)) 
-        vendor_filters = (Q(bio__icontains=query)) | Q(worker__username__icontains=query)
-        salons = SalonProfile.objects.annotate(
-        avg_rating=Coalesce(
-            Avg('reviews__rating'), 
-            Value(0.0), 
-            output_field=FloatField()
-        )
-)
-
-# 2. Fetch Vendors and force NULL ratings to be 0.0
-        vendors = IndividualVendorProfile.objects.annotate(
-            avg_rating=Coalesce(
-                Avg('reviews__rating'), 
-                Value(0.0), 
-                output_field=FloatField()
-            )
-        )
-
-# 3. Now your filters will work!
-        salons = salons.filter(salon_filters, avg_rating__gte=min_rating)
-        vendors = vendors.filter(vendor_filters, avg_rating__gte=min_rating)
-
-# 4. Filter by Service Category if provided
-        if service_id:
-            salons = salons.filter(category_id=service_id)
-            vendors = vendors.filter(category_id=service_id)
-
-        # 4. CALLING HAVERSINE: If lat/lon provided, calculate distance
+        # 4. Geospatial Logic (PostGIS sorting)
         if lat and lon:
-            salons = apply_geospatial_filter(salons, lat, lon).filter(distance__lte=20)
-            vendors = apply_geospatial_filter(vendors, lat, lon).filter(distance__lte=20)
+            try:
+                results = apply_geospatial_filter(results, lat, lon)
+            except (ValueError, TypeError):
+                pass 
+        else:
+            results = results.order_by('-avg_rating') # Default: Top Rated first
 
+        # 5. Paginate and Return
+        page = self.paginate_queryset(results)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
 
-        # 5. Combine results and sort
-        combined = sorted(
-            chain(salons, vendors),
-            key=lambda x: getattr(x, 'distance', 999) # Closest first
-        )
-
-        serializer = UnifiedSearchSerializer(combined, many=True)
+        serializer = self.get_serializer(results, many=True)
         return Response(serializer.data)
+
     
 
 

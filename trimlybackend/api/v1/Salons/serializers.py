@@ -25,7 +25,7 @@ class SalonProfileSerializer(serializers.ModelSerializer):
         model = SalonProfile
         fields = (
             "id", "owner", "name", "category", "about", "address", 
-            "latitude", "longitude", "profile_pic", 
+            "location", "profile_pic", 
             "links", "created_at", "is_open"
         )
         read_only_fields = ["id", "owner", "created_at"]
@@ -42,7 +42,7 @@ class SalonDetailSerializer(serializers.ModelSerializer):
         model = SalonProfile
         fields = (
             "id", "owner", "name", "categories", "about", "address", 
-            "latitude", "longitude", "profile_pic", "salon_portfolio", 
+            "location", "profile_pic", "salon_portfolio", 
             "links", "created_at", "is_open", "salon_services", "salon_reviews", "review_count", "average_rating"
         )
         read_only_fields = ["id", "owner", "created_at"]

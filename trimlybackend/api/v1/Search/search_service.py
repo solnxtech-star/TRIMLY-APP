@@ -1,14 +1,11 @@
-from django.db.models.functions import Radians, Cos, Sin, ACos
-from django.db.models import F, FloatField, ExpressionWrapper
+from django.contrib.gis.db.models.functions import Distance
+from django.contrib.gis.geos import Point
 
-def apply_geospatial_filter(queryset, lat, lon):
-    # Math: Distance = 6371 * acos(cos(lat1)*cos(lat2)*cos(lon2-lon1) + sin(lat1)*sin(lat2))
-    # 6371 is the radius of Earth in Kilometers
-    distance_formula = 6371 * ACos(
-        Cos(Radians(float(lat))) * Cos(Radians(F('latitude'))) *
-        Cos(Radians(F('longitude')) - Radians(float(lon))) +
-        Sin(Radians(float(lat))) * Sin(Radians(F('latitude')))
-    )
-    return queryset.annotate(
-        distance=ExpressionWrapper(distance_formula, output_field=FloatField())
-    )
+def apply_geospatial_filter(queryset, user_lat, user_lon):
+   if user_lat and user_lon:
+        user_loc = Point(user_lon, user_lat, srid=4326)
+        queryset = queryset.objects.annotate(
+        dist=Distance("location", user_loc)
+        ).filter(distance__lte=10000).order_by('dist')
+        
+        return queryset
