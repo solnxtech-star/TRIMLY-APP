@@ -11,7 +11,7 @@ for model in app_config.get_models():
         if not admin.site.is_registered(model):
             # Register the model using the default ModelAdmin configuration
             admin.site.register(model)
-            print(f"Automatically registered: {model.__name__}")
+            
     except Exception as e:
         # Handle cases where a model might not be registered (rare, but safe)
         print(f"Could not register {model.__name__}: {e}")

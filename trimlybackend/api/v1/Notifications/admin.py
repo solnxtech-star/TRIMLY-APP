@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.apps import apps
 
 # Get the configuration for the 'Users' app (replace 'Users' with your app name)
-app_config = apps.get_app_config('Vendor')
+app_config = apps.get_app_config('Notifications')
 
 # Loop through all model classes found in the application
 for model in app_config.get_models():

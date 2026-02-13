@@ -13,6 +13,8 @@ from rest_framework import status
 from django.db import transaction
 from .tasks import send_booking_notifications, send_reminder_task
 from datetime import timedelta
+from api.v1.Notifications.tasks  import create_and_send_notification
+
 
 class BookingViewSet(ModelViewSet):
     """
@@ -69,6 +71,14 @@ class BookingViewSet(ModelViewSet):
             
             # Use the captured booking_id variable
             transaction.on_commit(lambda: send_booking_notifications.delay(booking_id))
+            # Trigger the notification task
+            transaction.on_commit(lambda: create_and_send_notification.delay(
+            recipient_id=booking.vendor_service.vendor.worker.id, # The Individual Vendor
+            actor_id=self.request.user.id,  # The Customer
+            verb="booked",
+            target_model_name="Booking",
+            target_id=booking_id
+        ))
         
         # Send reminder (this works because it's outside the lambda)
         reminder_time = booking.created_at + timedelta(minutes=1)
@@ -112,8 +122,8 @@ class BookingViewSet(ModelViewSet):
 
         return Response(
             {"detail": "Booking cancelled."},
-            status=status.HTTP_200_OK
-        )
+            status=status.HTTP_200_OK)
+        
 
 
     @action(detail=True, methods=["post"])

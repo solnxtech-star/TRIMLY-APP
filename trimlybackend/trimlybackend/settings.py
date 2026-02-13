@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     'api.v1.Users',
     'api.v1.Vendor',
     'api.v1.Search',
-    'funcs',
+    'api.v1.Notifications',
     'silk',
 
 
