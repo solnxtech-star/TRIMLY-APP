@@ -100,8 +100,6 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 MIDDLEWARE = [
     'silk.middleware.SilkyMiddleware',
-    'funcs.middleware.ResponseTimeMiddleware',
-    'funcs.middleware.DBQueryCountMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
@@ -217,15 +215,6 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 # ALLOWED_HOSTS = ['.ngrok-free.dev', 'localhost', '127.0.0.1']
 
-from datetime import timedelta
-
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=90),
-    'ROTATE_REFRESH_TOKENS': True,
-    'SIGNING_KEY': os.getenv("SIGNING_KEY", "key"), 
-    'AUTH_HEADER_TYPES': ('Bearer',), 
-}
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'api.v1.utils.authentication.CsrfExemptSessionAuthentication',
@@ -251,7 +240,7 @@ REST_FRAMEWORK = {
 
 # LOGIN WITH EMAIL ONLY
 ACCOUNT_LOGIN_METHODS = {'email'}
-ACCOUNT_USER_MODEL_USERNAME_FIELD = None  # keep it
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
 
@@ -265,17 +254,26 @@ ACCOUNT_LOGIN_BY_CODE_ENABLED = True
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_ADAPTER = 'trimlybackend.adapters.BackgroundEmailAdapter'
 
-# Don't send allauth's default emails
 ACCOUNT_EMAIL_CONFIRMATION_HMAC = False
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 1
 
+# JWT Configuration
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=90),
+    'ROTATE_REFRESH_TOKENS': True,
+    'SIGNING_KEY': os.getenv("SIGNING_KEY", "key"), 
+    'AUTH_HEADER_TYPES': ('Bearer',), 
+}
+
+# dj-rest-auth Configuration
 REST_AUTH = {
-    # 1. CRITICAL: Tells dj-rest-auth to issue JWTs instead of basic tokens
-    'USE_JWT': True, 
+    'USE_JWT': True,
+    'JWT_AUTH_HTTPONLY': False,  # JSON response, not cookies
     'TOKEN_MODEL': None,
-    # 2. Use simplejwt's serializers to return the Access/Refresh token pair
-    'JWT_AUTH_REFRESH_COOKIE': 'refresh_token', # Optional: Use cookie for refresh token
-    'JWT_AUTH_HTTPONLY': True, # Optional security enhancement
+    
     'TOKEN_SERIALIZER': 'dj_rest_auth.serializers.JWTSerializer',
     'USER_MODEL': 'Users.User',
     'REGISTER_SERIALIZER': 'api.v1.Users.serializers.CustomRegisterSerializer',

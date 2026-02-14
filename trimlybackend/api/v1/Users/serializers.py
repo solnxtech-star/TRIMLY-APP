@@ -259,6 +259,8 @@ class ResendOTPSerializer(serializers.Serializer):
             fail_silently=False,
         )
 
+from rest_framework_simplejwt.tokens import RefreshToken # Add this import
+
 class EmailLoginSerializer(LoginSerializer):
     email = serializers.EmailField(required=True, allow_blank=False)
     
@@ -272,4 +274,18 @@ class EmailLoginSerializer(LoginSerializer):
         """Map email to username for authentication backend"""
         attrs['username'] = attrs.get('email')
         return super().validate(attrs)
-    
+
+    def get_auth_data(self, user):
+        """Explicitly include refresh token in the JSON response"""
+        refresh = RefreshToken.for_user(user)
+        return {
+            'access': str(refresh.access_token),
+            'refresh': str(refresh),
+            'user': user
+        }
+from rest_framework import serializers
+
+class CustomJWTSerializer(serializers.Serializer):
+    access = serializers.CharField()
+    refresh = serializers.CharField() # This is the "fix"
+    user = UserDetailSerializer() 

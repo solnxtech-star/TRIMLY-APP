@@ -5,31 +5,39 @@ from django.shortcuts import get_object_or_404
 from channels.db import database_sync_to_async
 
 class ChatConsumer(AsyncAPIConsumer):
+    """
+    Only when the user clicks on a specific conversation
+    To send and receive actual chat messages
+    """
     async def connect(self):
         self.user = self.scope["user"]
 
         conversation_id = self.scope["url_route"]['kwargs']["conversation_uuid"]
         
         # 2. Get Conversation (Safe Async way)
-        # has_access = await self.check_room_access(conversation_id, self.user)        # 3. Check Permissions (Privacy Wall)
-        # if has_access:
-        self.group_name = f"chat_{conversation_id}"
-        
-        # Join Redis Group
-        await self.channel_layer.group_add(self.group_name, self.channel_name)
-        await self.accept()
-        print(f"Accepted: {self.user} joined {conversation_id}")
-        
-        # Send initial confirmation to frontend
-        await self.send_json({
-            "type": "connection_established",
-            "message": "You have joined the conversation",
-            "conversation_id": str(conversation_id)
-        })
-    # else:
-    #     # Not authorized or room doesn't exist
-    #     print(f"Rejected: {self.user} has no access to {conversation_id}")
-    #     await self.close(code=4003)
+        has_access = await self.check_room_access(conversation_id, self.user)        # 3. Check Permissions (Privacy Wall)
+        if has_access:
+            self.group_name = f"chat_{conversation_id}"
+            
+            # Join Redis Group
+            await self.channel_layer.group_add(self.group_name, self.channel_name)
+            await self.accept()
+            print(f"Accepted: {self.user} joined {conversation_id}")
+            
+            # Send initial confirmation to frontend
+            await self.send_json({
+                "type": "connection_established",
+                "message": "You have joined the conversation",
+                "conversation_id": str(conversation_id)
+            })
+        else:
+            # Not authorized or room doesn't exist
+            await self.accept()
+            await self.send_json({
+                "type": "unable to connect",
+                "message": "Yyou are not authenticated",
+                "conversation_id": str(conversation_id)})
+            await self.close(code=4003)
      
 
     # Helper method to touch the DB
