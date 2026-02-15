@@ -47,24 +47,34 @@ class SalonService {
       console.log('📦 Salons count:', count);
       console.log('📋 Salons array length:', salonsArray.length);
       
-      // Transform response data to add computed fields
-      const transformedResults = salonsArray.map((salon: any) => ({
-        ...salon,
-        location: salon.address || `${salon.latitude}, ${salon.longitude}`,
-        rating: salon.salon_reviews?.length > 0
-          ? salon.salon_reviews.reduce((acc: number, r: any) => acc + r.rating, 0) / salon.salon_reviews.length
-          : 0,
-        review_count: salon.salon_reviews?.length || 0,
-        services: salon.salon_services,
-        gallery: salon.salon_portfolio.map((p: any) => ({
-          id: p.id,
-          image: p.image,
-          salon: p.salon,
-          vendor: p.vendor,
-          caption: p.caption,
-          created_at: p.created_at,
-        })),
-      }));
+      // Transform response data to add computed fields and handle missing relations
+      const transformedResults = salonsArray.map((salon: any) => {
+        const reviews = Array.isArray(salon.salon_reviews) ? salon.salon_reviews : [];
+        const portfolio = Array.isArray(salon.salon_portfolio) ? salon.salon_portfolio : [];
+        const services = Array.isArray(salon.salon_services) ? salon.salon_services : [];
+
+        const rating =
+          reviews.length > 0
+            ? reviews.reduce((acc: number, r: any) => acc + (r.rating || 0), 0) /
+              reviews.length
+            : 0;
+
+        return {
+          ...salon,
+          location: salon.address || salon.location || '',
+          rating,
+          review_count: reviews.length,
+          services,
+          gallery: portfolio.map((p: any) => ({
+            id: p.id,
+            image: p.image,
+            salon: p.salon,
+            vendor: p.vendor,
+            caption: p.caption,
+            created_at: p.created_at,
+          })),
+        };
+      });
       
       console.log('✨ [SALON SERVICE] Transformed results:', transformedResults.length);
       
@@ -280,8 +290,39 @@ class SalonService {
    */
   async getServiceCategories(): Promise<ServiceCategory[]> {
     try {
-      const response = await apiClient.get<ServiceCategory[]>('/category/', false);
-      return response;
+      let page = 1;
+      let hasNext = true;
+      const allCategories: ServiceCategory[] = [];
+
+      while (hasNext) {
+        const response = await apiClient.get<any>(`/category/?page=${page}`, false);
+        const results = Array.isArray(response) ? response : (response.results || []);
+        allCategories.push(...results);
+
+        if (!Array.isArray(response) && response.next) {
+          const nextUrl = response.next as string;
+          try {
+            const urlObj = new URL(nextUrl);
+            const nextPageParam = urlObj.searchParams.get('page');
+            if (nextPageParam) {
+              const nextPage = parseInt(nextPageParam, 10);
+              if (!isNaN(nextPage) && nextPage > page) {
+                page = nextPage;
+              } else {
+                hasNext = false;
+              }
+            } else {
+              hasNext = false;
+            }
+          } catch {
+            hasNext = false;
+          }
+        } else {
+          hasNext = false;
+        }
+      }
+
+      return allCategories;
     } catch (error) {
       console.error('Get service categories error:', error);
       throw this.handleError(error);

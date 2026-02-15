@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, TextInput, View, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { FontSizes } from '@/constants/theme';
 import authService from '@/services/authService';
 import CustomAlert from '@/components/CustomAlert';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function SignInScreen() {
   const [email, setEmail] = useState('');
@@ -28,50 +29,54 @@ export default function SignInScreen() {
   const params = useLocalSearchParams();
   const role = params.role || 'customer';
 
+  const [hasTriedAutoLogin, setHasTriedAutoLogin] = useState(false);
+
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
   const validatePassword = (password: string) => {
-    return password.length >= 7;
+    return password.length >= 8;
   };
 
-  const handleSignIn = async () => {
+  const handleSignIn = async (overrideEmail?: string, overridePassword?: string) => {
     setEmailError('');
     setPasswordError('');
     
     let isValid = true;
     
-    if (!email) {
+    const currentEmail = (overrideEmail ?? email).trim();
+    const currentPassword = overridePassword ?? password;
+
+    if (!currentEmail) {
       setEmailError('Email is required');
       isValid = false;
-    } else if (!validateEmail(email)) {
+    } else if (!validateEmail(currentEmail)) {
       setEmailError('Please enter a valid email address');
       isValid = false;
     }
     
-    if (!password) {
+    if (!currentPassword) {
       setPasswordError('Password is required');
       isValid = false;
-    } else if (!validatePassword(password)) {
-      setPasswordError('Password must be at least 7 characters');
+    } else if (!validatePassword(currentPassword)) {
+      setPasswordError('Password must be at least 8 characters');
       isValid = false;
     }
     
     if (isValid) {
       setIsLoading(true);
-      console.log('Starting login with email:', email);
+      console.log('Starting login with email:', currentEmail);
       
       try {
         const response = await authService.login({
-          email: email.trim(),
-          password,
+          email: currentEmail,
+          password: currentPassword,
         });
         
         console.log('Login successful, user role:', response.user.role);
         
-        // Navigate to appropriate dashboard based on user's role
         if (response.user.role === 'salon_owner' || response.user.role === 'vendor') {
           router.replace('/business/dashboard');
         } else {
@@ -114,6 +119,37 @@ export default function SignInScreen() {
       }
     }
   };
+
+  useEffect(() => {
+    const attemptAutoLogin = async () => {
+      if (hasTriedAutoLogin) {
+        return;
+      }
+
+      try {
+        const [storedEmail, storedPassword] = await AsyncStorage.multiGet([
+          'login_email',
+          'login_password',
+        ]);
+
+        const emailValue = storedEmail[1] || '';
+        const passwordValue = storedPassword[1] || '';
+
+        if (emailValue && passwordValue) {
+          setEmail(emailValue);
+          setPassword(passwordValue);
+          setHasTriedAutoLogin(true);
+          await handleSignIn(emailValue, passwordValue);
+        } else {
+          setHasTriedAutoLogin(true);
+        }
+      } catch (error) {
+        setHasTriedAutoLogin(true);
+      }
+    };
+
+    attemptAutoLogin();
+  }, [hasTriedAutoLogin]);
 
   return (
     <ThemedView style={styles.container}>
@@ -170,7 +206,7 @@ export default function SignInScreen() {
               if (!text) {
                 setPasswordError('Password is required');
               } else if (!validatePassword(text)) {
-                setPasswordError('Password must be at least 7 characters');
+                setPasswordError('Password must be at least 8 characters');
               } else {
                 setPasswordError('');
               }
@@ -215,7 +251,7 @@ export default function SignInScreen() {
         {/* Login Button (Loading State) */}
         <TouchableOpacity 
           style={[styles.loginButton, isLoading && styles.loginButtonDisabled]} 
-          onPress={handleSignIn}
+          onPress={() => handleSignIn()}
           disabled={isLoading}
         >
           {isLoading ? (

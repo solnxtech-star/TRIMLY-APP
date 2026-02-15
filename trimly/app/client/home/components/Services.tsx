@@ -1,28 +1,35 @@
 import { StyleSheet, View, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { FontSizes } from '@/constants/theme';
+import { baseCategories, buildCategoriesFromApi, CategoryItem } from '@/app/client/services';
+import salonService from '@/services/salonService';
 
 export default function Services() {
   const router = useRouter();
-  
-  const services = [
-    { id: 1, name: 'Haircut', icon: require('@/assets/icon/beard.png') },
-    { id: 2, name: 'Hair Styling', icon: require('@/assets/icon/styling.png') },
-    { id: 3, name: 'Nails', icon: require('@/assets/icon/nails.png') },
-    { id: 4, name: 'Facials & Skincare', icon: require('@/assets/icon/makeup.png') },
-    { id: 5, name: 'Lashes & Brows', icon: require('@/assets/icon/lashes.png') },
-    { id: 6, name: 'Massage', icon: require('@/assets/icon/massage.png') },
-    { id: 7, name: 'Tattoo', icon: require('@/assets/icon/tattoo.png') },
-  ];
-  
+  const [categories, setCategories] = useState<CategoryItem[]>(baseCategories);
+
   const handleSeeAll = () => {
     router.push('/client/services');
   };
   
-  const handleServicePress = (serviceId: number) => {
+  const handleServicePress = (service: CategoryItem) => {
     router.push('/client/services');
   };
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const apiCategories = await salonService.getServiceCategories();
+        setCategories(buildCategoriesFromApi(apiCategories));
+      } catch {
+        setCategories(baseCategories);
+      }
+    };
+
+    loadCategories();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -39,12 +46,16 @@ export default function Services() {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
       >
-        {services.map((service) => (
-          <TouchableOpacity key={service.id} style={styles.serviceItem} onPress={() => handleServicePress(service.id)}>
+        {categories.map(category => (
+          <TouchableOpacity
+            key={category.name}
+            style={styles.serviceItem}
+            onPress={() => handleServicePress(category)}
+          >
             <View style={styles.iconContainer}>
-              <Image source={service.icon} style={styles.serviceIcon} />
+              <Image source={category.icon} style={styles.serviceIcon} />
             </View>
-            <ThemedText style={styles.serviceName}>{service.name}</ThemedText>
+            <ThemedText style={styles.serviceName}>{category.name}</ThemedText>
           </TouchableOpacity>
         ))}
       </ScrollView>

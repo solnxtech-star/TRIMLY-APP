@@ -123,7 +123,10 @@ export default function SalonsScreen() {
                   {salon.gallery && salon.gallery.length > 0 ? (
                     <Image source={{ uri: salon.gallery[0].image }} style={styles.salonImage} />
                   ) : (
-                    <View style={[styles.salonImage, { backgroundColor: '#E5E7EB' }]} />
+                    <Image
+                      source={require('@/assets/stock/service.jpg')}
+                      style={styles.salonImage}
+                    />
                   )}
                   <View style={styles.infoSection}>
                     <View style={styles.nameRow}>

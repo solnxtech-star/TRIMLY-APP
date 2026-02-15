@@ -4,13 +4,51 @@ import { ThemedView } from '@/components/themed-view';
 import { CustomSafeAreaView } from '@/components/custom-safe-area-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { FontSizes } from '@/constants/theme';
+import salonService from '@/services/salonService';
+import { ServiceCategory } from '@/types/salon.types';
+
+export type CategoryItem = {
+  id?: number;
+  name: string;
+  icon: any;
+};
+
+export const baseCategories: CategoryItem[] = [
+  { name: 'Haircut', icon: require('@/assets/icon/beard.png') },
+  { name: 'Hair Styling', icon: require('@/assets/icon/styling.png') },
+  { name: 'Nails', icon: require('@/assets/icon/nails.png') },
+  { name: 'Facials & Skincare', icon: require('@/assets/icon/makeup.png') },
+  { name: 'Lashes & Brows', icon: require('@/assets/icon/lashes.png') },
+  { name: 'Massage', icon: require('@/assets/icon/massage.png') },
+  { name: 'Tatoo', icon: require('@/assets/icon/tattoo.png') },
+];
+
+export const buildCategoriesFromApi = (
+  apiCategories: ServiceCategory[]
+): CategoryItem[] => {
+  if (!apiCategories || apiCategories.length === 0) {
+    return baseCategories;
+  }
+
+  return baseCategories.map(category => {
+    const match = apiCategories.find(apiCat => apiCat.name === category.name);
+    if (match) {
+      return {
+        id: match.id,
+        name: match.name,
+        icon: category.icon,
+      };
+    }
+    return category;
+  });
+};
 
 export default function ServicesScreen() {
   const router = useRouter();
   
-  // Get theme colors
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({light: '#1a1a1a', dark: '#ffffff'}, 'text');
   const iconColor = useThemeColor({light: '#1a1a1a', dark: '#ffffff'}, 'text');
@@ -18,14 +56,20 @@ export default function ServicesScreen() {
   const cardBackgroundColor = useThemeColor({ light: '#FFFFFF', dark: '#1a1a1a' }, 'background');
   const cardBackgroundColor2 = useThemeColor({ light: 'lightgray', dark: 'gray' }, 'background');
 
-  const services = [
-    { id: 1, name: 'Massage & Body Care', category: 'Spa', icon: require('@/assets/icon/massage.png') },
-    { id: 2, name: 'Tattooing & Body Piercing', category: 'Body Art', icon: require('@/assets/icon/tattoo.png') },
-    { id: 3, name: 'Facial Treatments', category: 'Skincare', icon: require('@/assets/icon/makeup.png') },
-    { id: 4, name: 'Manicure & Pedicure', category: 'Nails', icon: require('@/assets/icon/nails.png') },
-    { id: 5, name: 'Hair Coloring', category: 'Hair', icon: require('@/assets/icon/styling.png') },
-    { id: 6, name: 'Beard Trimming', category: 'Grooming', icon: require('@/assets/icon/beard.png') },
-  ];
+  const [categories, setCategories] = useState<CategoryItem[]>(baseCategories);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const apiCategories = await salonService.getServiceCategories();
+        setCategories(buildCategoriesFromApi(apiCategories));
+      } catch {
+        setCategories(baseCategories);
+      }
+    };
+
+    loadCategories();
+  }, []);
 
   return (
     <CustomSafeAreaView edges="top" style={[styles.container, { backgroundColor }]}>
@@ -44,9 +88,9 @@ export default function ServicesScreen() {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
       >
-        {services.map((service) => (
+        {categories.map(service => (
           <TouchableOpacity 
-            key={service.id} 
+            key={service.name} 
             style={[styles.serviceItem, { backgroundColor: cardBackgroundColor }]}
             onPress={() => router.push('/client/salons')}
           >
@@ -59,7 +103,6 @@ export default function ServicesScreen() {
             </View>
             <View style={styles.textContainer}>
               <ThemedText style={[styles.serviceName, { color: textColor }]}>{service.name}</ThemedText>
-              <ThemedText style={[styles.categoryText, { color: textColor }]}>{service.category}</ThemedText>
             </View>
             <IconSymbol name="chevron.right" size={20} color={iconColor} />
           </TouchableOpacity>

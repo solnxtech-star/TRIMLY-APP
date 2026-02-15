@@ -1,4 +1,5 @@
 import apiClient from '../utils/apiClient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   RegisterRequest,
   RegisterResponse,
@@ -17,6 +18,9 @@ import {
   User,
   ApiError,
 } from '../types/auth.types';
+
+const LOGIN_EMAIL_KEY = 'login_email';
+const LOGIN_PASSWORD_KEY = 'login_password';
 
 /**
  * Authentication Service
@@ -105,6 +109,11 @@ class AuthService {
         userRole: response.user?.role
       });
       
+      await AsyncStorage.multiSet([
+        [LOGIN_EMAIL_KEY, data.email],
+        [LOGIN_PASSWORD_KEY, data.password],
+      ]);
+
       // Store tokens and user data
       if (response.access && response.refresh) {
         await apiClient.storeTokens(response.access, response.refresh);
@@ -159,6 +168,7 @@ class AuthService {
       
       // Clear local storage
       await apiClient.clearTokens();
+      await AsyncStorage.multiRemove([LOGIN_EMAIL_KEY, LOGIN_PASSWORD_KEY]);
     } catch (error) {
       console.error('Logout error:', error);
       // Still clear tokens even if there's an error

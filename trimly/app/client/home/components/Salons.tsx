@@ -56,7 +56,7 @@ export default function Salons() {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
       >
-        {salons.map((salon) => (
+            {salons.map((salon) => (
           <TouchableOpacity 
             key={salon.id} 
             style={styles.card} 
@@ -69,7 +69,11 @@ export default function Salons() {
                 resizeMode="cover"
               />
             ) : (
-              <View style={[styles.cardBackground, { backgroundColor: '#E5E7EB' }]} />
+              <Image 
+                source={require('@/assets/stock/service.jpg')}
+                style={styles.cardBackground}
+                resizeMode="cover"
+              />
             )}
             <View style={styles.heartIconBackground}>
               <IconSymbol name="heart" size={20} color="#FFFFFF" style={styles.heartIcon} />
@@ -78,7 +82,7 @@ export default function Salons() {
               <View style={styles.salonInfoContainer}>
                 <ThemedText style={styles.salonName} numberOfLines={1}>{salon.name}</ThemedText>
                 <View style={styles.ratingPill}>
-                  <IconSymbol name="star.fill" size={12} color="#FFD700" />
+                  <IconSymbol name="star" size={12} color="#FFD700" />
                   <ThemedText style={styles.ratingText}>{salon.rating || 0}</ThemedText>
                 </View>
               </View>
@@ -177,13 +181,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    width: '100%',
+    width: '95%',
   },
   ratingPill: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    borderRadius: 16,
     paddingHorizontal: 8,
     paddingVertical: 4,
     gap: 4,

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, View, TextInput, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, View, TextInput, TouchableOpacity, Image, Modal } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useRouter } from 'expo-router';
@@ -17,37 +17,59 @@ export default function SearchBar() {
     router.push('/client/salons');
   };
 
+  const handleCloseModal = () => {
+    setSearchQuery('');
+  };
+
+  const hasQuery = !!searchQuery.trim();
+
   return (
-    <View style={styles.container}>
-      <IconSymbol name="magnifyingglass" size={20} color="#6B6B6B" style={styles.searchIcon} />
-      <TextInput
-        style={styles.input}
-        placeholder="Find barber or salon"
-        placeholderTextColor="#6B6B6B"
-        value={searchQuery}
-        onChangeText={handleSearch}
-      />
-      {searchQuery ? (
-        <View style={styles.resultsContainer}>
-          <TouchableOpacity style={styles.card} onPress={handleSalonPress}>
-            <Image 
-              source={require('@/assets/stock/service.jpg')} 
-              style={styles.cardBackground}
-              resizeMode="cover"
-            />
-            <View style={styles.overlay}>
-              <ThemedText style={styles.comingSoonText}>Coming Soon!</ThemedText>
-            </View>
-            <View style={styles.heartIconBackground}>
-              <IconSymbol name="heart" size={20} color="#FFFFFF" style={styles.heartIcon} />
-            </View>
-            <View style={styles.textOverlay}>
-              <ThemedText style={styles.salonName}>{searchQuery}</ThemedText>
+    <>
+      <View style={styles.container}>
+        <IconSymbol name="magnifyingglass" size={20} color="#6B6B6B" style={styles.searchIcon} />
+        <TextInput
+          style={styles.input}
+          placeholder="Find barber or salon"
+          placeholderTextColor="#6B6B6B"
+          value={searchQuery}
+          onChangeText={handleSearch}
+        />
+      </View>
+
+      <Modal
+        visible={hasQuery}
+        transparent
+        animationType="fade"
+        onRequestClose={handleCloseModal}
+      >
+        <View style={styles.modalOverlay} pointerEvents="box-none">
+          <TouchableOpacity
+            activeOpacity={1}
+            style={styles.modalBackground}
+            onPress={handleCloseModal}
+          >
+            <View style={styles.resultsContainer}>
+              <TouchableOpacity style={styles.card} onPress={handleSalonPress}>
+                <Image 
+                  source={require('@/assets/stock/service.jpg')} 
+                  style={styles.cardBackground}
+                  resizeMode="cover"
+                />
+                <View style={styles.overlay}>
+                  <ThemedText style={styles.comingSoonText}>Coming Soon!</ThemedText>
+                </View>
+                <View style={styles.heartIconBackground}>
+                  <IconSymbol name="heart" size={20} color="#FFFFFF" style={styles.heartIcon} />
+                </View>
+                <View style={styles.textOverlay}>
+                  <ThemedText style={styles.salonName}>{searchQuery}</ThemedText>
+                </View>
+              </TouchableOpacity>
             </View>
           </TouchableOpacity>
         </View>
-      ) : null}
-    </View>
+      </Modal>
+    </>
   );
 }
 
@@ -77,12 +99,7 @@ const styles = StyleSheet.create({
     paddingLeft: 8,
   },
   resultsContainer: {
-    position: 'absolute',
-    top: 60,
-    left: 0,
-    right: 0,
-    zIndex: 10000000000,
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
     borderRadius: 16,
     padding: 10,
     shadowColor: '#000000',
@@ -144,5 +161,17 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.md, // 14
     fontWeight: '700',
     color: '#FFFFFF',
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'flex-start',
+  },
+  modalBackground: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    marginTop: 120,
+    paddingTop: 16,
+    paddingHorizontal: 16,
+    justifyContent: 'flex-start',
   },
 });

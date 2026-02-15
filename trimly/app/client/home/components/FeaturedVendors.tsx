@@ -56,7 +56,7 @@ export default function FeaturedVendors() {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
       >
-        {vendors.map((vendor) => (
+            {vendors.map((vendor) => (
           <TouchableOpacity 
             key={vendor.id} 
             style={[styles.card, styles.secondCard]} 
@@ -69,7 +69,11 @@ export default function FeaturedVendors() {
                 resizeMode="cover"
               />
             ) : (
-              <View style={[styles.cardBackground, { backgroundColor: '#E5E7EB' }]} />
+              <Image
+                source={require('@/assets/stock/img.png')}
+                style={styles.cardBackground}
+                resizeMode="cover"
+              />
             )}
             <View style={styles.textOverlay}>
               <ThemedText style={styles.vendorName} numberOfLines={1}>

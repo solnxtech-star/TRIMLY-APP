@@ -65,7 +65,11 @@ export default function FeaturedVendorsListScreen() {
           resizeMode="cover"
         />
       ) : (
-        <View style={[styles.cardBackground, { backgroundColor: '#E5E7EB' }]} />
+        <Image
+          source={require('@/assets/stock/img.png')}
+          style={styles.cardBackground}
+          resizeMode="cover"
+        />
       )}
       <View style={styles.textOverlay}>
         <ThemedText style={styles.vendorName} numberOfLines={1}>{item.worker || 'Vendor'}</ThemedText>

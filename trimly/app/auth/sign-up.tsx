@@ -40,7 +40,7 @@ export default function SignUpScreen() {
   };
 
   const validatePassword = (password: string) => {
-    return password.length >= 7;
+    return password.length >= 8;
   };
 
   const handleSignUp = async () => {
@@ -62,7 +62,7 @@ export default function SignUpScreen() {
       setPasswordError('Password is required');
       isValid = false;
     } else if (!validatePassword(password)) {
-      setPasswordError('Password must be at least 7 characters');
+      setPasswordError('Password must be at least 8 characters');
       isValid = false;
     }
     
@@ -206,7 +206,7 @@ export default function SignUpScreen() {
                   if (!text) {
                     setPasswordError('Password is required');
                   } else if (!validatePassword(text)) {
-                    setPasswordError('Password must be at least 7 characters');
+                    setPasswordError('Password must be at least 8 characters');
                   } else {
                     setPasswordError('');
                   }

@@ -40,7 +40,6 @@ export default function Header() {
       </View>
       
       <View style={styles.rightSection}>
-        <IconSymbol name="magnifyingglass" size={24} color="gray" />
         <IconSymbol name="bell" size={24} color="gray" />
       </View>
     </View>
