@@ -22,11 +22,16 @@ export default function BusinessDetailsScreen() {
   const cardBackgroundColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'background');
   const borderColor = useThemeColor({ light: '#E5E5E5', dark: '#424242' }, 'text');
   const secondaryTextColor = useThemeColor({ light: '#666666', dark: '#CCCCCC' }, 'text');
+  const savingsBackgroundColor = useThemeColor(
+    { light: '#F5F1E8', dark: '#2D2D2D' },
+    'background'
+  );
   const [salon, setSalon] = useState<Salon | null>(null);
   const [services, setServices] = useState<Service[]>([]);
   const [galleryItems, setGalleryItems] = useState<GalleryImage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [businessType, setBusinessType] = useState<'salon' | 'vendor'>('salon');
 
   useEffect(() => {
     const loadSalon = async () => {
@@ -38,9 +43,6 @@ export default function BusinessDetailsScreen() {
       try {
         setError(null);
         let resolvedSalon: Salon | null = null;
-        let resolvedServices: Service[] = [];
-        let resolvedGallery: GalleryImage[] = [];
-        let isVendor = false;
 
         try {
           const data = await salonService.getSalonById(String(id));
@@ -50,23 +52,6 @@ export default function BusinessDetailsScreen() {
           if (status === 404) {
             const vendor: any = await vendorService.getVendorById(String(id));
 
-            let vendorServices: Service[] = [];
-            let vendorGallery: GalleryImage[] = [];
-
-            try {
-              vendorServices = await vendorService.listVendorServices(
-                String(id)
-              );
-            } catch {
-              vendorServices = [];
-            }
-
-            try {
-              vendorGallery = await vendorService.getVendorGallery(String(id));
-            } catch {
-              vendorGallery = [];
-            }
-
             const mappedSalon: Salon = {
               ...(vendor as any),
               name: vendor.worker || vendor.name || 'Vendor',
@@ -74,35 +59,29 @@ export default function BusinessDetailsScreen() {
               address: vendor.address,
               is_open: vendor.is_available,
               location: vendor.address || vendor.location || '',
-              services: vendorServices,
-              gallery: vendorGallery,
+              services: vendor.services || [],
+              gallery: vendor.gallery || [],
             };
 
             resolvedSalon = mappedSalon;
-            resolvedServices = vendorServices;
-            resolvedGallery = vendorGallery;
-            isVendor = true;
+            setBusinessType('vendor');
           } else {
             throw err;
           }
         }
 
-        if (!isVendor && resolvedSalon) {
-          try {
-            resolvedServices = await salonService.listSalonServices(String(id));
-          } catch {
-            resolvedServices = [];
-          }
+        setSalon(resolvedSalon);
+        setServices(resolvedSalon?.services || []);
 
+        let resolvedGallery: GalleryImage[] = [];
+        if (resolvedSalon) {
           try {
             resolvedGallery = await salonService.getSalonGallery(String(id));
           } catch {
-            resolvedGallery = [];
+            resolvedGallery = resolvedSalon.gallery || [];
           }
         }
 
-        setSalon(resolvedSalon);
-        setServices(resolvedServices);
         setGalleryItems(resolvedGallery);
       } catch (e: any) {
         setError(e.message || 'Failed to load salon');
@@ -115,6 +94,21 @@ export default function BusinessDetailsScreen() {
   }, [id]);
 
   const salonReviews = (salon as any)?.salon_reviews || [];
+  const vendorGender =
+    (salon as any)?.Gender || (salon as any)?.gender || null;
+  const vendorActive =
+    typeof (salon as any)?.is_active === 'boolean'
+      ? (salon as any)?.is_active
+      : null;
+  const vendorStatusText = [
+    vendorGender
+      ? String(vendorGender).charAt(0).toUpperCase() +
+        String(vendorGender).slice(1)
+      : null,
+    vendorActive !== null ? (vendorActive ? 'Active' : 'Inactive') : null,
+  ]
+    .filter(Boolean)
+    .join(' • ');
 
   const heroImageSource =
     salon && salon.profile_pic
@@ -128,13 +122,7 @@ export default function BusinessDetailsScreen() {
   const businessLocation = salon?.address || salon?.location || '';
   const businessHours = salon?.is_open ? 'Open now' : 'Closed';
 
-  // Sample specialists data
-  const specialists = [
-    { id: '1', name: 'John Doe', rating: 4.8, image: require('@/assets/stock/img.png') },
-    { id: '2', name: 'Jane Smith', rating: 4.9, image: require('@/assets/stock/rated.png') },
-    { id: '3', name: 'Michael Brown', rating: 4.7, image: require('@/assets/stock/service.jpg') },
-    { id: '4', name: 'Sarah Johnson', rating: 4.9, image: require('@/assets/stock/special.jpg') },
-  ];
+  const specialists = (salon as any)?.specialists || [];
 
   // Sample packages data
   const packages = [
@@ -166,12 +154,19 @@ export default function BusinessDetailsScreen() {
     },
   ];
 
-  const handleServicePress = (serviceId: string) => {
-    router.push(
-      `/client/components/service-options?salonId=${String(
-        id
-      )}&serviceId=${serviceId}`
-    );
+  const handleServicePress = (service: Service, index: number) => {
+    router.push({
+      pathname: '/client/components/service-options',
+      params: {
+        salonId: String(id),
+        businessType,
+        serviceId: String(service.id ?? index),
+        serviceName: service.name,
+        serviceDescription: service.description || '',
+        servicePrice: String(service.price),
+        serviceDurationMinutes: String(service.duration_minutes),
+      },
+    });
   };
 
   const handleBookAppointment = () => {
@@ -252,6 +247,13 @@ export default function BusinessDetailsScreen() {
             <AntDesign name="clock-circle" size={16} color="#666666" />
             <ThemedText style={styles.hoursText}>{businessHours}</ThemedText>
           </View>
+
+          {vendorStatusText ? (
+            <View style={styles.statusContainer}>
+              <AntDesign name="user" size={16} color="#666666" />
+              <ThemedText style={styles.statusText}>{vendorStatusText}</ThemedText>
+            </View>
+          ) : null}
         </ThemedView>
 
         {/* Action Buttons */}
@@ -350,7 +352,12 @@ export default function BusinessDetailsScreen() {
                       <ThemedText style={[styles.newPrice, { color: '#2D7A3E' }]}>{pkg.price}</ThemedText>
                     </View>
 
-                    <View style={[styles.savingsContainer, { backgroundColor: useThemeColor({ light: '#F5F1E8', dark: '#2D2D2D' }, 'background') }]}> 
+                    <View
+                      style={[
+                        styles.savingsContainer,
+                        { backgroundColor: savingsBackgroundColor },
+                      ]}
+                    >
                       <ThemedText style={[styles.savingsText, { color: secondaryTextColor }]}> 
                         You save <ThemedText style={[styles.savingsAmount, { color: textColor }]}>₦{(parseInt(pkg.originalPrice.replace('₦', '')) - parseInt(pkg.price.replace('₦', ''))).toLocaleString()}</ThemedText> ({pkg.discount})
                       </ThemedText>
@@ -405,7 +412,7 @@ export default function BusinessDetailsScreen() {
                   key={String(service.id ?? index)}
                   style={styles.serviceItem}
                   onPress={() =>
-                    handleServicePress(String(service.id ?? index))
+                    handleServicePress(service, index)
                   }
                 >
                   <ThemedText style={styles.serviceName}>{service.name}</ThemedText>
@@ -419,7 +426,7 @@ export default function BusinessDetailsScreen() {
             <>
               <ThemedText style={styles.tabTitle}>Specialists ({specialists.length})</ThemedText>
               <View style={styles.specialistsGrid}>
-                {specialists.map((specialist) => (
+                {specialists.map((specialist:any) => (
                   <View key={specialist.id} style={styles.specialistCard}>
                     <Image source={specialist.image} style={styles.specialistImage} />
                     <View style={styles.specialistInfo}>
@@ -639,6 +646,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginLeft: 8,
     fontWeight: 'bold'
+  },
+  statusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingLeft: 4,
+    marginTop: 4,
+  },
+  statusText: {
+    fontSize: 14,
+    marginLeft: 8,
   },
   actionButtonsRow: {
     flexDirection: 'row',

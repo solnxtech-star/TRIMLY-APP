@@ -125,6 +125,35 @@ class VendorService {
     }
   }
 
+  async getAvailability(
+    vendorId: string
+  ): Promise<
+    {
+      id: string;
+      day_of_week: number;
+      start_time: string;
+      end_time: string;
+      salon: string | null;
+      vendor: string | null;
+    }[]
+  > {
+    try {
+      const response = await apiClient.get<PaginatedResponse<any> | any>(
+        `/vendors/${vendorId}/availability/`,
+        true
+      );
+
+      if (Array.isArray(response)) {
+        return response;
+      }
+
+      return (response.results || []) as any[];
+    } catch (error) {
+      console.error('Get vendor availability error:', error);
+      throw this.handleError(error);
+    }
+  }
+
   /**
    * List services for a specific vendor
    * @param vendorId - Vendor ID

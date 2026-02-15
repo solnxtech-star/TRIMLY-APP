@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { useState } from 'react';
+import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -8,17 +8,21 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AntDesign } from '@expo/vector-icons';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { FontSizes } from '@/constants/theme';
-import salonService from '@/services/salonService';
-import { Service } from '@/types/salon.types';
 
 export default function ServiceOptionsScreen() {
   const router = useRouter();
   const navigation = useNavigation();
-  const { serviceId, source, salonId } = useLocalSearchParams();
+  const {
+    serviceId,
+    source,
+    salonId,
+    businessType,
+    serviceName,
+    serviceDescription,
+    servicePrice,
+    serviceDurationMinutes,
+  } = useLocalSearchParams();
   const [selectedFilter, setSelectedFilter] = useState('All');
-  const [service, setService] = useState<Service | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   // Theme colors
   const backgroundColor = useThemeColor({}, 'background');
@@ -28,106 +32,48 @@ export default function ServiceOptionsScreen() {
   const filterBackgroundColor = useThemeColor({ light: '#F0F0F0', dark: '#2D2D2D' }, 'text');
   const filterTextColor = useThemeColor({ light: '#424242', dark: '#ffffff' }, 'text');
 
-  useEffect(() => {
-    const loadService = async () => {
-      if (!serviceId || !salonId) {
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        setError(null);
-        const data = await salonService.getSalonServiceById(
-          String(salonId),
-          String(serviceId)
-        );
-        setService(data);
-      } catch (e: any) {
-        setError(e.message || 'Failed to load service');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadService();
-  }, [serviceId, salonId]);
-
   // Filter categories
   const filters = ['All', 'Haircuts', 'Makeup', 'Massage', 'Skincare', 'Nails'];
 
   const handleBookNow = (optionId: string) => {
-    console.log('Booking option:', optionId);
-    // Navigate to date/time selection screen
-    router.push(`/client/bookings/form?optionId=${optionId}`);
+    router.push({
+      pathname: '/client/bookings/form',
+      params: {
+        optionId: String(optionId),
+        businessId: salonId ? String(salonId) : '',
+        businessType: businessType || 'salon',
+        serviceName,
+        servicePrice,
+        serviceDurationMinutes,
+      },
+    });
   };
 
-  if (isLoading) {
-    return (
-      <SafeAreaView style={[styles.container, { backgroundColor }]}>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color="#2D8A47" />
-          <ThemedText style={{ marginTop: 16 }}>Loading service...</ThemedText>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  if (error || !service) {
-    return (
-      <SafeAreaView style={[styles.container, { backgroundColor }]}>
-        <View
-          style={{
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            paddingHorizontal: 24,
-          }}
-        >
-          <ThemedText style={{ textAlign: 'center' }}>
-            {error || 'Service not found'}
-          </ThemedText>
-          <TouchableOpacity
-            style={[styles.bookButton, { marginTop: 16 }]}
-            onPress={() => {
-              if (navigation.canGoBack()) {
-                router.back();
-              } else {
-                router.push('/client/dashboard');
-              }
-            }}
-          >
-            <ThemedText style={[styles.bookButtonText, { color: '#ffffff' }]}>
-              Go Back
-            </ThemedText>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   const priceText =
-    typeof service.price === 'string'
-      ? `₦${Number(service.price).toLocaleString()}`
-      : `₦${service.price}`;
+    typeof servicePrice === 'string'
+      ? `₦${Number(servicePrice).toLocaleString()}`
+      : `₦${servicePrice}`;
 
-  const durationText = `${service.duration_minutes} min`;
+  const durationText = `${serviceDurationMinutes} min`;
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}> 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => {
-          // Check if we can go back, otherwise navigate to home
-          if (navigation.canGoBack()) {
-            router.back();
-          } else {
-            router.push('/client/dashboard');
-          }
-        }}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => {
+            if (salonId) {
+              router.push(`/client/business-details/${salonId}`);
+            } else {
+              router.back();
+            }
+          }}
+        >
           <AntDesign name="left" size={17} color={textColor} />
         </TouchableOpacity>
         <ThemedText style={[styles.title, { color: textColor }]}>
-          {service.name}
+          {serviceName}
         </ThemedText>
         <View style={styles.placeholder} />
       </View>
@@ -172,7 +118,7 @@ export default function ServiceOptionsScreen() {
           >
             <View style={styles.optionHeader}>
               <ThemedText style={[styles.optionName, { color: textColor }]}>
-                {service.name}
+                {serviceName}
               </ThemedText>
               <TouchableOpacity
                 style={styles.bookButton}
@@ -188,7 +134,7 @@ export default function ServiceOptionsScreen() {
             <ThemedText
               style={[styles.optionDescription, { color: textColor }]}
             >
-              {service.description || 'No description'}
+              {serviceDescription || 'No description'}
             </ThemedText>
             <View style={styles.optionDetails}>
               <ThemedText style={[styles.price, { color: textColor }]}>

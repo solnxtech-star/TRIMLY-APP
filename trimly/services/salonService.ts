@@ -268,7 +268,7 @@ class SalonService {
     try {
       const response = await apiClient.get<any>(
         `/salons/${salonId}/gallery/`,
-        false
+        true
       );
 
       if (Array.isArray(response)) {
@@ -278,6 +278,35 @@ class SalonService {
       return (response.results || []) as GalleryImage[];
     } catch (error) {
       console.error('Get salon gallery error:', error);
+      throw this.handleError(error);
+    }
+  }
+
+  async getSalonAvailability(
+    salonId: string
+  ): Promise<
+    {
+      id: string;
+      day_of_week: number;
+      start_time: string;
+      end_time: string;
+      salon: string | null;
+      vendor: string | null;
+    }[]
+  > {
+    try {
+      const response = await apiClient.get<any>(
+        `/salons/${salonId}/availability/`,
+        true
+      );
+
+      if (Array.isArray(response)) {
+        return response;
+      }
+
+      return (response.results || []) as any[];
+    } catch (error) {
+      console.error('Get salon availability error:', error);
       throw this.handleError(error);
     }
   }

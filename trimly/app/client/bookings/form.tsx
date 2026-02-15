@@ -1,21 +1,50 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, View, ScrollView, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { AntDesign } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { FontSizes } from '@/constants/theme';
+import vendorService from '@/services/vendorService';
+import salonService from '@/services/salonService';
+
+interface Availability {
+  id: string;
+  day_of_week: number;
+  start_time: string;
+  end_time: string;
+  salon: string | null;
+  vendor: string | null;
+}
+
+interface DateItem {
+  labelDay: string;
+  labelDate: string;
+  isoDate: string;
+  weekdayIndex: number;
+}
 
 export default function BookingFormScreen() {
   const router = useRouter();
+  const {
+    optionId,
+    businessId,
+    businessType,
+    serviceName,
+    servicePrice,
+    serviceDurationMinutes,
+  } = useLocalSearchParams();
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [notes, setNotes] = useState('');
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
   const [selectedTime, setSelectedTime] = useState<number | null>(null);
+  const [availability, setAvailability] = useState<Availability[]>([]);
+  const [timeSlots, setTimeSlots] = useState<string[]>([]);
+  const [isLoadingAvailability, setIsLoadingAvailability] = useState(false);
 
   // Theme colors
   const backgroundColor = useThemeColor({ light: '#ffffff', dark: '#000000' }, 'background');
@@ -23,7 +52,6 @@ export default function BookingFormScreen() {
   const borderColor = useThemeColor({ light: '#E5E5E5', dark: '#424242' }, 'text');
   const cardBackgroundColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'text');
 
-  // Helper function to generate time slots
   const getTimeFromIndex = (index: number) => {
     const hours = Math.floor(index / 2) + 9; // Starting from 9 AM
     const minutes = index % 2 === 0 ? '00' : '30';
@@ -32,19 +60,100 @@ export default function BookingFormScreen() {
     return `${displayHours}:${minutes}${period}`;
   };
 
-  // Sample dates for the next week
-  const dates = [
-    { day: 'Mon', date: '1' },
-    { day: 'Tue', date: '2' },
-    { day: 'Wed', date: '3' },
-    { day: 'Thu', date: '4' },
-    { day: 'Fri', date: '5' },
-    { day: 'Sat', date: '6' },
-    { day: 'Sun', date: '7' },
-  ];
+  const generateNext7Days = (): DateItem[] => {
+    const today = new Date();
+    const items: DateItem[] = [];
+    const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      const weekdayIndex = d.getDay();
+      items.push({
+        labelDay: dayLabels[weekdayIndex],
+        labelDate: String(d.getDate()),
+        isoDate: d.toISOString().split('T')[0],
+        weekdayIndex,
+      });
+    }
+
+    return items;
+  };
+
+  const dates = generateNext7Days();
+
+  const formatTime = (timeStr: string) => {
+    const parts = timeStr.split(':');
+    const hour = parseInt(parts[0], 10) || 0;
+    const minute = parseInt(parts[1], 10) || 0;
+    const period = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour % 12 === 0 ? 12 : hour % 12;
+    const minutePadded = minute.toString().padStart(2, '0');
+    return `${displayHour}:${minutePadded}${period}`;
+  };
+
+  const formatTimeRange = (start: string, end: string) => {
+    return `${formatTime(start)} - ${formatTime(end)}`;
+  };
+
+  useEffect(() => {
+    const loadAvailability = async () => {
+      if (!businessId) {
+        return;
+      }
+
+      try {
+        setIsLoadingAvailability(true);
+        const type = typeof businessType === 'string' ? businessType.toLowerCase() : 'salon';
+        let records: Availability[] = [];
+
+        if (type === 'vendor') {
+          records = await vendorService.getAvailability(String(businessId));
+        } else {
+          records = await salonService.getSalonAvailability(String(businessId));
+        }
+
+        setAvailability(records);
+      } catch (e) {
+        setAvailability([]);
+      } finally {
+        setIsLoadingAvailability(false);
+      }
+    };
+
+    loadAvailability();
+  }, [businessId, businessType]);
+
+  const handleSelectDate = (index: number) => {
+    setSelectedDate(index);
+    const selected = dates[index];
+    setDate(selected.isoDate);
+
+    const dayAvailabilities = availability.filter(
+      (a) => a.day_of_week === selected.weekdayIndex
+    );
+    const slots = dayAvailabilities.map((a) =>
+      formatTimeRange(a.start_time, a.end_time)
+    );
+    setTimeSlots(slots);
+    setSelectedTime(null);
+    if (slots.length === 0) {
+      setTime('');
+    }
+  };
 
   const handleConfirmBooking = () => {
-    console.log('Booking confirmed with:', { date, time, notes });
+    console.log('Booking confirmed with:', {
+      date,
+      time,
+      notes,
+      optionId,
+      businessId,
+      businessType,
+      serviceName,
+      servicePrice,
+      serviceDurationMinutes,
+    });
     // Navigate to confirmation screen
     router.push('/client/bookings/confirmation');
   };
@@ -85,10 +194,10 @@ export default function BookingFormScreen() {
                 <TouchableOpacity 
                   key={index} 
                   style={[styles.dateItem, { backgroundColor: selectedDate === index ? '#2D8A47' : cardBackgroundColor, borderColor: borderColor }]}
-                  onPress={() => setSelectedDate(index)}
+                  onPress={() => handleSelectDate(index)}
                 >
-                  <ThemedText style={[styles.dayText, { color: selectedDate === index ? '#FFFFFF' : textColor }]}>{item.day}</ThemedText>
-                  <ThemedText style={[styles.dateText, { color: selectedDate === index ? '#FFFFFF' : textColor }]}>{item.date}</ThemedText>
+                  <ThemedText style={[styles.dayText, { color: selectedDate === index ? '#FFFFFF' : textColor }]}>{item.labelDay}</ThemedText>
+                  <ThemedText style={[styles.dateText, { color: selectedDate === index ? '#FFFFFF' : textColor }]}>{item.labelDate}</ThemedText>
                 </TouchableOpacity>
               ))}
             </View>
@@ -99,14 +208,35 @@ export default function BookingFormScreen() {
         <View style={styles.formSection}>
           <ThemedText style={styles.sectionTitle}>Select Time</ThemedText>
           <View style={styles.timeGrid}>
-            {[...Array(9)].map((_, index) => (
-              <TouchableOpacity 
-                key={index} 
-                style={[styles.timeSlot, { backgroundColor: selectedTime === index ? '#2D8A47' : cardBackgroundColor, borderColor: borderColor }]}
-                onPress={() => setSelectedTime(index)}
+            {timeSlots.map((slot, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  styles.timeSlot,
+                  {
+                    backgroundColor:
+                      selectedTime === index ? '#2D8A47' : cardBackgroundColor,
+                    borderColor: borderColor,
+                  },
+                ]}
+                onPress={() => {
+                  setSelectedTime(index);
+                  setTime(slot);
+                }}
               >
-                <IconSymbol name="clock" size={16} color={selectedTime === index ? '#FFFFFF' : '#666666'} />
-                <ThemedText style={[styles.timeText, { color: selectedTime === index ? '#FFFFFF' : textColor }]}>{getTimeFromIndex(index)}</ThemedText>
+                <IconSymbol
+                  name="clock"
+                  size={16}
+                  color={selectedTime === index ? '#FFFFFF' : '#666666'}
+                />
+                <ThemedText
+                  style={[
+                    styles.timeText,
+                    { color: selectedTime === index ? '#FFFFFF' : textColor },
+                  ]}
+                >
+                  {slot}
+                </ThemedText>
               </TouchableOpacity>
             ))}
           </View>
