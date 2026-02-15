@@ -7,6 +7,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { AntDesign } from '@expo/vector-icons';
 import salonService from '@/services/salonService';
+import vendorService from '@/services/vendorService';
 import { Salon, Service, GalleryImage } from '@/types/salon.types';
 
 export default function BusinessDetailsScreen() {
@@ -36,12 +37,73 @@ export default function BusinessDetailsScreen() {
 
       try {
         setError(null);
-        const data = await salonService.getSalonById(String(id));
-        setSalon(data);
-        const svc = await salonService.listSalonServices(String(id));
-        setServices(svc);
-        const gallery = await salonService.getSalonGallery(String(id));
-        setGalleryItems(gallery);
+        let resolvedSalon: Salon | null = null;
+        let resolvedServices: Service[] = [];
+        let resolvedGallery: GalleryImage[] = [];
+        let isVendor = false;
+
+        try {
+          const data = await salonService.getSalonById(String(id));
+          resolvedSalon = data;
+        } catch (err: any) {
+          const status = err?.status || err?.response?.status;
+          if (status === 404) {
+            const vendor: any = await vendorService.getVendorById(String(id));
+
+            let vendorServices: Service[] = [];
+            let vendorGallery: GalleryImage[] = [];
+
+            try {
+              vendorServices = await vendorService.listVendorServices(
+                String(id)
+              );
+            } catch {
+              vendorServices = [];
+            }
+
+            try {
+              vendorGallery = await vendorService.getVendorGallery(String(id));
+            } catch {
+              vendorGallery = [];
+            }
+
+            const mappedSalon: Salon = {
+              ...(vendor as any),
+              name: vendor.worker || vendor.name || 'Vendor',
+              about: vendor.bio,
+              address: vendor.address,
+              is_open: vendor.is_available,
+              location: vendor.address || vendor.location || '',
+              services: vendorServices,
+              gallery: vendorGallery,
+            };
+
+            resolvedSalon = mappedSalon;
+            resolvedServices = vendorServices;
+            resolvedGallery = vendorGallery;
+            isVendor = true;
+          } else {
+            throw err;
+          }
+        }
+
+        if (!isVendor && resolvedSalon) {
+          try {
+            resolvedServices = await salonService.listSalonServices(String(id));
+          } catch {
+            resolvedServices = [];
+          }
+
+          try {
+            resolvedGallery = await salonService.getSalonGallery(String(id));
+          } catch {
+            resolvedGallery = [];
+          }
+        }
+
+        setSalon(resolvedSalon);
+        setServices(resolvedServices);
+        setGalleryItems(resolvedGallery);
       } catch (e: any) {
         setError(e.message || 'Failed to load salon');
       } finally {

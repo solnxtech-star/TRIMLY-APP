@@ -42,10 +42,6 @@ export default function SearchBar() {
     return () => clearTimeout(timeoutId);
   }, [searchQuery]);
 
-  const handleSalonPress = () => {
-    router.push('/client/salons');
-  };
-
   const handleCloseModal = () => {
     setSearchQuery('');
     setResults([]);
@@ -90,7 +86,10 @@ export default function SearchBar() {
                   renderItem={({ item }) => (
                     <TouchableOpacity
                       style={styles.card}
-                      onPress={handleSalonPress}
+                      onPress={() => {
+                        router.push(`/client/business-details/${item.id}`);
+                        handleCloseModal();
+                      }}
                     >
                       <Image 
                         source={require('@/assets/stock/service.jpg')} 
