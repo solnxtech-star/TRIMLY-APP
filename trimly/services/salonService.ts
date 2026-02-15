@@ -330,6 +330,45 @@ class SalonService {
   }
 
   /**
+   * Global search for salons and vendors
+   * @param params - Search filters
+   * @returns Search results
+   */
+  async searchMarketplace(params: {
+    query: string;
+    latitude?: string;
+    longitude?: string;
+    min_rating?: number;
+    category_id?: number;
+  }): Promise<PaginatedResponse<any>> {
+    try {
+      const searchParams = new URLSearchParams();
+      if (params.query) {
+        searchParams.append('q', params.query);
+      }
+      if (params.latitude) {
+        searchParams.append('latitude', params.latitude);
+      }
+      if (params.longitude) {
+        searchParams.append('longitude', params.longitude);
+      }
+      if (typeof params.min_rating === 'number') {
+        searchParams.append('min_rating', String(params.min_rating));
+      }
+      if (typeof params.category_id === 'number') {
+        searchParams.append('category_id', String(params.category_id));
+      }
+
+      const endpoint = `/search/?${searchParams.toString()}`;
+      const response = await apiClient.get<PaginatedResponse<any>>(endpoint, true);
+      return response;
+    } catch (error) {
+      console.error('Search marketplace error:', error);
+      throw this.handleError(error);
+    }
+  }
+
+  /**
    * Handle and format API errors
    * @param error - Error object from API
    * @returns Formatted error

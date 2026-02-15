@@ -87,6 +87,9 @@ export default function Salons() {
                 </View>
               </View>
             </View>
+            <View style={styles.overlay}>
+              <ThemedText style={styles.comingSoonText}>Coming Soon</ThemedText>
+            </View>
           </TouchableOpacity>
         ))}
       </ScrollView>

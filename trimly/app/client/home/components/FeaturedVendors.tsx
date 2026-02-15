@@ -77,7 +77,9 @@ export default function FeaturedVendors() {
             )}
             <View style={styles.textOverlay}>
               <ThemedText style={styles.vendorName} numberOfLines={1}>
-                {vendor.worker || 'Vendor'}
+                {(vendor.worker && vendor.worker.length > 8)
+                  ? `${vendor.worker.slice(0, 4)}...${vendor.worker.slice(-4)}`
+                  : (vendor.worker || 'Vendor')}
               </ThemedText>
               <View style={styles.ratingContainer}>
                 <MaterialCommunityIcons name='star' size={11} color='yellow' />

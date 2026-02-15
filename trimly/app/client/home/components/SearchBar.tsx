@@ -1,17 +1,46 @@
-import { useState } from 'react';
-import { StyleSheet, View, TextInput, TouchableOpacity, Image, Modal } from 'react-native';
+import { useEffect, useState } from 'react';
+import { StyleSheet, View, TextInput, TouchableOpacity, Image, Modal, FlatList } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useRouter } from 'expo-router';
 import { FontSizes } from '@/constants/theme';
+import salonService from '@/services/salonService';
+import { ServiceCategory } from '@/types/salon.types';
 
 export default function SearchBar() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [results, setResults] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const handleSearch = (text: string) => {
+  const handleSearchChange = (text: string) => {
     setSearchQuery(text);
   };
+
+  useEffect(() => {
+    const performSearch = async () => {
+      const trimmed = searchQuery.trim();
+      if (!trimmed) {
+        setResults([]);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        const response = await salonService.searchMarketplace({
+          query: trimmed,
+        });
+        setResults(response.results || []);
+      } catch {
+        setResults([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    const timeoutId = setTimeout(performSearch, 400);
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
 
   const handleSalonPress = () => {
     router.push('/client/salons');
@@ -19,6 +48,7 @@ export default function SearchBar() {
 
   const handleCloseModal = () => {
     setSearchQuery('');
+    setResults([]);
   };
 
   const hasQuery = !!searchQuery.trim();
@@ -32,7 +62,7 @@ export default function SearchBar() {
           placeholder="Find barber or salon"
           placeholderTextColor="#6B6B6B"
           value={searchQuery}
-          onChangeText={handleSearch}
+          onChangeText={handleSearchChange}
         />
       </View>
 
@@ -48,23 +78,34 @@ export default function SearchBar() {
             style={styles.modalBackground}
             onPress={handleCloseModal}
           >
-            <View style={styles.resultsContainer}>
-              <TouchableOpacity style={styles.card} onPress={handleSalonPress}>
-                <Image 
-                  source={require('@/assets/stock/service.jpg')} 
-                  style={styles.cardBackground}
-                  resizeMode="cover"
+            <View style={styles.resultsContainer} pointerEvents="box-none">
+              {isLoading ? (
+                <ThemedText style={styles.loadingText}>Searching...</ThemedText>
+              ) : results.length === 0 ? (
+                <ThemedText style={styles.emptyText}>No results found</ThemedText>
+              ) : (
+                <FlatList
+                  data={results}
+                  keyExtractor={(item) => String(item.id)}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      style={styles.card}
+                      onPress={handleSalonPress}
+                    >
+                      <Image 
+                        source={require('@/assets/stock/service.jpg')} 
+                        style={styles.cardBackground}
+                        resizeMode="cover"
+                      />
+                      <View style={styles.overlay}>
+                        <ThemedText style={styles.comingSoonText}>
+                          {item.display_name || searchQuery}
+                        </ThemedText>
+                      </View>
+                    </TouchableOpacity>
+                  )}
                 />
-                <View style={styles.overlay}>
-                  <ThemedText style={styles.comingSoonText}>Coming Soon!</ThemedText>
-                </View>
-                <View style={styles.heartIconBackground}>
-                  <IconSymbol name="heart" size={20} color="#FFFFFF" style={styles.heartIcon} />
-                </View>
-                <View style={styles.textOverlay}>
-                  <ThemedText style={styles.salonName}>{searchQuery}</ThemedText>
-                </View>
-              </TouchableOpacity>
+              )}
             </View>
           </TouchableOpacity>
         </View>

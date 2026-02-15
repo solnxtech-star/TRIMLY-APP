@@ -4,7 +4,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { CustomSafeAreaView } from '@/components/custom-safe-area-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import salonService from '@/services/salonService';
 import { Salon } from '@/types/salon.types';
@@ -12,6 +12,7 @@ import { FontSizes } from '@/constants/theme';
 
 export default function SalonsScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams();
   const [salons, setSalons] = useState<Salon[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -27,12 +28,17 @@ export default function SalonsScreen() {
   
   useEffect(() => {
     fetchSalons();
-  }, []);
+  }, [params.categoryId]);
   
   const fetchSalons = async () => {
     try {
       setError(null);
-      const response = await salonService.listSalons({ limit: 50 });
+      const listParams: any = { limit: 50 };
+      if (params.categoryId) {
+        listParams.category = String(params.categoryId);
+      }
+
+      const response = await salonService.listSalons(listParams);
       
       console.log('=== SALONS DATA (Salons Screen) ===');
       console.log('Total salons loaded:', response.results.length);

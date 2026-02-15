@@ -72,7 +72,11 @@ export default function FeaturedVendorsListScreen() {
         />
       )}
       <View style={styles.textOverlay}>
-        <ThemedText style={styles.vendorName} numberOfLines={1}>{item.worker || 'Vendor'}</ThemedText>
+        <ThemedText style={styles.vendorName} numberOfLines={1}>
+          {(item.worker && item.worker.length > 8)
+            ? `${item.worker.slice(0, 4)}...${item.worker.slice(-4)}`
+            : (item.worker || 'Vendor')}
+        </ThemedText>
         <View style={styles.ratingContainer}>
           <MaterialCommunityIcons name='star' size={12} color='yellow' />
           <ThemedText style={styles.rating}>{item.rating || 0}</ThemedText>

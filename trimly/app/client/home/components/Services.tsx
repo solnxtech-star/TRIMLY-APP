@@ -7,15 +7,22 @@ import { baseCategories, buildCategoriesFromApi, CategoryItem } from '@/app/clie
 import salonService from '@/services/salonService';
 
 export default function Services() {
-  const router = useRouter();
   const [categories, setCategories] = useState<CategoryItem[]>(baseCategories);
+  const router = useRouter();
 
   const handleSeeAll = () => {
     router.push('/client/services');
   };
   
   const handleServicePress = (service: CategoryItem) => {
-    router.push('/client/services');
+    if (service.id) {
+      router.push({
+        pathname: '/client/services',
+        params: { categoryId: String(service.id) },
+      });
+    } else {
+      router.push('/client/services');
+    }
   };
 
   useEffect(() => {

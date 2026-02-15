@@ -3,7 +3,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { CustomSafeAreaView } from '@/components/custom-safe-area-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { FontSizes } from '@/constants/theme';
@@ -48,6 +48,7 @@ export const buildCategoriesFromApi = (
 
 export default function ServicesScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams();
   
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({light: '#1a1a1a', dark: '#ffffff'}, 'text');
@@ -57,6 +58,9 @@ export default function ServicesScreen() {
   const cardBackgroundColor2 = useThemeColor({ light: 'lightgray', dark: 'gray' }, 'background');
 
   const [categories, setCategories] = useState<CategoryItem[]>(baseCategories);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
+    params.categoryId ? Number(params.categoryId) : null
+  );
 
   useEffect(() => {
     const loadCategories = async () => {
