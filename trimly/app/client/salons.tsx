@@ -33,7 +33,7 @@ export default function SalonsScreen() {
   const fetchSalons = async () => {
     try {
       setError(null);
-      const listParams: any = { limit: 50 };
+      const listParams: any = {};
       if (params.categoryId) {
         listParams.category = String(params.categoryId);
       }

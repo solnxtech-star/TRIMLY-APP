@@ -32,7 +32,7 @@ export default function ExploreScreen() {
   const fetchSalons = async () => {
     try {
       setError(null);
-      const response = await salonService.listSalons({ limit: 20 });
+      const response = await salonService.listSalons();
       
       console.log('=== SALONS DATA (Explore Screen) ===');
       console.log('Total salons loaded:', response.results.length);

@@ -18,7 +18,7 @@ export default function Salons() {
   
   const fetchSalons = async () => {
     try {
-      const response = await salonService.listSalons({ limit: 5 });
+      const response = await salonService.listSalons();
       console.log('Salons component loaded:', response.results.length);
       setSalons(response.results);
     } catch (error) {

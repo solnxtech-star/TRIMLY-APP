@@ -1,11 +1,13 @@
-import { useState } from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity, Image, Platform } from 'react-native';
+import { useState, useEffect } from 'react';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Image, Platform, ActivityIndicator } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { AntDesign } from '@expo/vector-icons';
+import salonService from '@/services/salonService';
+import { Salon, Service, GalleryImage } from '@/types/salon.types';
 
 export default function BusinessDetailsScreen() {
   const router = useRouter();
@@ -19,39 +21,50 @@ export default function BusinessDetailsScreen() {
   const cardBackgroundColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'background');
   const borderColor = useThemeColor({ light: '#E5E5E5', dark: '#424242' }, 'text');
   const secondaryTextColor = useThemeColor({ light: '#666666', dark: '#CCCCCC' }, 'text');
+  const [salon, setSalon] = useState<Salon | null>(null);
+  const [services, setServices] = useState<Service[]>([]);
+  const [galleryItems, setGalleryItems] = useState<GalleryImage[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Sample business data - in a real app this would come from an API
-  const businessImages = [
-    require('@/assets/stock/img.png'),
-    require('@/assets/stock/rated.png'),
-    require('@/assets/stock/service.jpg'),
-    require('@/assets/stock/special.jpg'),
-  ];
-  
-  // Select image based on business ID
-  const getImageForBusiness = (businessId: string) => {
-    const index = parseInt(businessId) % businessImages.length;
-    return businessImages[index];
-  };
-  
-  const business = {
-    id: id || '1',
-    name: 'Glamour Haven',
-    description: 'Premium beauty salon offering top-notch haircuts, styling, and grooming services.',
-    location: 'No. 20 Ozuoba Rd, Ph',
-    hours: 'Mon - Sun | 11am - 11pm',
-    rating: 4.8,
-    reviewCount: 120,
-    image: getImageForBusiness(id as string || '1'),
-  };
+  useEffect(() => {
+    const loadSalon = async () => {
+      if (!id) {
+        setIsLoading(false);
+        return;
+      }
 
-  const services = [
-    { id: '1', name: 'Haircut', chevron: true },
-    { id: '2', name: 'Braiding', chevron: true },
-    { id: '3', name: 'Treatment', chevron: true },
-    { id: '4', name: 'Massage', chevron: true },
-    { id: '5', name: 'Nails', chevron: true },
-  ];
+      try {
+        setError(null);
+        const data = await salonService.getSalonById(String(id));
+        setSalon(data);
+        const svc = await salonService.listSalonServices(String(id));
+        setServices(svc);
+        const gallery = await salonService.getSalonGallery(String(id));
+        setGalleryItems(gallery);
+      } catch (e: any) {
+        setError(e.message || 'Failed to load salon');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadSalon();
+  }, [id]);
+
+  const salonReviews = (salon as any)?.salon_reviews || [];
+
+  const heroImageSource =
+    salon && salon.profile_pic
+      ? { uri: salon.profile_pic }
+      : salon && salon.gallery && salon.gallery.length > 0
+      ? { uri: salon.gallery[0].image }
+      : require('@/assets/stock/service.jpg');
+
+  const businessName = salon?.name || 'Salon';
+  const businessDescription = salon?.about || 'No description available';
+  const businessLocation = salon?.address || salon?.location || '';
+  const businessHours = salon?.is_open ? 'Open now' : 'Closed';
 
   // Sample specialists data
   const specialists = [
@@ -91,54 +104,12 @@ export default function BusinessDetailsScreen() {
     },
   ];
 
-  // Sample gallery images
-  const galleryImages = [
-    { id: '1', image: require('@/assets/stock/img.png') },
-    { id: '2', image: require('@/assets/stock/rated.png') },
-    { id: '3', image: require('@/assets/stock/service.jpg') },
-    { id: '4', image: require('@/assets/stock/special.jpg') },
-    { id: '5', image: require('@/assets/stock/img.png') },
-    { id: '6', image: require('@/assets/stock/rated.png') },
-  ];
-
-  // Sample reviews data
-  const reviews = [
-    {
-      id: '1',
-      user: {
-        name: 'Alice Johnson',
-        image: require('@/assets/stock/img.png'),
-      },
-      rating: 4.8,
-      text: 'Amazing service! The staff was very professional and the results exceeded my expectations. Will definitely come back.',
-      date: '2023-10-15',
-    },
-    {
-      id: '2',
-      user: {
-        name: 'Michael Brown',
-        image: require('@/assets/stock/rated.png'),
-      },
-      rating: 4.5,
-      text: 'Great experience overall. The salon was clean and the stylist was very skilled. Highly recommend!',
-      date: '2023-10-10',
-    },
-    {
-      id: '3',
-      user: {
-        name: 'Sarah Williams',
-        image: require('@/assets/stock/service.jpg'),
-      },
-      rating: 5.0,
-      text: 'Best salon I\'ve ever been to! The attention to detail and customer service was outstanding.',
-      date: '2023-10-05',
-    },
-  ];
-
   const handleServicePress = (serviceId: string) => {
-    console.log('Selected service:', serviceId);
-    // Navigate to service options screen in components folder
-    router.push(`/client/components/service-options?serviceId=${serviceId}`);
+    router.push(
+      `/client/components/service-options?salonId=${String(
+        id
+      )}&serviceId=${serviceId}`
+    );
   };
 
   const handleBookAppointment = () => {
@@ -149,8 +120,38 @@ export default function BusinessDetailsScreen() {
 
   const handleBookPackage = (packageId: string) => {
     console.log('Book package pressed:', packageId);
-    // Navigate to booking screen for specific package
   };
+
+  if (isLoading) {
+    return (
+      <ThemedView style={styles.container}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color="#2D8A47" />
+          <ThemedText style={{ marginTop: 16 }}>Loading salon...</ThemedText>
+        </View>
+      </ThemedView>
+    );
+  }
+
+  if (error) {
+    return (
+      <ThemedView style={styles.container}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            paddingHorizontal: 24,
+          }}
+        >
+          <ThemedText style={{ textAlign: 'center' }}>{error}</ThemedText>
+          <TouchableOpacity style={styles.bookButton} onPress={() => router.back()}>
+            <ThemedText style={styles.bookButtonText}>Go Back</ThemedText>
+          </TouchableOpacity>
+        </View>
+      </ThemedView>
+    );
+  }
 
   return (
     <ThemedView style={styles.container}>
@@ -158,7 +159,7 @@ export default function BusinessDetailsScreen() {
         {/* Hero Image Area */}
         <View style={styles.heroContainer}>
           <Image 
-            source={business.image} 
+            source={heroImageSource} 
             style={styles.heroImage} 
             resizeMode="cover"
           />
@@ -177,17 +178,17 @@ export default function BusinessDetailsScreen() {
           {/* iOS-style indicator */}
           <View style={styles.indicator} />
           
-          <ThemedText style={styles.businessName}>{business.name}</ThemedText>
-          <ThemedText style={styles.businessDescription}>{business.description}</ThemedText>
+          <ThemedText style={styles.businessName}>{businessName}</ThemedText>
+          <ThemedText style={styles.businessDescription}>{businessDescription}</ThemedText>
           
           <View style={styles.locationContainer}>
             <IconSymbol name="location" size={20} color="#666666" />
-            <ThemedText style={styles.locationText}>{business.location}</ThemedText>
+            <ThemedText style={styles.locationText}>{businessLocation}</ThemedText>
           </View>
           
           <View style={styles.hoursContainer}>
             <AntDesign name="clock-circle" size={16} color="#666666" />
-            <ThemedText style={styles.hoursText}>{business.hours}</ThemedText>
+            <ThemedText style={styles.hoursText}>{businessHours}</ThemedText>
           </View>
         </ThemedView>
 
@@ -337,16 +338,16 @@ export default function BusinessDetailsScreen() {
           {activeTab === 'Services' && (
             <>
               <ThemedText style={styles.tabTitle}>Services ({services.length})</ThemedText>
-              {services.map((service) => (
-                <TouchableOpacity 
-                  key={service.id} 
+              {services.map((service, index) => (
+                <TouchableOpacity
+                  key={String(service.id ?? index)}
                   style={styles.serviceItem}
-                  onPress={() => handleServicePress(service.id)}
+                  onPress={() =>
+                    handleServicePress(String(service.id ?? index))
+                  }
                 >
                   <ThemedText style={styles.serviceName}>{service.name}</ThemedText>
-                  {service.chevron && (
-                    <IconSymbol name="chevron.right" size={20} color="#666666" />
-                  )}
+                  <IconSymbol name="chevron.right" size={20} color="#666666" />
                 </TouchableOpacity>
               ))}
             </>
@@ -415,28 +416,35 @@ export default function BusinessDetailsScreen() {
           
           {activeTab === 'Review' && (
             <>
-              <ThemedText style={styles.tabTitle}>Reviews ({reviews.length})</ThemedText>
-              {reviews.map((review) => (
+              <ThemedText style={styles.tabTitle}>Reviews ({salonReviews.length})</ThemedText>
+              {salonReviews.map((review: any) => (
                 <View key={review.id} style={styles.reviewCard}>
-                  <ThemedText style={styles.reviewDate}>{review.date}</ThemedText>
+                  <ThemedText style={styles.reviewDate}>{review.created_at}</ThemedText>
                   <View style={styles.reviewUserInfo}>
-                    <Image source={review.user.image} style={styles.reviewUserImage} />
+                    <Image
+                      source={require('@/assets/stock/service.jpg')}
+                      style={styles.reviewUserImage}
+                    />
                     <View style={styles.reviewUserNameRating}>
-                      <ThemedText style={styles.reviewUserName}>{review.user.name}</ThemedText>
+                      <ThemedText style={styles.reviewUserName}>
+                        {review.customer_name}
+                      </ThemedText>
                       <View style={styles.reviewRating}>
                         {[...Array(5)].map((_, i) => (
-                          <IconSymbol 
-                            key={i} 
-                            name="star" 
-                            size={12} 
-                            color={i < Math.floor(review.rating) ? '#FFD700' : '#E0E0E0'} 
+                          <IconSymbol
+                            key={i}
+                            name="star"
+                            size={12}
+                            color={i < Math.floor(review.rating || 0) ? '#FFD700' : '#E0E0E0'}
                           />
                         ))}
-                        <ThemedText style={styles.reviewRatingText}>{review.rating}</ThemedText>
+                        <ThemedText style={styles.reviewRatingText}>
+                          {review.rating}
+                        </ThemedText>
                       </View>
                     </View>
                   </View>
-                  <ThemedText style={styles.reviewText}>{review.text}</ThemedText>
+                  <ThemedText style={styles.reviewText}>{review.review}</ThemedText>
                 </View>
               ))}
             </>
@@ -444,11 +452,14 @@ export default function BusinessDetailsScreen() {
           
           {activeTab === 'Gallery' && (
             <>
-              <ThemedText style={styles.tabTitle}>Gallery ({galleryImages.length})</ThemedText>
+              <ThemedText style={styles.tabTitle}>Gallery ({galleryItems.length})</ThemedText>
               <View style={styles.galleryGrid}>
-                {galleryImages.map((item) => (
-                  <View key={item.id} style={styles.galleryImageContainer}>
-                    <Image source={item.image} style={styles.galleryImage} />
+                {galleryItems.map((item: any, index: number) => (
+                  <View
+                    key={String(item.id || index)}
+                    style={styles.galleryImageContainer}
+                  >
+                    <Image source={{ uri: item.image }} style={styles.galleryImage} />
                   </View>
                 ))}
               </View>

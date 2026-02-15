@@ -215,4 +215,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     justifyContent: 'flex-start',
   },
+  loadingText: {
+    textAlign: 'center',
+    fontSize: FontSizes.md,
+    marginVertical: 8,
+    color: '#111827',
+  },
+  emptyText: {
+    textAlign: 'center',
+    fontSize: FontSizes.md,
+    marginVertical: 8,
+    color: '#6B7280',
+  },
 });

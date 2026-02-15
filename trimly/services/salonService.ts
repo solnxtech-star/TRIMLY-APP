@@ -101,18 +101,27 @@ class SalonService {
    */
   async getSalonById(id: string): Promise<Salon> {
     try {
-      const response = await apiClient.get<Salon>(`/salons/${id}/`, false);
-      
-      // Transform response data
+      const response = await apiClient.get<any>(`/salons/${id}/`, false);
+
+      const reviews = Array.isArray(response.salon_reviews) ? response.salon_reviews : [];
+      const portfolio = Array.isArray(response.salon_portfolio) ? response.salon_portfolio : [];
+      const services = Array.isArray(response.salon_services) ? response.salon_services : [];
+
+      const computedRating =
+        reviews.length > 0
+          ? reviews.reduce((acc: number, r: any) => acc + (r.rating || 0), 0) / reviews.length
+          : 0;
+
+      const rating = Math.min(5, Math.max(0, Number(computedRating) || 0));
+
       return {
         ...response,
-        location: response.address || `${response.latitude}, ${response.longitude}`,
-        rating: response.salon_reviews?.length > 0
-          ? response.salon_reviews.reduce((acc, r) => acc + r.rating, 0) / response.salon_reviews.length
-          : 0,
-        review_count: response.salon_reviews?.length || 0,
-        services: response.salon_services,
-        gallery: response.salon_portfolio.map(p => ({
+        location: response.address || response.location || '',
+        rating,
+        review_count:
+          typeof response.review_count === 'number' ? response.review_count : reviews.length,
+        services,
+        gallery: portfolio.map((p: any) => ({
           id: p.id,
           image: p.image,
           salon: p.salon,
@@ -173,11 +182,31 @@ class SalonService {
         params as Record<string, string>
       ).toString();
       const endpoint = `/salons/${salonId}/services/${queryString ? `?${queryString}` : ''}`;
-      
-      const response = await apiClient.get<Service[]>(endpoint, false);
-      return response;
+      const response = await apiClient.get<any>(endpoint, false);
+
+      if (Array.isArray(response)) {
+        return response as Service[];
+      }
+
+      return (response.results || []) as Service[];
     } catch (error) {
       console.error('List salon services error:', error);
+      throw this.handleError(error);
+    }
+  }
+
+  async getSalonServiceById(
+    salonId: string,
+    serviceId: string
+  ): Promise<Service> {
+    try {
+      const response = await apiClient.get<Service>(
+        `/salons/${salonId}/services/${serviceId}/`,
+        false
+      );
+      return response;
+    } catch (error) {
+      console.error('Get salon service error:', error);
       throw this.handleError(error);
     }
   }
@@ -237,11 +266,16 @@ class SalonService {
    */
   async getSalonGallery(salonId: string): Promise<GalleryImage[]> {
     try {
-      const response = await apiClient.get<GalleryImage[]>(
+      const response = await apiClient.get<any>(
         `/salons/${salonId}/gallery/`,
         false
       );
-      return response;
+
+      if (Array.isArray(response)) {
+        return response as GalleryImage[];
+      }
+
+      return (response.results || []) as GalleryImage[];
     } catch (error) {
       console.error('Get salon gallery error:', error);
       throw this.handleError(error);

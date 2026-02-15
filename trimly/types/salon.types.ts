@@ -14,6 +14,7 @@ export interface ServiceCategory {
 
 // Service
 export interface Service {
+  id?: string | number;
   salon?: string;
   name: string;
   description: string;
