@@ -156,7 +156,7 @@ db_config['ENGINE'] = 'django.contrib.gis.db.backends.postgis'
 
 # 3. Add specific timeouts to prevent "hanging" connections
 db_config['OPTIONS'] = {
-    'connect_timeout': 10,
+    'connect_timeout': 20,
 }
 
 DATABASES = {

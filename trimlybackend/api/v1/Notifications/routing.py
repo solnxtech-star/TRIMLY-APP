@@ -3,5 +3,5 @@ from . import consumers
 
 
 notification_urlpatterns = [
-    path('ws/notifcations/', consumers.NotificationConsumer.as_asgi()),
+    path('ws/notifications/', consumers.NotificationConsumer.as_asgi()),
 ]

@@ -57,3 +57,11 @@ class OTP(models.Model):
         return not self.is_used and timezone.now() < expiry_time
 
 
+class PasswordResetToken(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def is_valid(self):
+        # Token is valid for 5 minutes
+        return timezone.now() < self.created_at + timedelta(minutes=5)

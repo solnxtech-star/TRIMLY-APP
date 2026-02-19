@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from api.v1.Vendor.models import IndividualVendorProfile
-from .models import OTP, User
+from .models import OTP, User, PasswordResetToken
 from api.v1.Salons.models import SalonOwnerProfile
 from dj_rest_auth.registration.serializers import RegisterSerializer
 from django.db import transaction
@@ -182,7 +182,7 @@ class RequestPasswordResetOTPSerializer(serializers.Serializer):
 class VerifyPasswordResetOTPSerializer(serializers.Serializer):
     email = serializers.EmailField()
     otp = serializers.CharField(max_length=6)
-    new_password = serializers.CharField(write_only=True, min_length=8)
+
     
     def validate(self, data):
         try:
@@ -202,9 +202,20 @@ class VerifyPasswordResetOTPSerializer(serializers.Serializer):
         
         if not otp.is_valid():
             raise serializers.ValidationError("OTP has expired")
-        
-        data['user'] = user
-        data['otp_object'] = otp
+        reset_obj = PasswordResetToken.objects.create(user=user)
+        data['reset_obj'] = str(reset_obj.token)
+        return data
+
+class ResetPasswordSerializer(serializers.Serializer):
+    token_str = serializers.UUIDField()
+    new_password = serializers.CharField(write_only=True, min_length=8, required=True)
+    confirm_new_password = serializers.CharField(write_only=True, min_length=8, required=True)
+
+    def validate(self, data):
+        new_password = data.get("new_password")
+        confirm_password = data.get(confirm_password)
+        if confirm_password != new_password:
+            raise serializers.ValidationError("password mismatch")
         return data
 
 
@@ -283,9 +294,3 @@ class EmailLoginSerializer(LoginSerializer):
             'refresh': str(refresh),
             'user': user
         }
-from rest_framework import serializers
-
-class CustomJWTSerializer(serializers.Serializer):
-    access = serializers.CharField()
-    refresh = serializers.CharField() # This is the "fix"
-    user = UserDetailSerializer() 

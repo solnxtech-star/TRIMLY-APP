@@ -1,6 +1,5 @@
 from django.shortcuts import render
-from .models import User
-from .serializers import UserDetailSerializer
+from .models import PasswordResetToken, User
 from rest_framework.generics import ListAPIView,  RetrieveAPIView
 from rest_framework.permissions import IsAdminUser
 from .permissions import IsApplicationAdmin
@@ -10,7 +9,7 @@ from dj_rest_auth.registration.views import SocialLoginView
 
 from dj_rest_auth.views import LoginView
 from dj_rest_auth.registration.views import RegisterView
-from .serializers import EmailLoginSerializer, CustomRegisterSerializer
+from .serializers import EmailLoginSerializer, CustomRegisterSerializer, UserDetailSerializer, ResetPasswordSerializer
 from .docs.auth import login_schema, register_schema
 
 
@@ -67,6 +66,7 @@ class VerifyEmailOTPView(APIView):
     )
     def post(self, request):
         serializer = VerifyEmailOTPSerializer(data=request.data)
+        
         if serializer.is_valid():
             user = serializer.validated_data['user']
             otp = serializer.validated_data['otp_object']
@@ -118,7 +118,7 @@ class RequestPasswordResetOTPView(APIView):
 
 
 class VerifyPasswordResetOTPView(APIView):
-    """Verify OTP and reset password"""
+    """Verify OTP"""
     permission_classes = [AllowAny]
     @extend_schema(
         request=VerifyPasswordResetOTPSerializer,
@@ -126,30 +126,53 @@ class VerifyPasswordResetOTPView(APIView):
             200: OpenApiResponse(description='Password reset successfully'),
             400: OpenApiResponse(description='Invalid OTP or validation error'),
         },
-        description="Verify the OTP code and set a new password",
+        description="Verify the OTP code and return a unique token",
         tags=['auth']
     )
     def post(self, request):
         serializer = VerifyPasswordResetOTPSerializer(data=request.data)
         if serializer.is_valid():
-            user = serializer.validated_data['user']
-            otp = serializer.validated_data['otp_object']
-            new_password = serializer.validated_data['new_password']
-            
-            # Set new password
-            user.set_password(new_password)
-            user.save()
-            
-            # Mark OTP as used
-            otp.is_used = True
-            otp.save()
+           
+            reset_token = serializer.validated_data['reset_obj']
             
             return Response({
-                'message': 'Password reset successfully'
+                'message': 'OTP Verified',
+                "reset_token" : reset_token
             }, status=status.HTTP_200_OK)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class ResetPasswordView(APIView):
+    """change password of User After Otp has been generated"""
+    permission_classes = [AllowAny]
+    @extend_schema(
+        request=ResetPasswordSerializer,
+        responses={
+            200: OpenApiResponse(description='Password reset successfully'),
+            400: OpenApiResponse(description='Validation error'),
+        },
+        description="Reset password, input the generated token from /api/v1/auth/password/verify-otp/",
+        tags=['auth']
+    )
 
+    def post(self, request):
+        serializer = ResetPasswordSerializer
+        if serializer.is_valid():
+            token_str = serializer.validated_data("token_str")
+            new_password = serializer.validated_data("new_password")
+        try:
+            reset_obj = PasswordResetToken.objects.get(token=token_str)
+            if not reset_obj.is_valid():
+                reset_obj.delete()
+                return Response({"error": "Token expired"}, status=status.HTTP_400_BAD_REQUEST)
+            user = reset_obj.user
+            user.set_password(new_password)
+            user.save()
+            reset_obj.delete()
+            return Response({"message": "Password reset successful"}, status=status.HTTP_200_OK)
+        
+        except PasswordResetToken.DoesNotExist:
+            return Response({"error": "Invalid reset token"}, status=status.HTTP_400_BAD_REQUEST)
 
 class ResendOTPView(APIView):
     """Resend OTP for email verification or password reset"""

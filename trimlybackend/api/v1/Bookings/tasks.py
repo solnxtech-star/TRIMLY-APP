@@ -6,8 +6,12 @@ from django.db import connections
 #change to celery beat rather than ete, to cancle appointment reminders
 #change eta time to use 2hrs
 
-
-@shared_task
+@shared_task(
+    bind=True, 
+    autoretry_for=(Exception,), 
+    retry_backoff=True, # Resend is stable, but always good to have backoff
+    max_retries=3
+)
 def send_booking_notifications(booking_id):
     try:
         booking = Booking.objects.select_related('customer', 'salon_service', 'vendor_service').get(id=booking_id)

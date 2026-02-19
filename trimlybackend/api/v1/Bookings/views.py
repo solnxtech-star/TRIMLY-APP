@@ -73,7 +73,7 @@ class BookingViewSet(ModelViewSet):
             transaction.on_commit(lambda: send_booking_notifications.delay(booking_id))
             # Trigger the notification task
             transaction.on_commit(lambda: create_and_send_notification.delay(
-            recipient_id=booking.vendor_service.vendor.worker.id, # The Individual Vendor
+            recipient_id=self.request.user.id, # The Individual Vendor
             actor_id=self.request.user.id,  # The Customer
             verb="booked",
             target_model_name="Booking",
