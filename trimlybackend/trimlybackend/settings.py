@@ -249,13 +249,13 @@ ACCOUNT_SIGNUP_FIELDS = [
     'password1*',
     'password2*',
 ]
-ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = True
+ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = False
 ACCOUNT_LOGIN_BY_CODE_ENABLED = True
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
-ACCOUNT_ADAPTER = 'trimlybackend.adapters.BackgroundEmailAdapter'
+ACCOUNT_ADAPTER = 'trimlybackend.adapters.NoEmailAdapter'
 
 ACCOUNT_EMAIL_CONFIRMATION_HMAC = False
-ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 1
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 0
 
 # JWT Configuration
 from datetime import timedelta
@@ -284,21 +284,23 @@ REST_AUTH = {
 
 
 # # For development: uses mailbox sandbox
-EMAIL_BACKEND = "anymail.backends.mailtrap.EmailBackend" 
-# # Mailtrap Sandbox SMTP Credentials
-# EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
-# EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")   # From Mailtrap Inbox Settings
-# EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")  # From Mailtrap Inbox Settings
-# EMAIL_PORT = os.getenv("EMAIL_PORT")
-# EMAIL_USE_TLS = True
-# EMAIL_USE_SSL = False
 
-# This can be anything in Sandbox mode
-DEFAULT_FROM_EMAIL = "Trimly <support@trimly.app>"
+## settings.py
+
 ANYMAIL = {
-    "MAILTRAP_API_TOKEN": "ade4aa48e3f33bf64ef6c6fb3ccf391d",
-    "MAILTRAP_SANDBOX_ID": "2931144", # From your Inbox URL
+    "RESEND_API_KEY": os.getenv("RESEND_API_KEY"),
 }
+
+DEFAULT_FROM_EMAIL = 'onboarding@resend.dev'
+DEV_EMAIL_REDIRECT = os.getenv('DEV_EMAIL_REDIRECT', '')
+
+if os.getenv('DJANGO_ENV') == 'development':
+    EMAIL_BACKEND = 'api.v1.Core.email_backend.SandboxEmailBackend'
+else:
+    EMAIL_BACKEND = 'anymail.backends.resend.EmailBackend'
+
+
+
 
 # IMPORTANT: Even with the API, Mailtrap Sandbox usually lets you 
 # skip domain verification, but you MUST use the token found 

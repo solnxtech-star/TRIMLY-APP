@@ -9,6 +9,7 @@ from dj_rest_auth.serializers import LoginSerializer
 from api.v1.utils.otp_generator import send_otp_email
 from allauth.account.models import EmailAddress
 from django.core.mail import send_mail
+from django.conf import settings
 
 
 User = get_user_model()
@@ -108,7 +109,7 @@ class CustomRegisterSerializer(RegisterSerializer):
         user.role = self.validated_data.get("role")
         user.phone_number = self.validated_data.get("phone_number", "")
         user.save(update_fields=["role", "phone_number"])
-        user.save()
+        
         
         # Generate and send OTP
         otp = OTP.objects.create(
@@ -173,7 +174,7 @@ class RequestPasswordResetOTPSerializer(serializers.Serializer):
             send_mail(
                 'Reset Your Password',
                 f'Your password reset code is: {otp.code}\nThis code expires in 5 minutes.',
-                'noreply@trimly.com',
+                "onboarding@resend.dev",
                 [self.user.email],
                 fail_silently=False,
             )
@@ -213,7 +214,7 @@ class ResetPasswordSerializer(serializers.Serializer):
 
     def validate(self, data):
         new_password = data.get("new_password")
-        confirm_password = data.get(confirm_password)
+        confirm_password = data.get("confirm_new_password")
         if confirm_password != new_password:
             raise serializers.ValidationError("password mismatch")
         return data
@@ -265,7 +266,7 @@ class ResendOTPSerializer(serializers.Serializer):
         send_mail(
             subject,
             message,
-            'noreply@trimly.com',
+            'onboarding@resend.dev',
             [user.email],
             fail_silently=False,
         )

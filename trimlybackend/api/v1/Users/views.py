@@ -6,7 +6,7 @@ from .permissions import IsApplicationAdmin
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from dj_rest_auth.registration.views import SocialLoginView
-
+from django.shortcuts import get_object_or_404
 from dj_rest_auth.views import LoginView
 from dj_rest_auth.registration.views import RegisterView
 from .serializers import EmailLoginSerializer, CustomRegisterSerializer, UserDetailSerializer, ResetPasswordSerializer
@@ -156,11 +156,13 @@ class ResetPasswordView(APIView):
     )
 
     def post(self, request):
-        serializer = ResetPasswordSerializer
+        serializer = ResetPasswordSerializer(data=request.data)
         if serializer.is_valid():
-            token_str = serializer.validated_data("token_str")
-            new_password = serializer.validated_data("new_password")
+            token_str = serializer.validated_data["token_str"]
+            new_password = serializer.validated_data["new_password"]
+            
         try:
+
             reset_obj = PasswordResetToken.objects.get(token=token_str)
             if not reset_obj.is_valid():
                 reset_obj.delete()
@@ -170,7 +172,8 @@ class ResetPasswordView(APIView):
             user.save()
             reset_obj.delete()
             return Response({"message": "Password reset successful"}, status=status.HTTP_200_OK)
-        
+        except User.DoesNotExist:
+            return Response({"error": "Invalid email"}, status=status.HTTP_400_BAD_REQUEST)
         except PasswordResetToken.DoesNotExist:
             return Response({"error": "Invalid reset token"}, status=status.HTTP_400_BAD_REQUEST)
 
