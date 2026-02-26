@@ -34,7 +34,7 @@ urlpatterns = [
     path('api/v1/search/', include('api.v1.Search.urls')),
     path('api/v1/toggle-status/', toggle_availability, name='toggle-availability'),
     path('api/v1/reviews/', include('api.v1.Reviews.urls')),
-    path('api/v1/cha/', include('api.v1.Reviews.urls')),
+    path('api/v1/chat/', include('api.v1.Chat.urls')),
     #documentation
     path('swagger/', SpectacularSwaggerView.as_view(), name="schema"),
     path('redoc/', SpectacularRedocView.as_view(), name="redoc"),
