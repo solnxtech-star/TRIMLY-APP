@@ -30,6 +30,21 @@ class BookingService {
   }
 
   /**
+   * Create a new booking with full details as per requirements
+   * @param data - Detailed booking data
+   * @returns Created booking
+   */
+  async confirmBooking(data: any): Promise<Booking> {
+    try {
+      const response = await apiClient.post<Booking>('/bookings/', data, true);
+      return response;
+    } catch (error) {
+      console.error('Confirm booking error:', error);
+      throw this.handleError(error);
+    }
+  }
+
+  /**
    * List bookings with optional filters (role-based)
    * @param params - Query parameters for filtering
    * @returns Paginated list of bookings

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator, Alert } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -10,6 +10,8 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { FontSizes } from '@/constants/theme';
 import vendorService from '@/services/vendorService';
 import salonService from '@/services/salonService';
+import authService from '@/services/authService';
+import bookingService from '@/services/bookingService';
 
 interface Availability {
   id: string;
@@ -46,6 +48,7 @@ export default function BookingFormScreen() {
   const [availability, setAvailability] = useState<Availability[]>([]);
   const [timeSlots, setTimeSlots] = useState<string[]>([]);
   const [isLoadingAvailability, setIsLoadingAvailability] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Theme colors
   const backgroundColor = useThemeColor({ light: '#ffffff', dark: '#000000' }, 'background');
@@ -158,8 +161,8 @@ export default function BookingFormScreen() {
     // Sort slots by time
     const sortedSlots = allSlots.sort((a, b) => {
       const parseTime = (t: string) => {
-        const [time, period] = t.match(/(\d+:\d+)(AM|PM)/)?.slice(1) || [];
-        let [h, m] = time.split(':').map(Number);
+        const [timePart, period] = t.match(/(\d+:\d+)(AM|PM)/)?.slice(1) || [];
+        let [h, m] = timePart.split(':').map(Number);
         if (period === 'PM' && h !== 12) h += 12;
         if (period === 'AM' && h === 12) h = 0;
         return h * 60 + m;
@@ -177,20 +180,51 @@ export default function BookingFormScreen() {
 
   const monthYearLabel = viewedDate.toLocaleString('default', { month: 'long', year: 'numeric' });
 
-  const handleConfirmBooking = () => {
-    console.log('Booking confirmed with:', {
-      date,
-      time,
-      notes,
-      optionId,
-      businessId,
-      businessType,
-      serviceName,
-      servicePrice,
-      serviceDurationMinutes,
-    });
-    // Navigate to confirmation screen
-    router.push('/client/bookings/confirmation');
+  const handleConfirmBooking = async () => {
+    if (!date || !time) {
+      Alert.alert('Selection required', 'Please select a date and time for your appointment');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      
+      const user = await authService.getCurrentUser();
+      
+      // Parse time (e.g., "8:30AM") to "HH:MM:SS.000Z"
+      const [timePart, period] = time.match(/(\d+:\d+)(AM|PM)/)?.slice(1) || [];
+      let [h, m] = timePart.split(':').map(Number);
+      if (period === 'PM' && h !== 12) h += 12;
+      if (period === 'AM' && h === 12) h = 0;
+      
+      const startTimeStr = `${date}T${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:00.000Z`;
+      
+      const isSalon = businessType === 'salon';
+      
+      const bookingData = {
+        customer: user.id,
+        salon_service: isSalon ? String(optionId) : null,
+        vendor_service: !isSalon ? String(optionId) : null,
+        date: date,
+        start_time: startTimeStr,
+        status: 'pending',
+        payment_reference: 'PRE_PAID_PENDING', // Placeholder as per instructions
+        is_rated: false,
+        notes: notes
+      };
+      
+      console.log('Confirming booking with data:', bookingData);
+      
+      await bookingService.confirmBooking(bookingData);
+      
+      // Navigate to confirmation screen
+      router.push('/client/bookings/confirmation');
+    } catch (error: any) {
+      console.error('Failed to create booking:', error);
+      Alert.alert('Booking Failed', error.message || 'An unexpected error occurred while processing your booking');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -228,24 +262,28 @@ export default function BookingFormScreen() {
               </TouchableOpacity>
             </View>
           </View>
-          <View style={styles.dateGrid}>
-            {dates.map((item, index) => (
-              <TouchableOpacity 
-                key={index} 
-                style={[
-                  styles.dateItemGrid, 
-                  { 
-                    backgroundColor: selectedDate === index ? '#2D8A47' : cardBackgroundColor, 
-                    borderColor: borderColor 
-                  }
-                ]}
-                onPress={() => handleSelectDate(index)}
-              >
-                <ThemedText style={[styles.dayTextSmall, { color: selectedDate === index ? '#FFFFFF' : '#666666' }]}>{item.labelDay}</ThemedText>
-                <ThemedText style={[styles.dateTextGrid, { color: selectedDate === index ? '#FFFFFF' : textColor }]}>{item.labelDate}</ThemedText>
-              </TouchableOpacity>
-            ))}
-          </View>
+          {isLoadingAvailability ? (
+            <ActivityIndicator size="small" color="#2D8A47" style={{ marginVertical: 20 }} />
+          ) : (
+            <View style={styles.dateGrid}>
+              {dates.map((item, index) => (
+                <TouchableOpacity 
+                  key={index} 
+                  style={[
+                    styles.dateItemGrid, 
+                    { 
+                      backgroundColor: selectedDate === index ? '#2D8A47' : cardBackgroundColor, 
+                      borderColor: borderColor 
+                    }
+                  ]}
+                  onPress={() => handleSelectDate(index)}
+                >
+                  <ThemedText style={[styles.dayTextSmall, { color: selectedDate === index ? '#FFFFFF' : '#666666' }]}>{item.labelDay}</ThemedText>
+                  <ThemedText style={[styles.dateTextGrid, { color: selectedDate === index ? '#FFFFFF' : textColor }]}>{item.labelDate}</ThemedText>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
         </View>
 
         {/* Time Selection */}
@@ -278,6 +316,9 @@ export default function BookingFormScreen() {
                 </ThemedText>
               </TouchableOpacity>
             ))}
+            {date && timeSlots.length === 0 && (
+              <ThemedText style={{ color: '#666', marginTop: 8 }}>No availability for this date</ThemedText>
+            )}
           </View>
         </View>
 
@@ -299,8 +340,16 @@ export default function BookingFormScreen() {
       </ScrollView>
 
       {/* Confirm Button */}
-      <TouchableOpacity style={styles.confirmButton} onPress={handleConfirmBooking}>
-        <ThemedText style={styles.confirmButtonText}>Book Appointment</ThemedText>
+      <TouchableOpacity 
+        style={[styles.confirmButton, isSubmitting && { opacity: 0.7 }]} 
+        onPress={handleConfirmBooking}
+        disabled={isSubmitting}
+      >
+        {isSubmitting ? (
+          <ActivityIndicator color="#FFFFFF" />
+        ) : (
+          <ThemedText style={styles.confirmButtonText}>Book Appointment</ThemedText>
+        )}
       </TouchableOpacity>
     </SafeAreaView>
   </KeyboardAvoidingView>
