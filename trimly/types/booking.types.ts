@@ -17,17 +17,21 @@ export type BookingStatus =
 // Booking
 export interface Booking {
   id: string;
-  customer: User | string;
-  salon?: Salon | string | null;
-  vendor?: Vendor | string | null;
-  service: Service | string;
+  customer: string; // Changed to string based on user's API response
+  salon_service?: string | null;
+  vendor_service?: string | null;
   date: string; // YYYY-MM-DD format
-  time_slot: string; // HH:MM format
+  start_time: string; // ISO or HH:MM:SS format
+  end_time: string;
   status: BookingStatus;
+  payment_reference: string;
+  is_rated: boolean;
   notes?: string;
-  total_amount: number;
   created_at: string;
-  updated_at: string;
+  // Added helper fields that might be injected by service layer
+  business_name?: string;
+  salon_service_name?: string;
+  vendor_service_name?: string;
 }
 
 // Create Booking Request
