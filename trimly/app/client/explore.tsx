@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, TouchableOpacity, Image, ActivityIndicator, Platform } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { CustomSafeAreaView } from '@/components/custom-safe-area-view';
@@ -11,17 +10,34 @@ import { FontSizes } from '@/constants/theme';
 import salonService from '@/services/salonService';
 import { Salon } from '@/types/salon.types';
 
+// Safely import react-native-maps to avoid crashes on unsupported environments (e.g. Web)
+let MapView: any = null;
+let Marker: any = null;
+let PROVIDER_GOOGLE: any = null;
+
+if (Platform.OS !== 'web') {
+  try {
+    const Maps = require('react-native-maps');
+    MapView = Maps.default;
+    Marker = Maps.Marker;
+    PROVIDER_GOOGLE = Maps.PROVIDER_GOOGLE;
+  } catch (err) {
+    console.warn('⚠️ [EXPLORE] Failed to load react-native-maps:', err);
+  }
+}
+
 export default function ExploreScreen() {
   const router = useRouter();
-  const mapRef = useRef<MapView>(null);
+  const mapRef = useRef<any>(null);
   const [selectedStore, setSelectedStore] = useState<Salon | null>(null);
   const [salons, setSalons] = useState<Salon[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mapReady, setMapReady] = useState(false);
   
   // Lagos, Nigeria coordinates
-  const [region, setRegion] = useState<Region>({
+  const [region, setRegion] = useState({
     latitude: 6.5244,
     longitude: 3.3792,
     latitudeDelta: 0.1,
@@ -79,12 +95,16 @@ export default function ExploreScreen() {
     const lon = parseFloat(salon.longitude);
     
     if (!isNaN(lat) && !isNaN(lon) && mapRef.current) {
-      mapRef.current.animateToRegion({
-        latitude: lat,
-        longitude: lon,
-        latitudeDelta: 0.05,
-        longitudeDelta: 0.05,
-      }, 1000);
+      try {
+        mapRef.current.animateToRegion({
+          latitude: lat,
+          longitude: lon,
+          latitudeDelta: 0.05,
+          longitudeDelta: 0.05,
+        }, 1000);
+      } catch (e) {
+        console.warn('Failed to animate to region:', e);
+      }
     }
   };
   
@@ -127,6 +147,8 @@ export default function ExploreScreen() {
       </CustomSafeAreaView>
     );
   }
+
+  const isMapAvailable = MapView && Marker;
   
   return (
     <CustomSafeAreaView edges="top" style={[styles.container, { backgroundColor }]}>
@@ -140,35 +162,51 @@ export default function ExploreScreen() {
       
       {/* Full Screen Map */}
       <View style={[styles.mapContainer, { backgroundColor: cardBackgroundColor }]}>
-        <MapView
-          ref={mapRef}
-          style={styles.map}
-          provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
-          initialRegion={region}
-          showsUserLocation
-          showsMyLocationButton
-          onPress={() => closeStoreItem()}
-        >
-          {salons.map((salon) => {
-            const lat = parseFloat(salon.latitude);
-            const lon = parseFloat(salon.longitude);
-            
-            if (isNaN(lat) || isNaN(lon)) return null;
-            
-            return (
-              <Marker
-                key={salon.id}
-                coordinate={{ latitude: lat, longitude: lon }}
-                title={salon.name}
-                onPress={() => handleLocationPress(salon)}
-              >
-                <View style={styles.markerContainer}>
-                  <View style={styles.pinIcon} />
-                </View>
-              </Marker>
-            );
-          })}
-        </MapView>
+        {isMapAvailable ? (
+          <MapView
+            ref={mapRef}
+            style={styles.map}
+            provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
+            initialRegion={region}
+            showsUserLocation
+            showsMyLocationButton
+            onPress={() => closeStoreItem()}
+            onMapReady={() => setMapReady(true)}
+          >
+            {salons.map((salon) => {
+              const lat = parseFloat(salon.latitude);
+              const lon = parseFloat(salon.longitude);
+              
+              if (isNaN(lat) || isNaN(lon)) return null;
+              
+              return (
+                <Marker
+                  key={salon.id}
+                  coordinate={{ latitude: lat, longitude: lon }}
+                  title={salon.name}
+                  onPress={() => handleLocationPress(salon)}
+                >
+                  <View style={styles.markerContainer}>
+                    <View style={styles.pinIcon} />
+                  </View>
+                </Marker>
+              );
+            })}
+          </MapView>
+        ) : (
+          <View style={styles.mapFallback}>
+            <IconSymbol name="map" size={64} color="#9CA3AF" />
+            <ThemedText style={styles.mapFallbackText}>
+              Map view is not available in this environment.
+            </ThemedText>
+            <TouchableOpacity 
+              style={[styles.exploreButton, { backgroundColor: '#2D8A47', marginTop: 20 }]} 
+              onPress={() => router.push('/client/salons')}
+            >
+              <ThemedText style={styles.exploreButtonText}>View Salon List</ThemedText>
+            </TouchableOpacity>
+          </View>
+        )}
         
         {/* Store Item Display at Bottom */}
         {selectedStore && (
@@ -233,12 +271,14 @@ export default function ExploreScreen() {
       </View>
       
       {/* Explore All Button */}
-      <TouchableOpacity 
-        style={[styles.exploreButton, { backgroundColor: '#2D8A47' }]} 
-        onPress={() => router.push('/client/salons')}
-      >
-        <ThemedText style={styles.exploreButtonText}>Explore All</ThemedText>
-      </TouchableOpacity>
+      {isMapAvailable && (
+        <TouchableOpacity 
+          style={[styles.exploreButton, { backgroundColor: '#2D8A47' }]} 
+          onPress={() => router.push('/client/salons')}
+        >
+          <ThemedText style={styles.exploreButtonText}>Explore All</ThemedText>
+        </TouchableOpacity>
+      )}
     </CustomSafeAreaView>
   );
 }
@@ -276,6 +316,19 @@ const styles = StyleSheet.create({
   map: {
     ...StyleSheet.absoluteFillObject,
   },
+  mapFallback: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#F3F4F6',
+  },
+  mapFallbackText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
+  },
   markerContainer: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -301,23 +354,6 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 8,
   },
-  // Positioning for sample locations
-  location1: {
-    top: '30%',
-    left: '20%',
-  },
-  location2: {
-    top: '40%',
-    left: '40%',
-  },
-  location3: {
-    top: '50%',
-    left: '60%',
-  },
-  location4: {
-    top: '60%',
-    left: '30%',
-  },
   storeItemContainer: {
     position: 'absolute',
     bottom: 0,
@@ -336,7 +372,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 12,
     borderWidth: 1,
-    // paddingLeft: 2
   },
   cardContent: {
     flexDirection: 'row',
