@@ -37,6 +37,7 @@ export default function BookingFormScreen() {
     servicePrice,
     serviceDurationMinutes,
   } = useLocalSearchParams();
+  const [viewedDate, setViewedDate] = useState(new Date());
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [notes, setNotes] = useState('');
@@ -52,26 +53,19 @@ export default function BookingFormScreen() {
   const borderColor = useThemeColor({ light: '#E5E5E5', dark: '#424242' }, 'text');
   const cardBackgroundColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'text');
 
-  const getTimeFromIndex = (index: number) => {
-    const hours = Math.floor(index / 2) + 9; // Starting from 9 AM
-    const minutes = index % 2 === 0 ? '00' : '30';
-    const period = hours >= 12 ? 'PM' : 'AM';
-    const displayHours = hours > 12 ? hours - 12 : hours === 0 ? 12 : hours;
-    return `${displayHours}:${minutes}${period}`;
-  };
-
-  const generateNext7Days = (): DateItem[] => {
-    const today = new Date();
+  const generateMonthDays = (baseDate: Date): DateItem[] => {
+    const year = baseDate.getFullYear();
+    const month = baseDate.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
     const items: DateItem[] = [];
     const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(today);
-      d.setDate(today.getDate() + i);
+    for (let i = 1; i <= daysInMonth; i++) {
+      const d = new Date(year, month, i);
       const weekdayIndex = d.getDay();
       items.push({
         labelDay: dayLabels[weekdayIndex],
-        labelDate: String(d.getDate()),
+        labelDate: String(i),
         isoDate: d.toISOString().split('T')[0],
         weekdayIndex,
       });
@@ -80,7 +74,7 @@ export default function BookingFormScreen() {
     return items;
   };
 
-  const dates = generateNext7Days();
+  const dates = generateMonthDays(viewedDate);
 
   const formatTime = (timeStr: string) => {
     const parts = timeStr.split(':');
@@ -92,8 +86,30 @@ export default function BookingFormScreen() {
     return `${displayHour}:${minutePadded}${period}`;
   };
 
-  const formatTimeRange = (start: string, end: string) => {
-    return `${formatTime(start)} - ${formatTime(end)}`;
+  const generate30MinSlots = (startTime: string, endTime: string): string[] => {
+    const slots: string[] = [];
+    // Use a fixed date to handle time calculations
+    const start = new Date(`2000-01-01T${startTime}`);
+    const end = new Date(`2000-01-01T${endTime}`);
+
+    let current = new Date(start);
+    while (current < end) {
+      const timeStr = current.toTimeString().split(' ')[0];
+      slots.push(formatTime(timeStr));
+      current.setMinutes(current.getMinutes() + 30);
+    }
+    return slots;
+  };
+
+  const changeMonth = (offset: number) => {
+    const newDate = new Date(viewedDate);
+    newDate.setMonth(viewedDate.getMonth() + offset);
+    setViewedDate(newDate);
+    setSelectedDate(null);
+    setSelectedTime(null);
+    setTimeSlots([]);
+    setDate('');
+    setTime('');
   };
 
   useEffect(() => {
@@ -132,15 +148,34 @@ export default function BookingFormScreen() {
     const dayAvailabilities = availability.filter(
       (a) => a.day_of_week === selected.weekdayIndex
     );
-    const slots = dayAvailabilities.map((a) =>
-      formatTimeRange(a.start_time, a.end_time)
-    );
-    setTimeSlots(slots);
+    
+    const allSlots: string[] = [];
+    dayAvailabilities.forEach((a) => {
+      const slots = generate30MinSlots(a.start_time, a.end_time);
+      allSlots.push(...slots);
+    });
+
+    // Sort slots by time
+    const sortedSlots = allSlots.sort((a, b) => {
+      const parseTime = (t: string) => {
+        const [time, period] = t.match(/(\d+:\d+)(AM|PM)/)?.slice(1) || [];
+        let [h, m] = time.split(':').map(Number);
+        if (period === 'PM' && h !== 12) h += 12;
+        if (period === 'AM' && h === 12) h = 0;
+        return h * 60 + m;
+      };
+      return parseTime(a) - parseTime(b);
+    });
+
+    const uniqueSlots = [...new Set(sortedSlots)];
+    setTimeSlots(uniqueSlots);
     setSelectedTime(null);
-    if (slots.length === 0) {
+    if (uniqueSlots.length === 0) {
       setTime('');
     }
   };
+
+  const monthYearLabel = viewedDate.toLocaleString('default', { month: 'long', year: 'numeric' });
 
   const handleConfirmBooking = () => {
     console.log('Booking confirmed with:', {
@@ -184,24 +219,33 @@ export default function BookingFormScreen() {
           <View style={styles.sectionHeader}>
             <ThemedText style={styles.sectionTitle}>Select Date</ThemedText>
             <View style={styles.monthYearContainer}>
-              <ThemedText style={styles.monthYearText}>December 2023</ThemedText>
-              <IconSymbol name="chevron.down" size={16} color="#666666" />
+              <TouchableOpacity onPress={() => changeMonth(-1)} style={styles.monthArrow}>
+                <AntDesign name="left" size={16} color="#666666" />
+              </TouchableOpacity>
+              <ThemedText style={[styles.monthYearText, { color: textColor }]}>{monthYearLabel}</ThemedText>
+              <TouchableOpacity onPress={() => changeMonth(1)} style={styles.monthArrow}>
+                <AntDesign name="right" size={16} color="#666666" />
+              </TouchableOpacity>
             </View>
           </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View style={styles.dateContainer}>
-              {dates.map((item, index) => (
-                <TouchableOpacity 
-                  key={index} 
-                  style={[styles.dateItem, { backgroundColor: selectedDate === index ? '#2D8A47' : cardBackgroundColor, borderColor: borderColor }]}
-                  onPress={() => handleSelectDate(index)}
-                >
-                  <ThemedText style={[styles.dayText, { color: selectedDate === index ? '#FFFFFF' : textColor }]}>{item.labelDay}</ThemedText>
-                  <ThemedText style={[styles.dateText, { color: selectedDate === index ? '#FFFFFF' : textColor }]}>{item.labelDate}</ThemedText>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </ScrollView>
+          <View style={styles.dateGrid}>
+            {dates.map((item, index) => (
+              <TouchableOpacity 
+                key={index} 
+                style={[
+                  styles.dateItemGrid, 
+                  { 
+                    backgroundColor: selectedDate === index ? '#2D8A47' : cardBackgroundColor, 
+                    borderColor: borderColor 
+                  }
+                ]}
+                onPress={() => handleSelectDate(index)}
+              >
+                <ThemedText style={[styles.dayTextSmall, { color: selectedDate === index ? '#FFFFFF' : '#666666' }]}>{item.labelDay}</ThemedText>
+                <ThemedText style={[styles.dateTextGrid, { color: selectedDate === index ? '#FFFFFF' : textColor }]}>{item.labelDate}</ThemedText>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
 
         {/* Time Selection */}
@@ -212,7 +256,7 @@ export default function BookingFormScreen() {
               <TouchableOpacity
                 key={index}
                 style={[
-                  styles.timeSlot,
+                  styles.timeSlotGrid,
                   {
                     backgroundColor:
                       selectedTime === index ? '#2D8A47' : cardBackgroundColor,
@@ -224,14 +268,9 @@ export default function BookingFormScreen() {
                   setTime(slot);
                 }}
               >
-                <IconSymbol
-                  name="clock"
-                  size={16}
-                  color={selectedTime === index ? '#FFFFFF' : '#666666'}
-                />
                 <ThemedText
                   style={[
-                    styles.timeText,
+                    styles.timeTextGrid,
                     { color: selectedTime === index ? '#FFFFFF' : textColor },
                   ]}
                 >
@@ -327,50 +366,53 @@ const styles = StyleSheet.create({
   },
   monthYearText: {
     fontSize: FontSizes.sm, // 14
-    marginRight: 4,
+    marginHorizontal: 12,
+    fontWeight: '600',
   },
-  dateContainer: {
+  monthArrow: {
+    padding: 4,
+  },
+  dateGrid: {
     flexDirection: 'row',
-    alignItems: 'center',
+    flexWrap: 'wrap',
+    marginTop: 8,
     justifyContent: 'space-between',
-    marginVertical: 8,
-    gap: 15
   },
-  dateItem: {
+  dateItemGrid: {
+    width: '23.5%', // Slightly more width to fill 4 columns nicely
+    aspectRatio: 1,
     alignItems: 'center',
-    padding: 8,
+    justifyContent: 'center',
     borderRadius: 12,
-    minWidth: 60,
-    borderWidth: 1
+    borderWidth: 1,
+    marginBottom: 10,
   },
-  dayText: {
-    fontSize: FontSizes.sm, // 14
+  dayTextSmall: {
+    fontSize: 10,
     fontWeight: '600',
-    marginBottom: 4,
+    marginBottom: 2,
   },
-  dateText: {
+  dateTextGrid: {
     fontSize: FontSizes.sm, // 14
-    fontWeight: '600',
+    fontWeight: '700',
   },
   timeGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    gap: 10,
+    marginTop: 8,
   },
-  timeSlot: {
-    flexDirection: 'row',
+  timeSlotGrid: {
+    width: '31%', // 3 items per row with gaps
+    paddingVertical: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    width: '30%',
-    padding: 8,
-    marginVertical: 6,
     borderRadius: 12,
     borderWidth: 1,
   },
-  timeText: {
+  timeTextGrid: {
     fontSize: FontSizes.sm, // 14
     fontWeight: '600',
-    marginLeft: 8,
   },
   textAreaContainer: {
     borderWidth: 1,

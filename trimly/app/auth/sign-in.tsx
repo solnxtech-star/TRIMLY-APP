@@ -465,6 +465,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
+    borderRadius: 50
   },
   socialIcon: {
     width: 24,
