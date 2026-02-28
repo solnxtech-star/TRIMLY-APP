@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator, Alert } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -12,6 +12,7 @@ import vendorService from '@/services/vendorService';
 import salonService from '@/services/salonService';
 import authService from '@/services/authService';
 import bookingService from '@/services/bookingService';
+import CustomAlert from '@/components/CustomAlert';
 
 interface Availability {
   id: string;
@@ -49,6 +50,31 @@ export default function BookingFormScreen() {
   const [timeSlots, setTimeSlots] = useState<string[]>([]);
   const [isLoadingAvailability, setIsLoadingAvailability] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Custom Alert state
+  const [alertConfig, setAlertConfig] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+    buttons?: any[];
+  }>({
+    visible: false,
+    title: '',
+    message: '',
+  });
+
+  const showAlert = (title: string, message: string, buttons?: any[]) => {
+    setAlertConfig({
+      visible: true,
+      title,
+      message,
+      buttons,
+    });
+  };
+
+  const hideAlert = () => {
+    setAlertConfig(prev => ({ ...prev, visible: false }));
+  };
 
   // Theme colors
   const backgroundColor = useThemeColor({ light: '#ffffff', dark: '#000000' }, 'background');
@@ -182,7 +208,7 @@ export default function BookingFormScreen() {
 
   const handleConfirmBooking = async () => {
     if (!date || !time) {
-      Alert.alert('Selection required', 'Please select a date and time for your appointment');
+      showAlert('Selection required', 'Please select a date and time for your appointment');
       return;
     }
 
@@ -197,14 +223,25 @@ export default function BookingFormScreen() {
       if (period === 'PM' && h !== 12) h += 12;
       if (period === 'AM' && h === 12) h = 0;
       
-      const startTimeStr = `${date}T${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:00.000Z`;
+      const startTimeStr = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:00`;
       
       const isSalon = businessType === 'salon';
+      const serviceUuid = String(optionId);
+
+      // Basic UUID validation regex
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(serviceUuid);
+
+      if (!optionId || serviceUuid === 'undefined' || !isUuid) {
+        console.error('❌ [BOOKING FORM] Invalid service UUID:', serviceUuid);
+        showAlert('Invalid Service', 'Invalid service selection. Please go back and select a service again.');
+        setIsSubmitting(false);
+        return;
+      }
       
       const bookingData = {
         customer: user.id,
-        salon_service: isSalon ? String(optionId) : null,
-        vendor_service: !isSalon ? String(optionId) : null,
+        salon_service: isSalon ? serviceUuid : null,
+        vendor_service: !isSalon ? serviceUuid : null,
         date: date,
         start_time: startTimeStr,
         status: 'pending',
@@ -213,7 +250,7 @@ export default function BookingFormScreen() {
         notes: notes
       };
       
-      console.log('Confirming booking with data:', bookingData);
+      console.log('🚀 [BOOKING FORM] Submitting booking payload:', JSON.stringify(bookingData, null, 2));
       
       await bookingService.confirmBooking(bookingData);
       
@@ -221,7 +258,7 @@ export default function BookingFormScreen() {
       router.push('/client/bookings/confirmation');
     } catch (error: any) {
       console.error('Failed to create booking:', error);
-      Alert.alert('Booking Failed', error.message || 'An unexpected error occurred while processing your booking');
+      showAlert('Booking Failed', error.message || 'An unexpected error occurred while processing your booking');
     } finally {
       setIsSubmitting(false);
     }
@@ -351,6 +388,15 @@ export default function BookingFormScreen() {
           <ThemedText style={styles.confirmButtonText}>Book Appointment</ThemedText>
         )}
       </TouchableOpacity>
+
+      {/* Custom Alert Component */}
+      <CustomAlert
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        buttons={alertConfig.buttons}
+        onDismiss={hideAlert}
+      />
     </SafeAreaView>
   </KeyboardAvoidingView>
   );

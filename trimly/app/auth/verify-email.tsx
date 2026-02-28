@@ -1,13 +1,39 @@
 import { useState, useEffect } from 'react';
-import { StyleSheet, View, TouchableOpacity, Alert, TextInput } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, TextInput } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useLocalSearchParams, router } from 'expo-router';
 import { FontSizes } from '@/constants/theme';
+import CustomAlert from '@/components/CustomAlert';
 
 export default function VerifyEmailScreen() {
   const [code, setCode] = useState(['', '', '', '']);
   const [focusedIndex, setFocusedIndex] = useState(-1);
+  
+  // Custom Alert state
+  const [alertConfig, setAlertConfig] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+    buttons?: any[];
+  }>({
+    visible: false,
+    title: '',
+    message: '',
+  });
+
+  const showAlert = (title: string, message: string, buttons?: any[]) => {
+    setAlertConfig({
+      visible: true,
+      title,
+      message,
+      buttons,
+    });
+  };
+
+  const hideAlert = () => {
+    setAlertConfig(prev => ({ ...prev, visible: false }));
+  };
   
   // Get the role from the URL parameters
   const params = useLocalSearchParams();
@@ -43,19 +69,36 @@ export default function VerifyEmailScreen() {
 
   const handleResendEmail = () => {
     // Simulate resending verification email
-    Alert.alert(
+    showAlert(
       'Email Resent',
       'A new verification email has been sent to your inbox.',
       [{ text: 'OK' }]
     );
   };
 
-  const handleContinue = () => {
-    // Navigate to email verification success screen
-    router.replace({
-      pathname: '/auth/email-verification-success',
-      params: { role }
-    });
+  const handleVerify = () => {
+    // If all digits are filled
+    if (code.every(digit => digit !== '')) {
+      // Simulate verification success
+      showAlert(
+        'Email Verified',
+        'Your email has been successfully verified.',
+        [
+          { 
+            text: 'OK', 
+            onPress: () => {
+              if (role === 'vendor') {
+                router.replace('/vendor/dashboard');
+              } else {
+                router.replace('/client/explore');
+              }
+            }
+          }
+        ]
+      );
+    } else {
+      showAlert('Invalid Code', 'Please enter the 4-digit verification code.');
+    }
   };
 
   return (
@@ -105,11 +148,20 @@ export default function VerifyEmailScreen() {
         {/* Continue Button */}
         <TouchableOpacity 
           style={styles.continueButton} 
-          onPress={handleContinue}
+          onPress={handleVerify}
         >
           <ThemedText style={styles.continueButtonText}>Continue</ThemedText>
         </TouchableOpacity>
       </ThemedView>
+
+      {/* Custom Alert Component */}
+      <CustomAlert
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        buttons={alertConfig.buttons}
+        onDismiss={hideAlert}
+      />
     </ThemedView>
   );
 }

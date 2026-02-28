@@ -11,6 +11,7 @@ import { FontSizes } from '@/constants/theme';
 import salonService from '@/services/salonService';
 import vendorService from '@/services/vendorService';
 import { Service } from '@/types/salon.types';
+import CustomAlert from '@/components/CustomAlert';
 
 export default function ServiceOptionsScreen() {
   const router = useRouter();
@@ -29,6 +30,31 @@ export default function ServiceOptionsScreen() {
   const [services, setServices] = useState<Service[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Custom Alert state
+  const [alertConfig, setAlertConfig] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+    buttons?: any[];
+  }>({
+    visible: false,
+    title: '',
+    message: '',
+  });
+
+  const showAlert = (title: string, message: string, buttons?: any[]) => {
+    setAlertConfig({
+      visible: true,
+      title,
+      message,
+      buttons,
+    });
+  };
+
+  const hideAlert = () => {
+    setAlertConfig(prev => ({ ...prev, visible: false }));
+  };
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -53,7 +79,7 @@ export default function ServiceOptionsScreen() {
         // If we only have one service passed from handleServicePress
         setServices([
           {
-            id: Number(serviceId),
+            id: serviceId ? String(serviceId) : undefined,
             name: String(initialServiceName),
             description: String(initialServiceDescription || ''),
             price: String(initialServicePrice),
@@ -79,10 +105,21 @@ export default function ServiceOptionsScreen() {
   const filters = ['All', 'Haircuts', 'Makeup', 'Massage', 'Skincare', 'Nails'];
 
   const handleBookNow = (service: Service) => {
+    const serviceIdStr = String(service.id);
+    
+    // Basic UUID validation regex
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(serviceIdStr);
+    
+    if (!service.id || !isUuid) {
+      console.warn('⚠️ [SERVICE OPTIONS] Cannot book service without a valid UUID:', service.id);
+      showAlert('Invalid Service', 'This service cannot be booked because it has an invalid ID. Please contact support.');
+      return;
+    }
+    
     router.push({
       pathname: '/client/bookings/form',
       params: {
-        optionId: String(service.id),
+        optionId: serviceIdStr,
         businessId: salonId ? String(salonId) : '',
         businessType: businessType || 'salon',
         serviceName: service.name,
@@ -204,6 +241,15 @@ export default function ServiceOptionsScreen() {
           )}
         </View>
       </ScrollView>
+
+      {/* Custom Alert Component */}
+      <CustomAlert
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        buttons={alertConfig.buttons}
+        onDismiss={hideAlert}
+      />
     </SafeAreaView>
   );
 }

@@ -155,12 +155,17 @@ export default function BusinessDetailsScreen() {
   ];
 
   const handleServicePress = (service: Service, index: number) => {
+    if (!service.id) {
+      console.warn('⚠️ [BUSINESS DETAILS] Service is missing a valid ID');
+      return;
+    }
+
     router.push({
       pathname: '/client/components/service-options',
       params: {
         salonId: String(id),
         businessType,
-        serviceId: String(service.id ?? index),
+        serviceId: String(service.id),
         serviceName: service.name,
         serviceDescription: service.description || '',
         servicePrice: String(service.price),
