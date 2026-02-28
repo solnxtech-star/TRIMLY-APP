@@ -13,7 +13,7 @@ import CustomAlert from '@/components/CustomAlert';
 
 export default function BusinessDetailsScreen() {
   const router = useRouter();
-  const { id } = useLocalSearchParams();
+  const { id, type } = useLocalSearchParams();
   const [isFavorite, setIsFavorite] = useState(false);
   const [activeTab, setActiveTab] = useState('Services');
   
@@ -32,7 +32,7 @@ export default function BusinessDetailsScreen() {
   const [galleryItems, setGalleryItems] = useState<GalleryImage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [businessType, setBusinessType] = useState<'salon' | 'vendor'>('salon');
+  const [businessType, setBusinessType] = useState<'salon' | 'vendor'>((type as any) || 'salon');
 
   // Custom Alert state
   const [alertConfig, setAlertConfig] = useState<{
@@ -69,30 +69,37 @@ export default function BusinessDetailsScreen() {
       try {
         setError(null);
         let resolvedSalon: Salon | null = null;
+        const requestedType = type || businessType;
 
-        try {
-          const data = await salonService.getSalonById(String(id));
-          resolvedSalon = data;
-        } catch (err: any) {
-          const status = err?.status || err?.response?.status;
-          if (status === 404) {
-            const vendor: any = await vendorService.getVendorById(String(id));
+        const fetchVendor = async () => {
+          const vendor: any = await vendorService.getVendorById(String(id));
+          const mappedSalon: Salon = {
+            ...(vendor as any),
+            name: vendor.worker || vendor.name || 'Vendor',
+            about: vendor.bio,
+            address: vendor.address,
+            is_open: vendor.is_available,
+            location: vendor.address || vendor.location || '',
+            services: vendor.services || [],
+            gallery: vendor.gallery || [],
+          };
+          setBusinessType('vendor');
+          return mappedSalon;
+        };
 
-            const mappedSalon: Salon = {
-              ...(vendor as any),
-              name: vendor.worker || vendor.name || 'Vendor',
-              about: vendor.bio,
-              address: vendor.address,
-              is_open: vendor.is_available,
-              location: vendor.address || vendor.location || '',
-              services: vendor.services || [],
-              gallery: vendor.gallery || [],
-            };
-
-            resolvedSalon = mappedSalon;
-            setBusinessType('vendor');
-          } else {
-            throw err;
+        if (requestedType === 'vendor') {
+          resolvedSalon = await fetchVendor();
+        } else {
+          try {
+            resolvedSalon = await salonService.getSalonById(String(id));
+            setBusinessType('salon');
+          } catch (err: any) {
+            console.log('🔍 [BUSINESS DETAILS] Salon fetch failed, trying vendor fallback...', err?.status);
+            if (err?.status === 404) {
+              resolvedSalon = await fetchVendor();
+            } else {
+              throw err;
+            }
           }
         }
 
@@ -110,14 +117,15 @@ export default function BusinessDetailsScreen() {
 
         setGalleryItems(resolvedGallery);
       } catch (e: any) {
-        setError(e.message || 'Failed to load salon');
+        console.error('❌ [BUSINESS DETAILS] Load error:', e);
+        setError(e.message || 'Failed to load business details');
       } finally {
         setIsLoading(false);
       }
     };
 
     loadSalon();
-  }, [id]);
+  }, [id, type]);
 
   const salonReviews = (salon as any)?.salon_reviews || [];
   const vendorGender =

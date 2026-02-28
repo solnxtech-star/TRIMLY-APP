@@ -100,7 +100,12 @@ export default function SearchBar() {
                     <TouchableOpacity
                       style={styles.card}
                       onPress={() => {
-                        router.push(`/client/business-details/${item.id}`);
+                        // Determine type if available in search result
+                        const itemType = item.type || (item.worker ? 'vendor' : 'salon');
+                        router.push({
+                          pathname: `/client/business-details/${item.id}`,
+                          params: { type: itemType }
+                        });
                         handleCloseModal();
                       }}
                     >

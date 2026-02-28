@@ -286,8 +286,12 @@ class VendorService {
    * @returns Formatted error
    */
   private handleError(error: any): ApiError {
-    if (error.status && error.message) {
-      return error as ApiError;
+    if (error.status !== undefined) {
+      return {
+        status: error.status,
+        message: error.message || 'API request failed',
+        data: error.data || error,
+      };
     }
     
     return {
