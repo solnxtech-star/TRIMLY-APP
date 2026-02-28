@@ -20,12 +20,14 @@ class SalonServicesSerializer(serializers.ModelSerializer):
 
 
 class SalonProfileSerializer(serializers.ModelSerializer):
-    
+    review_count = serializers.IntegerField(read_only=True)
+    average_rating = serializers.FloatField(read_only=True)
     class Meta:
         model = SalonProfile
         fields = (
             "id", "owner", "name", "category", "about", "address", 
-            "location", "profile_pic", 
+            "location", "profile_pic", "average_rating", "review_count",
+            "average_rating",
             "links", "created_at", "is_open"
         )
         read_only_fields = ["id", "owner", "created_at"]
