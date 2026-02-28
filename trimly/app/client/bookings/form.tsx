@@ -231,31 +231,48 @@ export default function BookingFormScreen() {
       // Basic UUID validation regex
       const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(serviceUuid);
 
+      const performBooking = async () => {
+        const bookingData = {
+          customer: user.id,
+          salon_service: isSalon ? serviceUuid : null,
+          vendor_service: !isSalon ? serviceUuid : null,
+          date: date,
+          start_time: startTimeStr,
+          status: 'pending',
+          payment_reference: 'PRE_PAID_PENDING', // Placeholder as per instructions
+          is_rated: false,
+          notes: notes
+        };
+        
+        console.log('🚀 [BOOKING FORM] Submitting booking payload:', JSON.stringify(bookingData, null, 2));
+        
+        await bookingService.confirmBooking(bookingData);
+        
+        // Navigate to confirmation screen
+        router.push('/client/bookings/confirmation');
+      };
+
       if (!optionId || serviceUuid === 'undefined' || !isUuid) {
-        console.error('❌ [BOOKING FORM] Invalid service UUID:', serviceUuid);
-        showAlert('Invalid Service', 'Invalid service selection. Please go back and select a service again.');
+        console.warn('⚠️ [BOOKING FORM] Invalid service UUID detected:', serviceUuid);
+        showAlert(
+          'Invalid Service ID', 
+          'The selected service has an invalid identifier. You can still try to book, but the request might be rejected by the server.',
+          [{ 
+            text: 'Try Anyway', 
+            onPress: () => {
+              hideAlert();
+              performBooking().catch(err => {
+                console.error('Booking retry failed:', err);
+                showAlert('Booking Failed', err.message || 'An unexpected error occurred');
+              });
+            }
+          }]
+        );
         setIsSubmitting(false);
         return;
       }
       
-      const bookingData = {
-        customer: user.id,
-        salon_service: isSalon ? serviceUuid : null,
-        vendor_service: !isSalon ? serviceUuid : null,
-        date: date,
-        start_time: startTimeStr,
-        status: 'pending',
-        payment_reference: 'PRE_PAID_PENDING', // Placeholder as per instructions
-        is_rated: false,
-        notes: notes
-      };
-      
-      console.log('🚀 [BOOKING FORM] Submitting booking payload:', JSON.stringify(bookingData, null, 2));
-      
-      await bookingService.confirmBooking(bookingData);
-      
-      // Navigate to confirmation screen
-      router.push('/client/bookings/confirmation');
+      await performBooking();
     } catch (error: any) {
       console.error('Failed to create booking:', error);
       showAlert('Booking Failed', error.message || 'An unexpected error occurred while processing your booking');

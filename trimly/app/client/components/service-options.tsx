@@ -110,23 +110,37 @@ export default function ServiceOptionsScreen() {
     // Basic UUID validation regex
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(serviceIdStr);
     
+    const navigateToForm = () => {
+      router.push({
+        pathname: '/client/bookings/form',
+        params: {
+          optionId: serviceIdStr,
+          businessId: salonId ? String(salonId) : '',
+          businessType: businessType || 'salon',
+          serviceName: service.name,
+          servicePrice: String(service.price),
+          serviceDurationMinutes: String(service.duration_minutes),
+        },
+      });
+    };
+
     if (!service.id || !isUuid) {
-      console.warn('⚠️ [SERVICE OPTIONS] Cannot book service without a valid UUID:', service.id);
-      showAlert('Invalid Service', 'This service cannot be booked because it has an invalid ID. Please contact support.');
+      console.warn('⚠️ [SERVICE OPTIONS] Service has invalid UUID:', service.id);
+      showAlert(
+        'Invalid Service ID', 
+        'This service has an invalid identifier. You can still proceed, but the booking might fail at the final step.',
+        [{ 
+          text: 'Proceed Anyway', 
+          onPress: () => {
+            hideAlert();
+            navigateToForm();
+          }
+        }]
+      );
       return;
     }
     
-    router.push({
-      pathname: '/client/bookings/form',
-      params: {
-        optionId: serviceIdStr,
-        businessId: salonId ? String(salonId) : '',
-        businessType: businessType || 'salon',
-        serviceName: service.name,
-        servicePrice: String(service.price),
-        serviceDurationMinutes: String(service.duration_minutes),
-      },
-    });
+    navigateToForm();
   };
 
   const filteredServices = selectedFilter === 'All' 

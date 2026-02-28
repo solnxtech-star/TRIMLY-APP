@@ -9,6 +9,7 @@ import { AntDesign } from '@expo/vector-icons';
 import salonService from '@/services/salonService';
 import vendorService from '@/services/vendorService';
 import { Salon, Service, GalleryImage } from '@/types/salon.types';
+import CustomAlert from '@/components/CustomAlert';
 
 export default function BusinessDetailsScreen() {
   const router = useRouter();
@@ -32,6 +33,31 @@ export default function BusinessDetailsScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [businessType, setBusinessType] = useState<'salon' | 'vendor'>('salon');
+
+  // Custom Alert state
+  const [alertConfig, setAlertConfig] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+    buttons?: any[];
+  }>({
+    visible: false,
+    title: '',
+    message: '',
+  });
+
+  const showAlert = (title: string, message: string, buttons?: any[]) => {
+    setAlertConfig({
+      visible: true,
+      title,
+      message,
+      buttons,
+    });
+  };
+
+  const hideAlert = () => {
+    setAlertConfig(prev => ({ ...prev, visible: false }));
+  };
 
   useEffect(() => {
     const loadSalon = async () => {
@@ -155,23 +181,43 @@ export default function BusinessDetailsScreen() {
   ];
 
   const handleServicePress = (service: Service, index: number) => {
-    if (!service.id) {
-      console.warn('⚠️ [BUSINESS DETAILS] Service is missing a valid ID');
+    const serviceIdStr = String(service.id);
+    
+    // Basic UUID validation regex
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(serviceIdStr);
+    
+    const navigateToOptions = () => {
+      router.push({
+        pathname: '/client/components/service-options',
+        params: {
+          salonId: String(id),
+          businessType,
+          serviceId: serviceIdStr,
+          serviceName: service.name,
+          serviceDescription: service.description || '',
+          servicePrice: String(service.price),
+          serviceDurationMinutes: String(service.duration_minutes),
+        },
+      });
+    };
+
+    if (!service.id || !isUuid) {
+      console.warn('⚠️ [BUSINESS DETAILS] Service has invalid UUID:', service.id);
+      showAlert(
+        'Invalid Service ID', 
+        'This service has an invalid identifier. You can still proceed, but the booking might fail later.',
+        [{ 
+          text: 'Proceed Anyway', 
+          onPress: () => {
+            hideAlert();
+            navigateToOptions();
+          }
+        }]
+      );
       return;
     }
-
-    router.push({
-      pathname: '/client/components/service-options',
-      params: {
-        salonId: String(id),
-        businessType,
-        serviceId: String(service.id),
-        serviceName: service.name,
-        serviceDescription: service.description || '',
-        servicePrice: String(service.price),
-        serviceDurationMinutes: String(service.duration_minutes),
-      },
-    });
+    
+    navigateToOptions();
   };
 
   const handleBookAppointment = () => {
@@ -553,6 +599,15 @@ export default function BusinessDetailsScreen() {
       <TouchableOpacity style={styles.bookButton} onPress={handleBookAppointment}>
         <ThemedText style={styles.bookButtonText}>Book Appointment</ThemedText>
       </TouchableOpacity>
+
+      {/* Custom Alert Component */}
+      <CustomAlert
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        buttons={alertConfig.buttons}
+        onDismiss={hideAlert}
+      />
     </ThemedView>
   );
 }
