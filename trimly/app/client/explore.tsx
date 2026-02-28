@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { StyleSheet, View, TouchableOpacity, Image, ActivityIndicator, FlatList, RefreshControl } from 'react-native';
+import { useState, useEffect, useRef } from 'react';
+import { StyleSheet, View, TouchableOpacity, Image, ActivityIndicator, Platform } from 'react-native';
+import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { CustomSafeAreaView } from '@/components/custom-safe-area-view';
@@ -12,12 +13,21 @@ import { Salon } from '@/types/salon.types';
 
 export default function ExploreScreen() {
   const router = useRouter();
+  const mapRef = useRef<MapView>(null);
   const [selectedStore, setSelectedStore] = useState<Salon | null>(null);
   const [salons, setSalons] = useState<Salon[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
+  // Lagos, Nigeria coordinates
+  const [region, setRegion] = useState<Region>({
+    latitude: 6.5244,
+    longitude: 3.3792,
+    latitudeDelta: 0.1,
+    longitudeDelta: 0.1,
+  });
+
   // Get theme colors
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
@@ -36,26 +46,23 @@ export default function ExploreScreen() {
       
       console.log('=== SALONS DATA (Explore Screen) ===');
       console.log('Total salons loaded:', response.results.length);
-      console.log('Full response:', JSON.stringify(response, null, 2));
-      console.log('Salons array:', JSON.stringify(response.results, null, 2));
-      
-      // Log individual salon details
-      response.results.forEach((salon, index) => {
-        console.log(`\n--- Salon ${index + 1} ---`);
-        console.log('ID:', salon.id);
-        console.log('Name:', salon.name);
-        console.log('Owner:', salon.owner);
-        console.log('Category:', salon.category);
-        console.log('Address:', salon.address);
-        console.log('Location:', salon.location);
-        console.log('Is Open:', salon.is_open);
-        console.log('Rating:', salon.rating);
-        console.log('Review Count:', salon.review_count);
-        console.log('Services:', salon.services);
-        console.log('Gallery:', salon.gallery);
-      });
       
       setSalons(response.results);
+      
+      // Update region to fit markers if salons exist
+      if (response.results.length > 0) {
+        const firstSalon = response.results[0];
+        const lat = parseFloat(firstSalon.latitude);
+        const lon = parseFloat(firstSalon.longitude);
+        
+        if (!isNaN(lat) && !isNaN(lon)) {
+          setRegion(prev => ({
+            ...prev,
+            latitude: lat,
+            longitude: lon,
+          }));
+        }
+      }
     } catch (err: any) {
       console.error('Failed to fetch salons:', err);
       setError(err.message || 'Failed to load salons');
@@ -65,63 +72,35 @@ export default function ExploreScreen() {
     }
   };
   
+  const handleLocationPress = (salon: Salon) => {
+    setSelectedStore(salon);
+    
+    const lat = parseFloat(salon.latitude);
+    const lon = parseFloat(salon.longitude);
+    
+    if (!isNaN(lat) && !isNaN(lon) && mapRef.current) {
+      mapRef.current.animateToRegion({
+        latitude: lat,
+        longitude: lon,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      }, 1000);
+    }
+  };
+  
+  const handleStoreItemPress = (salonId: string) => {
+    router.push(`/client/business-details/${salonId}`);
+  };
+  
+  const closeStoreItem = () => {
+    setSelectedStore(null);
+  };
+  
   const handleRefresh = () => {
     setIsRefreshing(true);
     fetchSalons();
   };
-  
-  // Sample store data with images
-  const stores = [
-    {
-      id: 1,
-      name: 'Glamour Haven',
-      rating: 4.7,
-      reviews: 50,
-      services: 'Haircut.Beard Trim.Braiding',
-      price: '$25 - $60',
-      distance: '0.5 miles',
-      status: 'Open',
-      isFeatured: true,
-      image: require('@/assets/stock/img.png')
-    },
-    {
-      id: 2,
-      name: 'Glow Spa & Nails',
-      rating: 4.7,
-      reviews: 89,
-      services: 'Manicure.Pedicure.Facials',
-      price: '$30 - $70',
-      distance: '1.2 miles',
-      status: 'Open',
-      isFeatured: false,
-      image: require('@/assets/stock/service.jpg')
-    },
-    {
-      id: 3,
-      name: 'Tranquil Touch Spa',
-      rating: 4.7,
-      reviews: 89,
-      services: 'Massage.Sauna.Body Wrap',
-      price: '$40 - $90',
-      distance: '0.5 miles',
-      status: 'Open',
-      isFeatured: false,
-      image: require('@/assets/stock/rated.png')
-    },
-    {
-      id: 4,
-      name: 'Serenity Salon',
-      rating: 4.7,
-      reviews: 89,
-      services: 'Hair.Color.Nails',
-      price: '$20 - $50',
-      distance: '1.2 miles',
-      status: 'Open',
-      isFeatured: false,
-      image: require('@/assets/stock/special.jpg')
-    }
-  ];
-  
+
   // Show loading state
   if (isLoading) {
     return (
@@ -149,22 +128,6 @@ export default function ExploreScreen() {
     );
   }
   
-  const handleExploreAllPress = () => {
-    router.push('/client/components/map');
-  };
-  
-  const handleLocationPress = (salon: Salon) => {
-    setSelectedStore(salon);
-  };
-  
-  const handleStoreItemPress = (salonId: string) => {
-    router.push(`/client/business-details/${salonId}`);
-  };
-  
-  const closeStoreItem = () => {
-    setSelectedStore(null);
-  };
-  
   return (
     <CustomSafeAreaView edges="top" style={[styles.container, { backgroundColor }]}>
       {/* Search Bar */}
@@ -177,40 +140,35 @@ export default function ExploreScreen() {
       
       {/* Full Screen Map */}
       <View style={[styles.mapContainer, { backgroundColor: cardBackgroundColor }]}>
-        {/* Lagos area representation */}
-        <View style={styles.lagosArea}>
-          <TouchableOpacity
-            style={[styles.locationPin, styles.location1]}
-            onPress={() => handleLocationPress(salons[0] || stores[0] as any)}
-          >
-            <View style={styles.pinIcon} />
-            <ThemedText style={[styles.locationName, { color: textColor }]}>Oshodi-Isolo</ThemedText>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={[styles.locationPin, styles.location2]}
-            onPress={() => handleLocationPress(salons[1] || stores[1] as any)}
-          >
-            <View style={styles.pinIcon} />
-            <ThemedText style={[styles.locationName, { color: textColor }]}>Mushin</ThemedText>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={[styles.locationPin, styles.location3]}
-            onPress={() => handleLocationPress(salons[2] || stores[2] as any)}
-          >
-            <View style={styles.pinIcon} />
-            <ThemedText style={[styles.locationName, { color: textColor }]}>Surulere</ThemedText>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={[styles.locationPin, styles.location4]}
-            onPress={() => handleLocationPress(salons[3] || stores[3] as any)}
-          >
-            <View style={styles.pinIcon} />
-            <ThemedText style={[styles.locationName, { color: textColor }]}>Ikeja</ThemedText>
-          </TouchableOpacity>
-        </View>
+        <MapView
+          ref={mapRef}
+          style={styles.map}
+          provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
+          initialRegion={region}
+          showsUserLocation
+          showsMyLocationButton
+          onPress={() => closeStoreItem()}
+        >
+          {salons.map((salon) => {
+            const lat = parseFloat(salon.latitude);
+            const lon = parseFloat(salon.longitude);
+            
+            if (isNaN(lat) || isNaN(lon)) return null;
+            
+            return (
+              <Marker
+                key={salon.id}
+                coordinate={{ latitude: lat, longitude: lon }}
+                title={salon.name}
+                onPress={() => handleLocationPress(salon)}
+              >
+                <View style={styles.markerContainer}>
+                  <View style={styles.pinIcon} />
+                </View>
+              </Marker>
+            );
+          })}
+        </MapView>
         
         {/* Store Item Display at Bottom */}
         {selectedStore && (
@@ -275,7 +233,10 @@ export default function ExploreScreen() {
       </View>
       
       {/* Explore All Button */}
-      <TouchableOpacity style={[styles.exploreButton, { backgroundColor: '#2D8A47' }]} onPress={handleExploreAllPress}>
+      <TouchableOpacity 
+        style={[styles.exploreButton, { backgroundColor: '#2D8A47' }]} 
+        onPress={() => router.push('/client/salons')}
+      >
         <ThemedText style={styles.exploreButtonText}>Explore All</ThemedText>
       </TouchableOpacity>
     </CustomSafeAreaView>
@@ -310,23 +271,27 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginBottom: 16,
     overflow: 'hidden',
-  },
-  lagosArea: {
-    flex: 1,
     position: 'relative',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
-  locationPin: {
-    position: 'absolute',
+  map: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  markerContainer: {
     alignItems: 'center',
+    justifyContent: 'center',
   },
   pinIcon: {
     width: 20,
     height: 20,
     borderRadius: 10,
     backgroundColor: '#2D8A47',
-    marginBottom: 4,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    elevation: 4,
   },
   locationName: {
     fontSize: 10,
