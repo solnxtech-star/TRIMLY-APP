@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, View, TextInput, TouchableOpacity, Image, Modal, FlatList } from 'react-native';
+import { StyleSheet, View, TextInput, TouchableOpacity, Image, Modal, FlatList, Platform } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useRouter } from 'expo-router';
@@ -49,18 +49,24 @@ export default function SearchBar() {
 
   const hasQuery = !!searchQuery.trim();
 
+  const renderSearchInput = (autoFocus = false) => (
+    <View style={styles.container}>
+      <IconSymbol name="magnifyingglass" size={20} color="#6B6B6B" style={styles.searchIcon} />
+      <TextInput
+        style={styles.input}
+        placeholder="Find barber or salon"
+        placeholderTextColor="#6B6B6B"
+        value={searchQuery}
+        onChangeText={handleSearchChange}
+        autoFocus={autoFocus}
+      />
+    </View>
+  );
+
   return (
-    <>
-      <View style={styles.container}>
-        <IconSymbol name="magnifyingglass" size={20} color="#6B6B6B" style={styles.searchIcon} />
-        <TextInput
-          style={styles.input}
-          placeholder="Find barber or salon"
-          placeholderTextColor="#6B6B6B"
-          value={searchQuery}
-          onChangeText={handleSearchChange}
-        />
-      </View>
+    <View style={styles.wrapper}>
+      {/* Search Input - Outside Modal when no query */}
+      {!hasQuery && renderSearchInput()}
 
       <Modal
         visible={hasQuery}
@@ -68,13 +74,19 @@ export default function SearchBar() {
         animationType="fade"
         onRequestClose={handleCloseModal}
       >
-        <View style={styles.modalOverlay} pointerEvents="box-none">
+        <View style={styles.modalOverlay}>
+          {/* Background overlay to close search */}
           <TouchableOpacity
             activeOpacity={1}
             style={styles.modalBackground}
             onPress={handleCloseModal}
-          >
-            <View style={styles.resultsContainer} pointerEvents="box-none">
+          />
+          
+          {/* Search Input - Inside Modal so it remains interactive */}
+          <View style={styles.modalContent}>
+            {renderSearchInput(true)}
+
+            <View style={styles.resultsContainer}>
               {isLoading ? (
                 <ThemedText style={styles.loadingText}>Searching...</ThemedText>
               ) : results.length === 0 ? (
@@ -83,6 +95,7 @@ export default function SearchBar() {
                 <FlatList
                   data={results}
                   keyExtractor={(item) => String(item.id)}
+                  keyboardShouldPersistTaps="handled"
                   renderItem={({ item }) => (
                     <TouchableOpacity
                       style={styles.card}
@@ -106,14 +119,18 @@ export default function SearchBar() {
                 />
               )}
             </View>
-          </TouchableOpacity>
+          </View>
         </View>
       </Modal>
-    </>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  wrapper: {
+    position: 'relative',
+    zIndex: 100,
+  },
   container: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -127,7 +144,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 4,
-    position: 'relative',
   },
   searchIcon: {
     marginLeft: 16,
@@ -138,6 +154,17 @@ const styles = StyleSheet.create({
     color: '#000000',
     paddingLeft: 8,
   },
+  modalOverlay: {
+    flex: 1,
+  },
+  modalBackground: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+  },
+  modalContent: {
+    flex: 1,
+    paddingTop: Platform.OS === 'ios' ? 40 : 20, // Adjust for status bar
+  },
   resultsContainer: {
     backgroundColor: '#ffffff',
     borderRadius: 16,
@@ -147,7 +174,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 5,
-    width: '100%',
+    marginHorizontal: 16,
+    marginTop: 10,
+    maxHeight: '80%',
   },
   card: {
     width: '100%',
@@ -178,42 +207,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
-  heartIconBackground: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    borderRadius: 15,
-    width: 30,
-    height: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  heartIcon: {
-    // Positioning handled by parent container
-  },
-  textOverlay: {
-    position: 'absolute',
-    bottom: 12,
-    left: 12,
-  },
-  salonName: {
-    fontSize: FontSizes.md, // 14
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  modalOverlay: {
-    flex: 1,
-    justifyContent: 'flex-start',
-  },
-  modalBackground: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    marginTop: 120,
-    paddingTop: 16,
-    paddingHorizontal: 16,
-    justifyContent: 'flex-start',
-  },
   loadingText: {
     textAlign: 'center',
     fontSize: FontSizes.md,
@@ -227,3 +220,81 @@ const styles = StyleSheet.create({
     color: '#6B7280',
   },
 });
+//   card: {
+//     width: '100%',
+//     height: 160,
+//     borderRadius: 16,
+//     position: 'relative',
+//     overflow: 'hidden',
+//     marginBottom: 10,
+//   },
+//   cardBackground: {
+//     width: '100%',
+//     height: '100%',
+//     borderRadius: 16,
+//   },
+//   overlay: {
+//     position: 'absolute',
+//     top: 0,
+//     left: 0,
+//     right: 0,
+//     bottom: 0,
+//     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//     zIndex: 1,
+//   },
+//   comingSoonText: {
+//     fontSize: FontSizes.lg,
+//     fontWeight: 'bold',
+//     color: '#FFFFFF',
+//   },
+//   heartIconBackground: {
+//     position: 'absolute',
+//     top: 12,
+//     right: 12,
+//     backgroundColor: 'rgba(255, 255, 255, 0.3)',
+//     borderRadius: 15,
+//     width: 30,
+//     height: 30,
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//   },
+//   heartIcon: {
+//     // Positioning handled by parent container
+//   },
+//   textOverlay: {
+//     position: 'absolute',
+//     bottom: 12,
+//     left: 12,
+//   },
+//   salonName: {
+//     fontSize: FontSizes.md, // 14
+//     fontWeight: '700',
+//     color: '#FFFFFF',
+//   },
+//   modalOverlay: {
+//     flex: 1,
+//     justifyContent: 'flex-start',
+//   },
+//   modalBackground: {
+//     flex: 1,
+//     backgroundColor: 'rgba(0, 0, 0, 0.4)',
+//     marginTop: 120,
+//     paddingTop: 16,
+//     paddingHorizontal: 16,
+//     justifyContent: 'flex-start',
+//   },
+//   loadingText: {
+//     textAlign: 'center',
+//     fontSize: FontSizes.md,
+//     marginVertical: 8,
+//     color: '#111827',
+//   },
+//   emptyText: {
+//     textAlign: 'center',
+//     fontSize: FontSizes.md,
+//     marginVertical: 8,
+//     color: '#6B7280',
+//   },
+// });
