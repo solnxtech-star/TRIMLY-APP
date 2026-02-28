@@ -294,12 +294,12 @@ ANYMAIL = {
 DEFAULT_FROM_EMAIL = 'onboarding@resend.dev'
 DEV_EMAIL_REDIRECT = os.getenv('DEV_EMAIL_REDIRECT', '')
 
-if os.getenv('DJANGO_ENV') == 'development':
-    EMAIL_BACKEND = 'api.v1.Core.email_backend.SandboxEmailBackend'
-else:
-    EMAIL_BACKEND = 'anymail.backends.resend.EmailBackend'
+# if os.getenv('DJANGO_ENV') == 'development':
+#     EMAIL_BACKEND = 'api.v1.Core.email_backend.SandboxEmailBackend'
+# else:
+#     EMAIL_BACKEND = 'anymail.backends.resend.EmailBackend'
 
-
+EMAIL_BACKEND = 'api.v1.Core.email_backend.SandboxEmailBackend'
 
 
 # IMPORTANT: Even with the API, Mailtrap Sandbox usually lets you 
