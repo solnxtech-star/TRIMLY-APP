@@ -11,7 +11,7 @@ export default function Services() {
   const router = useRouter();
 
   const handleSeeAll = () => {
-    router.push('/client/salons');
+    router.push('/client/services');
   };
   
   const handleServicePress = (service: CategoryItem) => {
