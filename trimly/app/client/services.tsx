@@ -96,9 +96,18 @@ export default function ServicesScreen() {
           <TouchableOpacity 
             key={service.name} 
             style={[styles.serviceItem, { backgroundColor: cardBackgroundColor }]}
-            onPress={() => router.push('/client/salons')}
+            onPress={() => {
+              if (service.id) {
+                router.push({
+                  pathname: '/client/salons',
+                  params: { categoryId: String(service.id) },
+                });
+              } else {
+                router.push('/client/salons');
+              }
+            }}
           >
-            <View style={[styles.iconContainer, { backgroundColor: 'gray' }]}>              
+            <View style={[styles.iconContainer, { backgroundColor: '#2D8659' }]}>              
               <Image 
                 source={service.icon} 
                 style={styles.serviceIcon}

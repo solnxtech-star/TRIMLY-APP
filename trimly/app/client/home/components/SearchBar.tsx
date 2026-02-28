@@ -133,8 +133,8 @@ export default function SearchBar() {
                         )}
                         <View style={styles.infoSection}>
                           <View style={styles.nameRow}>
-                            <ThemedText style={styles.salonName} numberOfLines={1}>
-                              {item.name || item.worker}
+                            <ThemedText style={[styles.salonName, { color: textColor }]} numberOfLines={1}>
+                              {item.display_name || item.worker}
                             </ThemedText>
                             <View style={styles.statusBadge}>
                               <ThemedText style={[styles.statusText, { color: '#2D8659' }]}>Open</ThemedText>
@@ -265,7 +265,6 @@ const styles = StyleSheet.create({
   salonName: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#6B6B6B',
   },
   statusBadge: {
     width: 50,

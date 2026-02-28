@@ -11,17 +11,17 @@ export default function Services() {
   const router = useRouter();
 
   const handleSeeAll = () => {
-    router.push('/client/services');
+    router.push('/client/salons');
   };
   
   const handleServicePress = (service: CategoryItem) => {
     if (service.id) {
       router.push({
-        pathname: '/client/services',
+        pathname: '/client/salons',
         params: { categoryId: String(service.id) },
       });
     } else {
-      router.push('/client/services');
+      router.push('/client/salons');
     }
   };
 
