@@ -423,8 +423,58 @@ class SalonService {
       }
 
       const endpoint = `/search/?${searchParams.toString()}`;
-      const response = await apiClient.get<PaginatedResponse<any>>(endpoint, true);
-      return response;
+      const response = await apiClient.get<any>(endpoint, true);
+      
+      console.log('🔍 [SALON SERVICE] Search raw response:', response);
+      
+      // Handle search results transformation similarly to listSalons
+      const resultsArray = Array.isArray(response) ? response : (response.results || []);
+      const count = Array.isArray(response) ? response.length : (response.count || 0);
+      
+      const transformedResults = resultsArray.map((item: any) => {
+        // Search results can be salons or vendors
+        const isVendor = !!item.worker;
+        const reviews = Array.isArray(isVendor ? item.vendor_reviews : item.salon_reviews) 
+          ? (isVendor ? item.vendor_reviews : item.salon_reviews) 
+          : [];
+        const portfolio = Array.isArray(isVendor ? item.vendor_portfolio : item.salon_portfolio)
+          ? (isVendor ? item.vendor_portfolio : item.salon_portfolio)
+          : [];
+        const services = Array.isArray(isVendor ? item.vendor_services : item.salon_services)
+          ? (isVendor ? item.vendor_services : item.salon_services)
+          : [];
+
+        const rating =
+          reviews.length > 0
+            ? reviews.reduce((acc: number, r: any) => acc + (r.rating || 0), 0) /
+              reviews.length
+            : 0;
+
+        return {
+          ...item,
+          name: isVendor ? (item.worker || item.name) : item.name,
+          location: item.address || item.location || '',
+          rating,
+          review_count: reviews.length,
+          services,
+          gallery: portfolio.map((p: any) => ({
+            id: p.id,
+            image: p.image,
+            salon: p.salon,
+            vendor: p.vendor,
+            caption: p.caption,
+            created_at: p.created_at,
+          })),
+          type: isVendor ? 'vendor' : 'salon',
+        };
+      });
+
+      return {
+        count: count,
+        next: Array.isArray(response) ? null : (response.next || null),
+        previous: Array.isArray(response) ? null : (response.previous || null),
+        results: transformedResults,
+      };
     } catch (error) {
       console.error('Search marketplace error:', error);
       throw this.handleError(error);

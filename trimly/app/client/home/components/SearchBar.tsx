@@ -1,17 +1,23 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, View, TextInput, TouchableOpacity, Image, Modal, FlatList, Platform } from 'react-native';
+import { StyleSheet, View, TextInput, TouchableOpacity, Image, Modal, FlatList, Platform, ActivityIndicator } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useRouter } from 'expo-router';
 import { FontSizes } from '@/constants/theme';
 import salonService from '@/services/salonService';
-import { ServiceCategory } from '@/types/salon.types';
+import { useThemeColor } from '@/hooks/use-theme-color';
 
 export default function SearchBar() {
   const [searchQuery, setSearchQuery] = useState('');
   const [results, setResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+
+  // Theme colors
+  const backgroundColor = useThemeColor({}, 'background');
+  const textColor = useThemeColor({light: '#1a1a1a', dark: '#f5f5f5'}, 'text');
+  const cardBackgroundColor = useThemeColor({ light: '#f5f5f5', dark: '#1a1a1a' }, 'background');
+  const iconColor = useThemeColor({light: '#1a1a1a', dark: '#f5f5f5'}, 'text');
 
   const handleSearchChange = (text: string) => {
     setSearchQuery(text);
@@ -31,7 +37,8 @@ export default function SearchBar() {
           query: trimmed,
         });
         setResults(response.results || []);
-      } catch {
+      } catch (err) {
+        console.error('❌ [SEARCH BAR] Search failed:', err);
         setResults([]);
       } finally {
         setIsLoading(false);
@@ -88,7 +95,10 @@ export default function SearchBar() {
 
             <View style={styles.resultsContainer}>
               {isLoading ? (
-                <ThemedText style={styles.loadingText}>Searching...</ThemedText>
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="small" color="#2D8A47" />
+                  <ThemedText style={styles.loadingText}>Searching...</ThemedText>
+                </View>
               ) : results.length === 0 ? (
                 <ThemedText style={styles.emptyText}>No results found</ThemedText>
               ) : (
@@ -96,28 +106,71 @@ export default function SearchBar() {
                   data={results}
                   keyExtractor={(item) => String(item.id)}
                   keyboardShouldPersistTaps="handled"
+                  contentContainerStyle={styles.resultsListContent}
                   renderItem={({ item }) => (
-                    <TouchableOpacity
-                      style={styles.card}
+                    <TouchableOpacity 
+                      style={[
+                        {backgroundColor: cardBackgroundColor},
+                        styles.salonCard
+                      ]}
                       onPress={() => {
-                        // Determine type if available in search result
-                        const itemType = item.type || (item.worker ? 'vendor' : 'salon');
+                        // Following salons.tsx navigation style
                         router.push({
-                          pathname: `/client/business-details/${item.id}`,
-                          params: { type: itemType }
+                          pathname: '/client/business-details/[id]',
+                          params: { id: item.id, type: item.type }
                         });
                         handleCloseModal();
                       }}
                     >
-                      <Image 
-                        source={require('@/assets/stock/service.jpg')} 
-                        style={styles.cardBackground}
-                        resizeMode="cover"
-                      />
-                      <View style={styles.overlay}>
-                        <ThemedText style={styles.comingSoonText}>
-                          {item.display_name || searchQuery}
-                        </ThemedText>
+                      <View style={styles.cardContent}>
+                        {item.gallery && item.gallery.length > 0 ? (
+                          <Image source={{ uri: item.gallery[0].image }} style={styles.salonImage} />
+                        ) : (
+                          <Image
+                            source={require('@/assets/stock/service.jpg')}
+                            style={styles.salonImage}
+                          />
+                        )}
+                        <View style={styles.infoSection}>
+                          <View style={styles.nameRow}>
+                            <ThemedText style={styles.salonName} numberOfLines={1}>
+                              {item.name || item.worker}
+                            </ThemedText>
+                            <View style={styles.statusBadge}>
+                              <ThemedText style={[styles.statusText, { color: '#2D8659' }]}>Open</ThemedText>
+                            </View>
+                          </View>
+                          
+                          <View style={styles.ratingRow}>
+                            <IconSymbol name="star" size={16} color="#FFC107" />
+                            <ThemedText style={[styles.ratingText, { color: textColor }]}>
+                              {item.rating || 0}
+                            </ThemedText>
+                            <ThemedText style={[styles.reviewText, { color: textColor }]}>
+                              ({item.review_count || 0} Reviews)
+                            </ThemedText>
+                          </View>
+                          
+                          <ThemedText style={[styles.servicesText, { color: textColor }]} numberOfLines={1}>
+                            {item.services && item.services.length > 0
+                              ? item.services.slice(0, 3).map((s: any) => s.name).join(' . ')
+                              : 'Services available'}
+                          </ThemedText>
+                          
+                          <View style={styles.bottomRow}>
+                            <ThemedText style={[styles.priceText, { color: '#2D8659' }]}>
+                              {item.services && item.services.length > 0
+                                ? `₦${Math.min(...item.services.map((s: any) => Number(s.price)))} - ₦${Math.max(...item.services.map((s: any) => Number(s.price)))}`
+                                : 'Contact for pricing'}
+                            </ThemedText>
+                            <View style={styles.locationRow}>
+                              <IconSymbol name="location" size={14} color={iconColor} />
+                              <ThemedText style={[styles.distanceText, { color: textColor }]} numberOfLines={1}>
+                                {item.location}
+                              </ThemedText>
+                            </View>
+                          </View>
+                        </View>
                       </View>
                     </TouchableOpacity>
                   )}
@@ -183,123 +236,107 @@ const styles = StyleSheet.create({
     marginTop: 10,
     maxHeight: '80%',
   },
-  card: {
-    width: '100%',
-    height: 160,
-    borderRadius: 16,
-    position: 'relative',
-    overflow: 'hidden',
-    marginBottom: 10,
+  resultsListContent: {
+    paddingBottom: 10,
   },
-  cardBackground: {
-    width: '100%',
-    height: '100%',
+  salonCard: {
     borderRadius: 16,
+    padding: 12,
+    marginBottom: 12,
   },
-  overlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  cardContent: {
+    flexDirection: 'row',
+  },
+  salonImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+    marginRight: 12,
+  },
+  infoSection: {
+    flex: 1,
+  },
+  nameRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+  salonName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6B6B6B',
+  },
+  statusBadge: {
+    width: 50,
+    height: 20,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#2D8659',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 1,
   },
-  comingSoonText: {
-    fontSize: FontSizes.lg,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
+  statusText: {
+    fontSize: 9,
+    fontWeight: '600',
+  },
+  ratingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+  ratingText: {
+    fontSize: 11,
+    fontWeight: '700',
+    marginLeft: 4,
+    marginRight: 4,
+  },
+  reviewText: {
+    fontSize: 11,
+    fontWeight: '400',
+    color: '#6B6B6B',
+  },
+  servicesText: {
+    fontSize: 11,
+    fontWeight: '400',
+    color: '#6B6B6B',
+    marginBottom: 2,
+  },
+  bottomRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  priceText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#2D8659',
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  distanceText: {
+    fontSize: 11,
+    fontWeight: '400',
+    color: '#6B6B6B',
+    marginLeft: 4,
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 12,
   },
   loadingText: {
-    textAlign: 'center',
+    marginLeft: 8,
     fontSize: FontSizes.md,
-    marginVertical: 8,
-    color: '#111827',
+    color: '#6B7280',
   },
   emptyText: {
     textAlign: 'center',
     fontSize: FontSizes.md,
-    marginVertical: 8,
+    marginVertical: 12,
     color: '#6B7280',
   },
 });
-//   card: {
-//     width: '100%',
-//     height: 160,
-//     borderRadius: 16,
-//     position: 'relative',
-//     overflow: 'hidden',
-//     marginBottom: 10,
-//   },
-//   cardBackground: {
-//     width: '100%',
-//     height: '100%',
-//     borderRadius: 16,
-//   },
-//   overlay: {
-//     position: 'absolute',
-//     top: 0,
-//     left: 0,
-//     right: 0,
-//     bottom: 0,
-//     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//     zIndex: 1,
-//   },
-//   comingSoonText: {
-//     fontSize: FontSizes.lg,
-//     fontWeight: 'bold',
-//     color: '#FFFFFF',
-//   },
-//   heartIconBackground: {
-//     position: 'absolute',
-//     top: 12,
-//     right: 12,
-//     backgroundColor: 'rgba(255, 255, 255, 0.3)',
-//     borderRadius: 15,
-//     width: 30,
-//     height: 30,
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//   },
-//   heartIcon: {
-//     // Positioning handled by parent container
-//   },
-//   textOverlay: {
-//     position: 'absolute',
-//     bottom: 12,
-//     left: 12,
-//   },
-//   salonName: {
-//     fontSize: FontSizes.md, // 14
-//     fontWeight: '700',
-//     color: '#FFFFFF',
-//   },
-//   modalOverlay: {
-//     flex: 1,
-//     justifyContent: 'flex-start',
-//   },
-//   modalBackground: {
-//     flex: 1,
-//     backgroundColor: 'rgba(0, 0, 0, 0.4)',
-//     marginTop: 120,
-//     paddingTop: 16,
-//     paddingHorizontal: 16,
-//     justifyContent: 'flex-start',
-//   },
-//   loadingText: {
-//     textAlign: 'center',
-//     fontSize: FontSizes.md,
-//     marginVertical: 8,
-//     color: '#111827',
-//   },
-//   emptyText: {
-//     textAlign: 'center',
-//     fontSize: FontSizes.md,
-//     marginVertical: 8,
-//     color: '#6B7280',
-//   },
-// });
