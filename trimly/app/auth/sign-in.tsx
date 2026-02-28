@@ -450,7 +450,7 @@ const styles = StyleSheet.create({
   },
   dividerText: {
     fontSize: FontSizes.md, // 14
-    color: '#1A1D2E',
+    color: 'gray',
     marginHorizontal: 15,
   },
   socialLoginContainer: {
