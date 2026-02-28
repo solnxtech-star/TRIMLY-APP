@@ -347,7 +347,7 @@ SILKY_SAVE_BODY = False  # <--- This is the big one! Stop saving huge JSON blobs
 
 import os
 
-import os
+
 
 if os.name == 'nt':  # Windows
     GDAL_LIBRARY_PATH = r'C:\OSGeo4W\bin\gdal312.dll'
@@ -379,5 +379,9 @@ CELERY_TASK_ALWAYS_EAGER = False  # Set to True for testing without a worker
 # 5. Task discovery configuration
 # This ensures Celery finds 'tasks.py' in all your apps automatically.
 CELERY_IMPORTS = (
-    'api.v1.Bookings.tasks',  # Replace 'your_app_name' with your actual app name
+    'api.v1.Bookings.tasks', 
+    'api.v1.Notifications.tasks'
 )
+# Safety check: Stop the app immediately if a secret is missing
+if not os.getenv("RESEND_API_KEY"):
+    raise ValueError("SIGNING_KEY is not set in Render environment!")
