@@ -88,7 +88,7 @@ export default function VerifyEmailScreen() {
             text: 'OK', 
             onPress: () => {
               if (role === 'vendor') {
-                router.replace('/vendor/dashboard');
+                router.replace('/business/dashboard');
               } else {
                 router.replace('/client/explore');
               }
