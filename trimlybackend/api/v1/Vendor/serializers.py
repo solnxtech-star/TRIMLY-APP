@@ -11,15 +11,15 @@ class VendorServicesSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "vendor"]
 
 class VendorSerializer(serializers.ModelSerializer):
+    vendor_name = serializers.CharField(read_only=True, source="worker.get_full_name")
     class Meta:
         model = IndividualVendorProfile
-        fields = ["id", "worker", "category", "date_of_birth", 
-                  "bio", "profile_pic", "years_of_experience", 
-                  "Gender", "location", "address", "flw_subaccount_id", 
-                  "bank_code", "account_number", "total_earnings", "is_active", "is_available"]
+        fields = ["id", "vendor_name", "category",
+                  "bio", "profile_pic", "location", "address", "is_active", "is_available"]
         read_only_fields = ["vendor", "id", "is_active", "is_available" ]
 
 class VendorDetailSerializer(serializers.ModelSerializer):
+    vendor_name = serializers.CharField(read_only=True, source="worker.get_full_name")
     vendor_services = VendorServicesSerializer(many=True, read_only=True)
     review_count = serializers.IntegerField(read_only=True)
     average_rating = serializers.FloatField(read_only=True)
@@ -29,12 +29,13 @@ class VendorDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = IndividualVendorProfile
         fields = [
-            "id", "worker", "category", "date_of_birth", "bio", "profile_pic", 
-            "years_of_experience", "Gender", "location", "address", "flw_subaccount_id", 
-            "bank_code", "account_number", "total_earnings", "is_active", "is_available",
+            "id", "worker","vendor_name", "category",  "bio", "profile_pic", 
+            "location", "address",
+            "is_active", "is_available",
             "vendor_services", "vendor_portfolio", "vendor_reviews", "review_count", "average_rating"
         ]
-        read_only_fields = ["id", "worker", "total_earnings"]
+        read_only_fields = ["id", "worker", "total_earnings", "vendor_services", "vendor_portfolio", 
+                            "vendor_reviews", "review_count", "average_rating", "is_active", "is_available",]
 
 class SlotResponseSerializer(serializers.Serializer):
     vendor_id = serializers.UUIDField()
