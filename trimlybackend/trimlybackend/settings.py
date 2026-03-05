@@ -20,12 +20,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-k9&toki9k%@59k6jxkq_0s)zy31wl0k9-3yz^@1a)d^p+=80t9'
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = [
+    "api.trimly.africa",
+    "trimly-app.onrender.com",
+]
 
 
 # Application definition
@@ -291,7 +294,7 @@ ANYMAIL = {
     "RESEND_API_KEY": os.getenv("RESEND_API_KEY"),
 }
 
-DEFAULT_FROM_EMAIL = 'onboarding@resend.dev'
+DEFAULT_FROM_EMAIL = 'noreply@trimly.africa'
 DEV_EMAIL_REDIRECT = os.getenv('DEV_EMAIL_REDIRECT', '')
 
 # if os.getenv('DJANGO_ENV') == 'development':
@@ -299,7 +302,7 @@ DEV_EMAIL_REDIRECT = os.getenv('DEV_EMAIL_REDIRECT', '')
 # else:
 #     EMAIL_BACKEND = 'anymail.backends.resend.EmailBackend'
 
-EMAIL_BACKEND = 'api.v1.Core.email_backend.SandboxEmailBackend'
+EMAIL_BACKEND = 'anymail.backends.resend.EmailBackend'
 
 
 # IMPORTANT: Even with the API, Mailtrap Sandbox usually lets you 

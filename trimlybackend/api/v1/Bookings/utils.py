@@ -1,4 +1,6 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+
+import requests
 from api.v1.Category.models import Availability, AvailabilityException
 from api.v1.Vendor.models import IndividualVendorProfile
 from api.v1.Salons.models import SalonProfile
@@ -78,3 +80,81 @@ def get_available_slots(provider, date, service_duration):
         current_time += timedelta(minutes=interval)
 
     return slots
+
+import requests
+from django.utils import timezone
+from django.conf import settings
+from datetime import datetime
+
+def normalize(value):
+    return str(value).strip().lower()
+
+def names_match(user, api_entity):
+    user_first = normalize(user.first_name)
+    user_last = normalize(user.last_name)
+
+    # Combine all API name parts
+    api_full_name = " ".join([
+        normalize(api_entity.get("first_name", "")),
+        normalize(api_entity.get("middle_name", "")),
+        normalize(api_entity.get("last_name", "")),
+    ])
+
+    # Check both names exist anywhere
+    return user_first in api_full_name and user_last in api_full_name
+
+
+def dob_match(user, api_entity):
+    try:
+        api_dob = datetime.strptime(api_entity.get("date_of_birth"), "%Y-%m-%d").date()
+        return api_dob == user.date_of_birth
+    except Exception:
+        return False
+
+
+def verify_nin(nin, user):
+    if user.nin_verified:
+        return False
+
+    if not nin or len(nin) != 11 or not nin.isdigit():
+        return False
+
+    try:
+        url = "https://sandbox.dojah.io/api/v1/kyc/nin"
+        headers = {
+            "AppId": settings.DOJAH_APP_ID,
+            "Authorization": settings.DOJAH_SECRET_KEY
+        }
+
+        response = requests.get(
+            url,
+            params={"nin": nin},
+            headers=headers,
+            timeout=10
+        )
+
+        if response.status_code != 200:
+            return False
+
+        data = response.json()
+
+    except requests.RequestException:
+        return False
+
+    entity = data.get("entity")
+    if not entity:
+        return False
+
+    if not names_match(user, entity):
+        return False
+
+    if not dob_match(user, entity):
+        return False
+
+    # Success
+    user.nin_verified = True
+    user.nin_verified_at = timezone.now()
+    user.nin_last4 = nin[-4:]   # store only last 4 digits
+    user.save(update_fields=["nin_verified", "nin_verified_at", "nin_last4"])
+
+    return True
