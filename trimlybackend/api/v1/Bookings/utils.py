@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta, timezone
-
 import requests
 from api.v1.Category.models import Availability, AvailabilityException
 from api.v1.Vendor.models import IndividualVendorProfile
@@ -81,49 +80,64 @@ def get_available_slots(provider, date, service_duration):
 
     return slots
 
-import requests
-from django.utils import timezone
-from django.conf import settings
-from datetime import datetime
 
+#helper functions
 def normalize(value):
-    return str(value).strip().lower()
+    return " ".join(str(value).strip().lower().split())
+
 
 def names_match(user, api_entity):
+
     user_first = normalize(user.first_name)
     user_last = normalize(user.last_name)
 
-    # Combine all API name parts
     api_full_name = " ".join([
         normalize(api_entity.get("first_name", "")),
         normalize(api_entity.get("middle_name", "")),
         normalize(api_entity.get("last_name", "")),
     ])
 
-    # Check both names exist anywhere
     return user_first in api_full_name and user_last in api_full_name
 
 
 def dob_match(user, api_entity):
-    try:
-        api_dob = datetime.strptime(api_entity.get("date_of_birth"), "%Y-%m-%d").date()
-        return api_dob == user.date_of_birth
-    except Exception:
+
+    dob = api_entity.get("date_of_birth")
+
+    if not dob:
         return False
+
+    for fmt in ("%Y-%m-%d", "%d-%m-%Y"):
+        try:
+            api_dob = datetime.strptime(dob, fmt).date()
+            return api_dob == user.date_of_birth
+        except ValueError:
+            continue
+
+    return False
+
+#nin service
+import requests
+from django.conf import settings
+from django.utils import timezone
 
 
 def verify_nin(nin, user):
-    if user.nin_verified:
-        return False
 
+    if user.nin_verified:
+        return False, "already_verified"
+
+    # Defensive validation
     if not nin or len(nin) != 11 or not nin.isdigit():
-        return False
+        return False, "invalid_nin"
 
     try:
         url = "https://sandbox.dojah.io/api/v1/kyc/nin"
+
         headers = {
             "AppId": settings.DOJAH_APP_ID,
-            "Authorization": settings.DOJAH_SECRET_KEY
+            "Authorization": settings.DOJAH_SECRET_KEY,
+            "Content-Type": "application/json"
         }
 
         response = requests.get(
@@ -134,27 +148,28 @@ def verify_nin(nin, user):
         )
 
         if response.status_code != 200:
-            return False
+            return False, "provider_error"
 
         data = response.json()
 
     except requests.RequestException:
-        return False
+        return False, "network_error"
 
     entity = data.get("entity")
+
     if not entity:
-        return False
+        return False, "no_entity"
 
     if not names_match(user, entity):
-        return False
+        return False, "name_mismatch"
 
     if not dob_match(user, entity):
-        return False
+        return False, "dob_mismatch"
 
     # Success
     user.nin_verified = True
     user.nin_verified_at = timezone.now()
-    user.nin_last4 = nin[-4:]   # store only last 4 digits
+    user.nin_last4 = nin[-4:]
     user.save(update_fields=["nin_verified", "nin_verified_at", "nin_last4"])
 
-    return True
+    return True, None

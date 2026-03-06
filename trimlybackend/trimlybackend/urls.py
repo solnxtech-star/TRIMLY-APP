@@ -4,7 +4,7 @@ from django.urls import path, include, re_path
 from dj_rest_auth.views import PasswordResetConfirmView
 from dj_rest_auth.registration.views import VerifyEmailView, RegisterView 
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
-from api.v1.Users.views import GoogleLogin, VerifyEmailOTPView, VerifyPasswordResetOTPView, RequestPasswordResetOTPView, ResendOTPView, ResetPasswordView
+from api.v1.Users.views import GoogleLogin, VerifyEmailOTPView, VerifyPasswordResetOTPView, RequestPasswordResetOTPView, ResendOTPView, ResetPasswordView, HealthStatusView
 from api.v1.Search.views import toggle_availability
 
 
@@ -35,6 +35,7 @@ urlpatterns = [
     path('api/v1/toggle-status/', toggle_availability, name='toggle-availability'),
     path('api/v1/reviews/', include('api.v1.Reviews.urls')),
     path('api/v1/chat/', include('api.v1.Chat.urls')),
+    path('', HealthStatusView.as_view(), name="health_status"),
     #documentation
     path('swagger/', SpectacularSwaggerView.as_view(), name="schema"),
     path('redoc/', SpectacularRedocView.as_view(), name="redoc"),

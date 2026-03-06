@@ -11,7 +11,7 @@ from dj_rest_auth.views import LoginView
 from dj_rest_auth.registration.views import RegisterView
 from .serializers import EmailLoginSerializer, CustomRegisterSerializer, UserDetailSerializer, ResetPasswordSerializer
 from .docs.auth import login_schema, register_schema
-
+from rest_framework.views import APIView
 
 class UserProfileListView(RetrieveAPIView):
     queryset = User.objects.all()
@@ -199,3 +199,10 @@ class ResendOTPView(APIView):
             }, status=status.HTTP_200_OK)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class HealthStatusView(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request):
+        return Response({
+            "success" : "welcome to Trimly backend api"
+        })

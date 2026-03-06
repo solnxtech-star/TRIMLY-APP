@@ -93,3 +93,19 @@ class BookingDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
         fields = ["customer_name", "salon_name", "salon_address", "service_name", "vendor_name", "vendor_service_name"]
+
+class VerifyNinSerializer(serializers.Serializer):
+    nin = serializers.CharField(required=True, write_only=True)
+    def validate_nin(self, value):
+        value = value.strip()
+        
+        if not value:
+            raise serializers.ValidationError("please enter NIN")
+
+        if not value.isdigit():
+            raise serializers.ValidationError("NIN must contain only numbers")
+
+        if len(value) != 11:
+            raise serializers.ValidationError("NIN must be exactly 11 digits")
+
+        return value

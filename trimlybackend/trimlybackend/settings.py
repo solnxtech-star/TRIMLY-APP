@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+import os
+from dotenv import load_dotenv  
+load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -28,6 +31,8 @@ DEBUG = False
 ALLOWED_HOSTS = [
     "api.trimly.africa",
     "trimly-app.onrender.com",
+    "localhost",
+    "127.0.0.1",
 ]
 
 
@@ -135,12 +140,6 @@ WSGI_APPLICATION = 'trimlybackend.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
-import dj_database_url
-import os
-from dotenv import load_dotenv
-
-load_dotenv()  
 
 import dj_database_url
 
@@ -342,10 +341,6 @@ DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 FLW_SECRET_HASH = os.getenv("FLW_SECRET_HASH")
 FLW_SECRET_KEY = os.getenv("FLW_SECRET_KEY")
 
-SILKY_PYTHON_PROFILER = True
-SILKY_MAX_RECORDED_REQUESTS = 1000
-SILKY_MAX_RECORDED_REQUESTS_CHECK_PERCENT = 10
-SILKY_SAVE_BODY = False  # <--- This is the big one! Stop saving huge JSON blobs.
 
 import os
 
@@ -386,4 +381,5 @@ CELERY_IMPORTS = (
 )
 # Safety check: Stop the app immediately if a secret is missing
 if not os.getenv("RESEND_API_KEY"):
-    raise ValueError("SIGNING_KEY is not set in Render environment!")
+    raise ValueError("RESEND API KEY is not set in Render environment!")
+

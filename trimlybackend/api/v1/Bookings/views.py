@@ -6,7 +6,7 @@ from api.v1.Users.permissions import IsBookingOwnerOrProvider , BookingActionPer
 from .models import Booking
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter
-from .serializers import BookingSerializer, BookingDetailSerializer
+from .serializers import BookingSerializer, BookingDetailSerializer, VerifyNinSerializer
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
@@ -14,6 +14,11 @@ from django.db import transaction
 from .tasks import send_booking_notifications, send_reminder_task
 from datetime import timedelta
 from api.v1.Notifications.tasks  import create_and_send_notification
+from rest_framework.views import APIView
+from .utils import verify_nin
+from rest_framework.permissions import IsAuthenticated
+from drf_spectacular.utils import extend_schema
+
 
 
 class BookingViewSet(ModelViewSet):
@@ -167,3 +172,24 @@ class BookingViewSet(ModelViewSet):
         except Exception as e:
             # If anything fails (like a database error), the status stays 'confirmed'
             return Response({"detail": f"Error releasing funds: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+
+
+
+class VerifyNINView(APIView):
+    permission_classes = [IsAuthenticated]
+    @extend_schema(
+    request=VerifyNinSerializer,
+    responses={200: None}
+    )
+    def post(self, request):
+        serializer = VerifyNinSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        nin = serializer.validated_data["nin"]
+        is_verified, reason = verify_nin(nin)
+        if not is_verified:
+                return Response({"error": reason}, status=400)
+        return Response({"success" : "NIN verified succesfully"})
+
+
+  
