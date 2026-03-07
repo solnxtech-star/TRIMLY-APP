@@ -12,10 +12,12 @@ class VendorServicesSerializer(serializers.ModelSerializer):
 
 class VendorSerializer(serializers.ModelSerializer):
     vendor_name = serializers.CharField(read_only=True, source="worker.get_full_name")
+    review_count = serializers.IntegerField(read_only=True)
+    average_rating = serializers.FloatField(read_only=True)
     class Meta:
         model = IndividualVendorProfile
         fields = ["id", "vendor_name", "category",
-                  "bio", "profile_pic", "location", "address", "is_active", "is_available"]
+                  "bio", "profile_pic", "location", "address", "review_count", "average_rating", "is_active", "is_available"]
         read_only_fields = ["vendor", "id", "is_active", "is_available" ]
 
 class VendorDetailSerializer(serializers.ModelSerializer):

@@ -41,10 +41,10 @@ urlpatterns = [
     path('redoc/', SpectacularRedocView.as_view(), name="redoc"),
     path('swagger-schema/', SpectacularAPIView.as_view(), name="schema"),
 ]
-if settings.DEBUG:
-    urlpatterns += [
-        path('silk/', include('silk.urls', namespace='silk')),
-    ]+ urlpatterns
+# if settings.DEBUG:
+#     urlpatterns += [
+#         path('silk/', include('silk.urls', namespace='silk')),
+#     ]+ urlpatterns
 
 
 
