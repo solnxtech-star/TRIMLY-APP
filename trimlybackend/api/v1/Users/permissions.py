@@ -148,3 +148,28 @@ class IsOwnerOfTargetProvider(permissions.BasePermission):
             ).exists()
 
         return False
+
+class IsNINVerified(permissions.BasePermission):
+
+    """
+    Allows access only to vendors/salon owners who have verified their NIN.
+    """
+    def has_permission(self, request, view):
+        user = request.user
+        
+        # 1. Safety Check: Is the user even logged in?
+        if not user or not user.is_authenticated:
+            return False
+
+        # 2. Check Role and NIN status based on the specific profile
+        if user.role == "individual_vendor":
+            # Use getattr to avoid crashing if the profile is missing
+            profile = getattr(user, 'individual_vendor_profile', None)
+            return profile.is_nin_verified if profile else False
+            
+        elif user.role == "salon_owner":
+            profile = getattr(user, 'salon_owner_profile', None)
+            return profile.is_nin_verified if profile else False
+
+        # 3. If they are just a 'customer' or other role, deny access
+        return False

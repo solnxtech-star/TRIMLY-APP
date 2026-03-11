@@ -95,17 +95,17 @@ class BookingDetailSerializer(serializers.ModelSerializer):
         fields = ["customer_name", "salon_name", "salon_address", "service_name", "vendor_name", "vendor_service_name"]
 
 class VerifyNinSerializer(serializers.Serializer):
-    nin = serializers.CharField(required=True, write_only=True)
+    """
+    Validate Vendors VNIN
+    """
+    vnin = serializers.CharField(required=True, write_only=True, help_text="Enter virtual nin; to generate input : *346*3*Your_NIN*715461# or visit nimc mobile app and generate vnin using this enterprise code {715461}")
     def validate_nin(self, value):
         value = value.strip()
         
         if not value:
-            raise serializers.ValidationError("please enter NIN")
+            raise serializers.ValidationError("please enter vNIN")
 
-        if not value.isdigit():
-            raise serializers.ValidationError("NIN must contain only numbers")
-
-        if len(value) != 11:
-            raise serializers.ValidationError("NIN must be exactly 11 digits")
+        if len(value) != 16:
+            raise serializers.ValidationError("vNIN must be exactly 16 digits")
 
         return value

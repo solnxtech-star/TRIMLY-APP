@@ -24,7 +24,7 @@ class SalonProfile(models.Model):
 
 class SalonOwnerProfile(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="salon_owner_Profile")
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="salon_owner_profile")
     bio = models.TextField(blank=True)
     flw_subaccount_id = models.CharField(max_length=50, null=True, blank=True)
     bank_code = models.CharField(max_length=15, null=True, blank=True)
@@ -33,6 +33,8 @@ class SalonOwnerProfile(models.Model):
     address = models.CharField(max_length=255)
     date_of_birth = models.DateTimeField(auto_now_add=True)
     Gender = models.CharField(max_length=10, choices=[('male', 'male'), ('female', 'female')])
+    is_nin_verified = models.BooleanField(default=False)
+    nin_verified_at = models.DateTimeField(null=True, blank=True)
     def __str__(self):
         return self.user.name
     

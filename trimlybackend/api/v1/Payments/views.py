@@ -14,6 +14,7 @@ import uuid
 from .serializers import PaymentInitSerializer, PaymentLinkResponseSerializer, WithdrawalRequestSerializer
 from api.v1.Bookings.models import Booking
 from django.db import IntegrityError
+from api.v1.Users.permissions import IsNINVerified
 
 from decimal import Decimal
 
@@ -121,7 +122,7 @@ class RegisterBankDetailsView(GenericAPIView):
                         profile = user.individual_vendor_profile
                     elif user.role == 'salon_owner':
                         profile = user.salon_owner_Profile
-                        e
+                        
                     profile.flw_subaccount_id = sub_id
                     profile.bank_code = bank_code
                     profile.account_number = account_number
@@ -182,7 +183,14 @@ class InitializePaymentView(GenericAPIView):
 
 
 class RequestWithdrawalView(GenericAPIView):
+    '''Check NIN
+    Check available_balance
+    Call Flutterwave transfer
+    available_balance -= amount
+    Create withdrawal record
+    '''
     serializer_class = WithdrawalRequestSerializer
+    permission_classes = [IsNINVerified,]
 
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
@@ -202,6 +210,7 @@ class RequestWithdrawalView(GenericAPIView):
 
         try:
             with transaction.atomic():
+                #verify nin
                 # 2. Call Flutterwave FIRST
                 profile = user.individual_vendor_profile or user.salon_owner_profile
                 flw_resp = FlutterwaveService.initiate_transfer(

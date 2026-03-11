@@ -23,7 +23,6 @@ class User(AbstractUser):
     last_name = models.CharField(max_length=15, null=True, blank=True)
     is_nin_verified = models.BooleanField(default=False)
     nin_verified_at = models.DateTimeField(null=True, blank=True)
-    nin_last4 = models.CharField(max_length=15, null=True, blank=True)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = [] # Add fields you REQUIRE at sign up
     objects = CustomUserManager()

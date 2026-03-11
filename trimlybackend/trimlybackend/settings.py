@@ -292,7 +292,7 @@ ANYMAIL = {
     "RESEND_API_KEY": os.getenv("RESEND_API_KEY"),
 }
 
-DEFAULT_FROM_EMAIL = 'noreply@trimly.africa'
+DEFAULT_FROM_EMAIL = 'Trimly <noreply@trimly.africa>'
 DEV_EMAIL_REDIRECT = os.getenv('DEV_EMAIL_REDIRECT', '')
 
 # if os.getenv('DJANGO_ENV') == 'development':
@@ -383,3 +383,5 @@ CELERY_IMPORTS = (
 if not os.getenv("RESEND_API_KEY"):
     raise ValueError("RESEND API KEY is not set in Render environment!")
 
+DOJAH_APP_ID = os.getenv("DOJAH_APP_ID")
+DOJAH_SECRET_KEY = os.getenv("DOJAH_SECRET_KEY")

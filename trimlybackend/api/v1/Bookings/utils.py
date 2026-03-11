@@ -122,28 +122,49 @@ from django.conf import settings
 from django.utils import timezone
 
 
-def verify_nin(nin, user):
+def verify_nin(vnin, user):
+    """
+    verify user vnin using verifyMe
+    """
+    #dynamically assign vendor profile based on role
 
-    if user.nin_verified:
+    if user.role == "salon_owner":
+        vendor_profile = user.salon_owner_profile
+    elif user.role == "individual_vendor":
+        vendor_profile = user.individual_vendor_profile
+    else:
+        return False, "only vendors can verify nin"
+
+    if user.is_nin_verified:
         return False, "already_verified"
 
     # Defensive validation
-    if not nin or len(nin) != 11 or not nin.isdigit():
+    if not vnin or len(vnin) != 16:
         return False, "invalid_nin"
 
     try:
-        url = "https://sandbox.dojah.io/api/v1/kyc/nin"
+        url = "https://api.qoreid.com/v1/ng/identities/virtual-nin/"
 
         headers = {
-            "AppId": settings.DOJAH_APP_ID,
-            "Authorization": settings.DOJAH_SECRET_KEY,
-            "Content-Type": "application/json"
+            'accept': 'text/plain',
+            'content-type': 'application/json'
         }
-
-        response = requests.get(
+        
+        params = {
+            "vNIN" : vnin
+        }
+        body = {
+            "firstname" : user.first_name,
+            "lastname" : user.last_name,
+            "dob" : vendor_profile.date_of_birth,
+            "gender" : vendor_profile.Gender
+        }
+                
+        response = requests.post(
             url,
-            params={"nin": nin},
+            params=params,
             headers=headers,
+            json=body,
             timeout=10
         )
 
@@ -154,22 +175,15 @@ def verify_nin(nin, user):
 
     except requests.RequestException:
         return False, "network_error"
+    #extract the status from the response; status can be : (exact match, partial match(a letter is missing form frist or last name), no match)
+    vnin_status = data["summary"]["v_nin_check"]["status"]
+    if not vnin_status == "EXACT_MATCH":
+        return False, "details does not match"
 
-    entity = data.get("entity")
-
-    if not entity:
-        return False, "no_entity"
-
-    if not names_match(user, entity):
-        return False, "name_mismatch"
-
-    if not dob_match(user, entity):
-        return False, "dob_mismatch"
 
     # Success
-    user.nin_verified = True
+    user.is_nin_verified = True
     user.nin_verified_at = timezone.now()
-    user.nin_last4 = nin[-4:]
-    user.save(update_fields=["nin_verified", "nin_verified_at", "nin_last4"])
+    user.save(update_fields=["nin_verified", "nin_verified_at"])
 
     return True, None

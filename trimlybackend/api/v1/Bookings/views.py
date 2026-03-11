@@ -185,8 +185,8 @@ class VerifyNINView(APIView):
     def post(self, request):
         serializer = VerifyNinSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        nin = serializer.validated_data["nin"]
-        is_verified, reason = verify_nin(nin)
+        nin = serializer.validated_data["vnin"]
+        is_verified, reason = verify_nin(nin, self.request.user)
         if not is_verified:
                 return Response({"error": reason}, status=400)
         return Response({"success" : "NIN verified succesfully"})
