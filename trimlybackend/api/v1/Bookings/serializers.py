@@ -10,15 +10,24 @@ from .models import Booking
 class BookingSerializer(serializers.ModelSerializer):
     # We make end_time read_only because we want the system to calculate it 
     # based on the service duration automatically.
-    end_time = serializers.TimeField(read_only=True)
-
+    vendor_name = serializers.ReadOnlyField(source="get_vendor_user.get_full_name")
+    vendor_location = serializers.ReadOnlyField(source="get_vendor_user.get_full_name")
+    
     class Meta:
         model = Booking
         fields = [
-            'id', 'customer', 'salon_service', 'vendor_service', 
+            'id', 'customer', "vendor_name", "vendor_location", 'salon_service', 'vendor_service', 
             'date', 'start_time', 'end_time', 'status', 'payment_reference', 'is_rated','created_at'
         ]
-        read_only_Fields = ['id', 'status','is_rated' ]
+        read_only_fields = ['id', 'status','is_rated', 'end_time' ]
+    
+    def get_vendor_name(self, obj):
+        vendor_user_obj = obj.get_vendor_user()
+        return vendor_user_obj.get_full_name()
+    def get_vendor_location(self, obj):
+        vendor_user_obj = obj.get_vendor_user()
+        return vendor_user_obj.address
+        
 
     def validate(self, data):
         salon_service = data.get('salon_service')

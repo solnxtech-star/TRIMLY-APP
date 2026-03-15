@@ -41,6 +41,7 @@ class Booking(models.Model):
         max_length=20,
         choices=[
             ("pending", "Pending"),
+            ("confimed", "Confirmed"),
             ("completed", "Completed"),
             ("cancelled", "Cancelled"),
         ],
