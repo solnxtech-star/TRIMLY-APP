@@ -12,21 +12,20 @@ class BookingSerializer(serializers.ModelSerializer):
     # based on the service duration automatically.
     vendor_name = serializers.ReadOnlyField(source="get_vendor_user.get_full_name")
     vendor_location = serializers.ReadOnlyField(source="get_vendor_user.get_full_name")
+    vendor_image = serializers.ReadOnlyField(source="get_vendor_user.individual_vendor_profile.profile_pic.url")
+    customer_name = serializers.ReadOnlyField(source="customer.get_full_name")
+    vendor_service_name = serializers.ReadOnlyField(source="get_vendor_service_name")
+    # customer_image = serializers.ReadOnlyField(source="customer.")
     
     class Meta:
         model = Booking
         fields = [
-            'id', 'customer', "vendor_name", "vendor_location", 'salon_service', 'vendor_service', 
+            'id', 'customer_name', 'vendor_name', 'vendor_image' ,'vendor_location', 'vendor_service_name', 
             'date', 'start_time', 'end_time', 'status', 'payment_reference', 'is_rated','created_at'
         ]
         read_only_fields = ['id', 'status','is_rated', 'end_time' ]
     
-    def get_vendor_name(self, obj):
-        vendor_user_obj = obj.get_vendor_user()
-        return vendor_user_obj.get_full_name()
-    def get_vendor_location(self, obj):
-        vendor_user_obj = obj.get_vendor_user()
-        return vendor_user_obj.address
+
         
 
     def validate(self, data):

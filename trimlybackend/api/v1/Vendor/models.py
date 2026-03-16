@@ -21,7 +21,10 @@ class IndividualVendorProfile(models.Model):
     total_earnings = models.BigIntegerField(default=0)
     is_active = models.BooleanField(default=True)
     is_available = models.BooleanField(default=True)
+    is_nin_verified = models.BooleanField(default=False)
+    nin_verified_at = models.DateTimeField(null=True, blank=True)
     tags = models.CharField(max_length=20, null =True, blank=True)
+
 
 
     def __str__(self):
@@ -37,4 +40,4 @@ class VendorServices(models.Model):
     categories = models.ManyToManyField(ServiceCategory)
 
     def __str__(self):
-        return f"{self.vendor.email} - {self.name}"
+        return f"{self.vendor.worker.email} - {self.name}"

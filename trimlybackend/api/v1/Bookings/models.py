@@ -71,6 +71,11 @@ class Booking(models.Model):
             return self.vendor_service.price
         return self.salon_service.price
     @property
+    def get_vendor_service(self):
+        if self.vendor_service:
+            return self.vendor_service
+        return self.salon_service
+    
     def __str__(self):
         return f"Booking {self.id} - {self.customer}"
 

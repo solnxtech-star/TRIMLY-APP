@@ -106,8 +106,8 @@ class BookingViewSet(ModelViewSet):
     def get_serializer_class(self):
         if self.action in ['complete', 'cancel']:
             return None  # This hides all those unnecessary fields in Swagger/Postman
-        elif self.action == "retrieve":
-            return BookingDetailSerializer
+        # elif self.action == "retrieve":
+        #     return BookingDetailSerializer
         else:
             return BookingSerializer
 
