@@ -10,14 +10,15 @@ from api.v1.utils.otp_generator import send_otp_email
 from allauth.account.models import EmailAddress
 from django.core.mail import send_mail
 from django.conf import settings
+from .models import CustomerProfile
 
 
 User = get_user_model()
 
 
 class SalonOwnerSerializer(serializers.ModelSerializer):
+    salon_service = serializers.CharField()
     class Meta:
-        salon_service = serializers.CharField()
         model = SalonOwnerProfile
         fields = "__all__"
 
@@ -26,15 +27,20 @@ class IndividualVendorSerializer(serializers.ModelSerializer):
     class Meta:
         model = IndividualVendorProfile
         fields = "__all__"
+class CustomerProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomerProfile
+        fields = "__all__"
 
 
 class UserDetailSerializer(serializers.ModelSerializer):
-    salon_profile = SalonOwnerSerializer(source="SalonOwnerProfile", required=False)
-    vendor_profile = IndividualVendorSerializer(source="IndividualVendorProfile", required=False)
-    
+    salon_profile = SalonOwnerSerializer(source="salon_owner_profile", required=False)
+    vendor_profile = IndividualVendorSerializer(source="individual_vendor_profile", required=False)
+    customer_profile = CustomerProfileSerializer(source="customer_profile", required=False)
+
     class Meta:
         model = User
-        fields = ("id", "first_name", "last_name", "email", "username", "phone_number", "role", "salon_profile", "vendor_profile")
+        fields = ("id", "first_name", "last_name", "email", "username", "phone_number", "role", "salon_profile", "vendor_profile", "customer_profile")
         read_only_fields = ["id", "email", "role"]
     
     @transaction.atomic
@@ -48,24 +54,29 @@ class UserDetailSerializer(serializers.ModelSerializer):
         
         salon_data = validated_data.pop("salon_profile", None)
         vendor_data = validated_data.pop("vendor_profile", None)
+        customer_data = validated_data.pop("customer_profile", None)
         instance = super().update(instance, validated_data)
 
         if instance.role == 'salon_owner':
             update_or_create_profile(salon_data, SalonOwnerProfile)
         elif instance.role == 'individual_vendor':
             update_or_create_profile(vendor_data, IndividualVendorProfile)
+        elif instance.role == 'customer':
+            update_or_create_profile(customer_data, CustomerProfile)
             
         return instance
     
     def to_representation(self, instance):
         ret = super().to_representation(instance)
-        if instance.role == 'CUSTOMER':
+        if instance.role == 'customer':
             ret.pop('salon_profile', None)
             ret.pop('vendor_profile', None)
-        elif instance.role == 'SALON_OWNER':
+        elif instance.role == 'salon_owner':
             ret.pop('vendor_profile', None)
-        elif instance.role == 'INDIVIDUAL_VENDOR':
+            ret.pop('customer_profile', None)
+        elif instance.role == 'individual_vendor':
             ret.pop('salon_profile', None)
+            ret.pop('customer_profile', None)
         return ret
 
 

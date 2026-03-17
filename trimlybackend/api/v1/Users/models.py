@@ -5,6 +5,7 @@ from .managers import CustomUserManager
 import uuid
 from datetime import  timedelta
 from django.utils import timezone
+from cloudinary.models import CloudinaryField
 
 
 class User(AbstractUser):
@@ -21,16 +22,20 @@ class User(AbstractUser):
     username = models.CharField(max_length=150, unique=False, null=True, blank=True) 
     first_name = models.CharField(max_length=15, null=True, blank=True)
     last_name = models.CharField(max_length=15, null=True, blank=True)
-    is_nin_verified = models.BooleanField(default=False)
-    nin_verified_at = models.DateTimeField(null=True, blank=True)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = [] # Add fields you REQUIRE at sign up
     objects = CustomUserManager()
+
+class CustomerProfile(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    customer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="customer_profile")
+    phone_number = models.CharField(max_length=15, null=True, blank=True)
+    profile_pic = CloudinaryField('image', folder='profile_pic/customers', overwrite=True, resource_type="image", null=True, blank = True)
     
 
     def __str__(self):
         
-        return f"{self.email} ({self.role})"
+        return f"Profile for {self.customer.email}"
 
 
 
