@@ -36,7 +36,7 @@ class CustomerProfileSerializer(serializers.ModelSerializer):
 class UserDetailSerializer(serializers.ModelSerializer):
     salon_profile = SalonOwnerSerializer(source="salon_owner_profile", required=False)
     vendor_profile = IndividualVendorSerializer(source="individual_vendor_profile", required=False)
-    customer_profile = CustomerProfileSerializer(source="customer_profile", required=False)
+    customer_profile = CustomerProfileSerializer(required=False)
 
     class Meta:
         model = User
