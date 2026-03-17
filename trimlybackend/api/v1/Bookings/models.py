@@ -41,7 +41,7 @@ class Booking(models.Model):
         max_length=20,
         choices=[
             ("pending", "Pending"),
-            ("confimed", "Confirmed"),
+            ("confirmed", "Confirmed"),
             ("completed", "Completed"),
             ("cancelled", "Cancelled"),
         ],
@@ -71,10 +71,10 @@ class Booking(models.Model):
             return self.vendor_service.price
         return self.salon_service.price
     @property
-    def get_vendor_service(self):
+    def get_vendor_service_name(self):
         if self.vendor_service:
-            return self.vendor_service
-        return self.salon_service
+            return self.vendor_service.name
+        return self.salon_service.name
     
     def __str__(self):
         return f"Booking {self.id} - {self.customer}"
