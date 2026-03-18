@@ -84,15 +84,19 @@ class IsBookingOwnerOrProvider(permissions.BasePermission):
     
 class BookingActionPermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
-
-        # Admin override
+        # 1. Admin override
         if request.user.role == "admin":
+            return True
+
+        # 2. Let standard viewing actions pass (Ownership is handled by the other class)
+        if view.action in ["retrieve", "list", "metadata"]:
             return True
 
         # COMPLETE / CONFIRM → provider only
         if view.action in ["complete"]:
             return  obj.customer == request.user
-        # CANCEL → customer or provider
+
+        # 4. CANCEL → customer or provider
         if view.action == "cancel":
             return (
                 obj.customer == request.user or
@@ -100,6 +104,7 @@ class BookingActionPermission(permissions.BasePermission):
                 (obj.vendor_service and obj.vendor_service.vendor.worker == request.user)
             )
 
+        # Default to False for any other actions you haven't explicitly allowed
         return False
 
 class IsSalonAvailabilityOwnerObj(permissions.BasePermission):
