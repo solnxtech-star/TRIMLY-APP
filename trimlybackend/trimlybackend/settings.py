@@ -232,7 +232,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 5
+    'PAGE_SIZE': 10
 }
 
 # =========================
@@ -385,3 +385,4 @@ if not os.getenv("RESEND_API_KEY"):
 
 DOJAH_APP_ID = os.getenv("DOJAH_APP_ID")
 DOJAH_SECRET_KEY = os.getenv("DOJAH_SECRET_KEY")
+
