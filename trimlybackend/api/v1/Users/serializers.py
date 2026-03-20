@@ -20,17 +20,21 @@ class SalonOwnerSerializer(serializers.ModelSerializer):
     salon_service = serializers.CharField()
     class Meta:
         model = SalonOwnerProfile
-        fields = "__all__"
+        exclude = ['owner']
 
 
 class IndividualVendorSerializer(serializers.ModelSerializer):
     class Meta:
         model = IndividualVendorProfile
-        fields = "__all__"
+        exclude = ['worker']
 class CustomerProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerProfile
-        fields = "__all__"
+        exclude = ['user']
+        extra_kwargs = {
+            'user': {'read_only': True},
+            'id' : {'read_only' : True} # This stops the "already exists" validation check
+        }
 
 
 class UserDetailSerializer(serializers.ModelSerializer):
@@ -47,14 +51,19 @@ class UserDetailSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         def update_or_create_profile(profile_data, profile_model):
             if profile_data is not None:
+                # Remove 'user' from profile_data if it exists to avoid conflicts
+                profile_data.pop('user', None) 
+                
                 profile, created = profile_model.objects.update_or_create(
                     user=instance,
                     defaults=profile_data
                 )
         
-        salon_data = validated_data.pop("salon_profile", None)
-        vendor_data = validated_data.pop("vendor_profile", None)
+        # Pop the data before calling super().update
+        salon_data = validated_data.pop("salon_owner_profile", None) # Use the source name here
+        vendor_data = validated_data.pop("individual_vendor_profile", None)
         customer_data = validated_data.pop("customer_profile", None)
+
         instance = super().update(instance, validated_data)
 
         if instance.role == 'salon_owner':

@@ -28,7 +28,7 @@ class User(AbstractUser):
 
 class CustomerProfile(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    customer = models.OneToOneField(User, on_delete=models.CASCADE, related_name="customer_profile")
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="customer_profile")
     phone_number = models.CharField(max_length=15, null=True, blank=True)
     profile_pic = CloudinaryField('image', folder='profile_pic/customers', overwrite=True, resource_type="image", null=True, blank = True)
     
