@@ -17,10 +17,9 @@ User = get_user_model()
 
 
 class SalonOwnerSerializer(serializers.ModelSerializer):
-    salon_service = serializers.CharField()
     class Meta:
         model = SalonOwnerProfile
-        exclude = ['owner']
+        exclude = ['user']
 
 
 class IndividualVendorSerializer(serializers.ModelSerializer):
