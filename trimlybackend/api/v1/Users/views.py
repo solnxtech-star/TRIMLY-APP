@@ -12,8 +12,11 @@ from dj_rest_auth.registration.views import RegisterView
 from .serializers import EmailLoginSerializer, CustomRegisterSerializer, UserDetailSerializer, ResetPasswordSerializer
 from .docs.auth import login_schema, register_schema
 from rest_framework.views import APIView
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+
 
 class UserProfileListView(RetrieveAPIView):
+    parser_classes = (MultiPartParser, FormParser, JSONParser)
     queryset = User.objects.all()
     serializer_class = UserDetailSerializer
     permission_classes = [IsApplicationAdmin]

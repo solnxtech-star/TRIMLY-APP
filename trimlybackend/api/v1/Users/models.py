@@ -35,7 +35,7 @@ class CustomerProfile(models.Model):
 
     def __str__(self):
         
-        return f"Profile for {self.customer.email}"
+        return f"Profile for {self.user.email}"
 
 
 

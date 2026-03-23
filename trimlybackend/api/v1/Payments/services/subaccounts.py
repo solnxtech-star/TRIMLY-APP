@@ -45,7 +45,7 @@ class FlutterwaveService:
             "amount": float(amount),
             "currency": "NGN",
             
-            "redirect_url": "https://interconfessional-erna-unheaded.ngrok-free.dev/", # Where the user goes after paying
+            "redirect_url": "https://trimly.africa/", # Where the user goes after paying
             "customer": {
                 "email": booking.customer.email,
                 "name": f"{booking.customer.first_name} {booking.customer.last_name}",
@@ -56,7 +56,7 @@ class FlutterwaveService:
             },
             "customizations": {
                 "title": "Trimly Checkout",
-                "description": "Payment for beauty/grooming service",
+                "description": f"Payment for {booking.get_vendor_service_name}",
                 "logo": "https://trimly.app/static/logo.png"
             }
         }
@@ -67,7 +67,7 @@ class FlutterwaveService:
     @staticmethod
     def initiate_transfer(account_bank, account_number, amount, reference):
         """
-        Generates a Flutterwave hosted payment link.
+        Transfers to vendor bank account.
         """
         url = f"{FlutterwaveService.BASE_URL}/transfers"
         headers = {

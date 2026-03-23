@@ -17,16 +17,17 @@ User = get_user_model()
 
 
 class SalonOwnerSerializer(serializers.ModelSerializer):
+    profile_pic = serializers.SerializerMethodField()
     class Meta:
         model = SalonOwnerProfile
         exclude = ['user']
+    def get_profile_pic(self, obj):
+        # Check if the file exists and return the full URL
+        return obj.profile_pic.url if obj.profile_pic else None
 
-
-class IndividualVendorSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = IndividualVendorProfile
-        exclude = ['worker']
 class CustomerProfileSerializer(serializers.ModelSerializer):
+    profile_pic = serializers.SerializerMethodField()
+
     class Meta:
         model = CustomerProfile
         exclude = ['user']
@@ -35,6 +36,20 @@ class CustomerProfileSerializer(serializers.ModelSerializer):
             'id' : {'read_only' : True} # This stops the "already exists" validation check
         }
 
+
+    def get_profile_pic(self, obj):
+    # Check if the file exists and return the full URL
+        return obj.profile_pic.url if obj.profile_pic else None
+
+class IndividualVendorSerializer(serializers.ModelSerializer):
+    profile_pic = serializers.SerializerMethodField()
+
+    class Meta:
+        model = IndividualVendorProfile
+        exclude = ['worker']
+
+    def get_profile_pic(self, obj):
+        return obj.profile_pic.url if obj.profile_pic else None
 
 class UserDetailSerializer(serializers.ModelSerializer):
     salon_profile = SalonOwnerSerializer(source="salon_owner_profile", required=False)
