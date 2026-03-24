@@ -13,10 +13,15 @@ class Wallet(models.Model):
     # Money the vendor can actually withdraw to their bank
     available_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     
+    total_earned = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     updated_at = models.DateTimeField(auto_now=True)
+
+
 
     def __str__(self):
         return f"{self.user.email} - Avail: {self.available_balance}"
+
+
 
 class Transaction(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

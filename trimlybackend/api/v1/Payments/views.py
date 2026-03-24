@@ -1,4 +1,5 @@
 import json
+from rest_framework import permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
@@ -7,7 +8,7 @@ from api.v1.Payments.serializers import SubAccountSerializer
 from api.v1.Payments.services.subaccounts import FlutterwaveService
 from .models import Wallet, Transaction, WithdrawalRequest
 from django.db import transaction
-from rest_framework.generics import GenericAPIView
+from rest_framework.generics import GenericAPIView, RetrieveAPIView
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 import uuid
@@ -15,6 +16,10 @@ from .serializers import PaymentInitSerializer, PaymentLinkResponseSerializer, W
 from api.v1.Bookings.models import Booking
 from django.db import IntegrityError
 from api.v1.Users.permissions import IsNINVerified
+from rest_framework.viewsets import ReadOnlyModelViewSet
+from rest_framework.decorators import action
+from .models import Wallet, Transaction
+from .serializers import WalletSerializer, TransactionSerializer
 
 from decimal import Decimal
 
@@ -309,3 +314,26 @@ class TransferWebhookView(APIView):
                 wallet.save()
 
         return Response(status=200)
+
+
+
+class WalletAPIView(RetrieveAPIView):
+    """
+    Shows Balance and History for logged-in user
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = WalletSerializer
+
+    def get_queryset(self):
+        # A user should only see THEIR wallet
+        return Wallet.objects.filter(user=self.request.user)
+
+class TransactionViewSet(ReadOnlyModelViewSet):
+    """
+    Simple Transaction History for the users wallet
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = TransactionSerializer
+
+    def get_queryset(self):
+        return Transaction.objects.filter(wallet__user=self.request.user).order_by('-created_at')
