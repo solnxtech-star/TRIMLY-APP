@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from api.v1.Vendor.models import IndividualVendorProfile
-from .models import OTP, User, PasswordResetToken
 from api.v1.Salons.models import SalonOwnerProfile
+from .models import OTP, User, PasswordResetToken, CustomerProfile
 from dj_rest_auth.registration.serializers import RegisterSerializer
 from django.db import transaction
 from django.contrib.auth import get_user_model
@@ -10,48 +10,64 @@ from api.v1.utils.otp_generator import send_otp_email
 from allauth.account.models import EmailAddress
 from django.core.mail import send_mail
 from django.conf import settings
-from .models import CustomerProfile
-
+from drf_spectacular.utils import extend_schema_field
+from drf_spectacular.types import OpenApiTypes
+from rest_framework_simplejwt.tokens import RefreshToken
 
 User = get_user_model()
 
+# helper to ensure profile_pic always returns a full URL or None
+def get_file_url(obj_field):
+    try:
+        return obj_field.url if obj_field else None
+    except ValueError:
+        return None
 
 class SalonOwnerSerializer(serializers.ModelSerializer):
-    profile_pic = serializers.SerializerMethodField()
+    # Changed from SerializerMethodField to ImageField to allow uploads
+    profile_pic = serializers.ImageField(required=False, allow_null=True)
+
     class Meta:
         model = SalonOwnerProfile
         exclude = ['user']
-    def get_profile_pic(self, obj):
-        # Check if the file exists and return the full URL
-        return obj.profile_pic.url if obj.profile_pic else None
+        
+    def to_representation(self, instance):
+        """Ensure the GET response still returns the URL string"""
+        ret = super().to_representation(instance)
+        ret['profile_pic'] = get_file_url(instance.profile_pic)
+        return ret
 
 class CustomerProfileSerializer(serializers.ModelSerializer):
-    profile_pic = serializers.SerializerMethodField()
+    # Changed from SerializerMethodField to ImageField to allow uploads
+    profile_pic = serializers.ImageField(required=False, allow_null=True)
 
     class Meta:
         model = CustomerProfile
         exclude = ['user']
         extra_kwargs = {
-            'user': {'read_only': True},
-            'id' : {'read_only' : True} # This stops the "already exists" validation check
+            'id' : {'read_only' : True} 
         }
 
-
-    def get_profile_pic(self, obj):
-    # Check if the file exists and return the full URL
-        return obj.profile_pic.url if obj.profile_pic else None
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['profile_pic'] = get_file_url(instance.profile_pic)
+        return ret
 
 class IndividualVendorSerializer(serializers.ModelSerializer):
-    profile_pic = serializers.SerializerMethodField()
+    # Changed from SerializerMethodField to ImageField to allow uploads
+    profile_pic = serializers.ImageField(required=False, allow_null=True)
 
     class Meta:
         model = IndividualVendorProfile
         exclude = ['worker']
 
-    def get_profile_pic(self, obj):
-        return obj.profile_pic.url if obj.profile_pic else None
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['profile_pic'] = get_file_url(instance.profile_pic)
+        return ret
 
 class UserDetailSerializer(serializers.ModelSerializer):
+    # map specific source names to the nested serializers
     salon_profile = SalonOwnerSerializer(source="salon_owner_profile", required=False)
     vendor_profile = IndividualVendorSerializer(source="individual_vendor_profile", required=False)
     customer_profile = CustomerProfileSerializer(required=False)
@@ -63,27 +79,29 @@ class UserDetailSerializer(serializers.ModelSerializer):
     
     @transaction.atomic
     def update(self, instance, validated_data):
-        def update_or_create_profile(profile_data, profile_model):
+        def update_or_create_profile(profile_data, profile_model, user_field='user'):
             if profile_data is not None:
-                # Remove 'user' from profile_data if it exists to avoid conflicts
-                profile_data.pop('user', None) 
+                # Remove user key if it accidentally passed through
+                profile_data.pop(user_field, None) 
                 
                 profile, created = profile_model.objects.update_or_create(
-                    user=instance,
+                    **{user_field: instance},
                     defaults=profile_data
                 )
         
-        # Pop the data before calling super().update
-        salon_data = validated_data.pop("salon_owner_profile", None) # Use the source name here
+        # Pop nested data
+        salon_data = validated_data.pop("salon_owner_profile", None)
         vendor_data = validated_data.pop("individual_vendor_profile", None)
         customer_data = validated_data.pop("customer_profile", None)
 
+        # Update base user fields
         instance = super().update(instance, validated_data)
 
+        # Update specific profile based on role
         if instance.role == 'salon_owner':
             update_or_create_profile(salon_data, SalonOwnerProfile)
         elif instance.role == 'individual_vendor':
-            update_or_create_profile(vendor_data, IndividualVendorProfile)
+            update_or_create_profile(vendor_data, IndividualVendorProfile, user_field='worker')
         elif instance.role == 'customer':
             update_or_create_profile(customer_data, CustomerProfile)
             
@@ -91,17 +109,18 @@ class UserDetailSerializer(serializers.ModelSerializer):
     
     def to_representation(self, instance):
         ret = super().to_representation(instance)
-        if instance.role == 'customer':
+        # Clean up keys based on role for a cleaner response
+        role = instance.role
+        if role == 'customer':
             ret.pop('salon_profile', None)
             ret.pop('vendor_profile', None)
-        elif instance.role == 'salon_owner':
+        elif role == 'salon_owner':
             ret.pop('vendor_profile', None)
             ret.pop('customer_profile', None)
-        elif instance.role == 'individual_vendor':
+        elif role == 'individual_vendor':
             ret.pop('salon_profile', None)
             ret.pop('customer_profile', None)
         return ret
-
 
 class CustomRegisterSerializer(RegisterSerializer):
     role = serializers.ChoiceField(choices=User.ROLE_CHOICES)
