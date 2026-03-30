@@ -367,11 +367,11 @@ if RENDER:
     # This forces tasks to run inside the Web process (No Redis/Worker needed)
     CELERY_TASK_ALWAYS_EAGER = True 
     CELERY_BROKER_URL = None # You don't even need Upstash for this mode
-CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
+else:
+    CELERY_BROKER_URL = "rediss://default:gQAAAAAAAR5BAAIncDFkYmU5ZDMyZjMyMmE0YzliODNiNGMzOGEzNGUwN2RiYnAxNzMyODE@complete-lioness-73281.upstash.io:6379"
 
 # 2. The "Backend" stores the result (success/fail) of the tasks.
-CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
-
+CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 # 3. Timezone and Serialization
 CELERY_TIMEZONE = "UTC"  # Or your local timezone
 CELERY_TASK_SERIALIZER = 'json'
