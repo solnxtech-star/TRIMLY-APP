@@ -358,6 +358,15 @@ if os.name == 'nt':  # Windows
 
 # 1. The "Broker" is where tasks are stored before a worker picks them up.
 # Use your Memurai/Redis local address.
+# settings.py
+import os
+
+# If we are on Render but don't have a worker yet
+RENDER = os.environ.get('RENDER')
+if RENDER:
+    # This forces tasks to run inside the Web process (No Redis/Worker needed)
+    CELERY_TASK_ALWAYS_EAGER = True 
+    CELERY_BROKER_URL = None # You don't even need Upstash for this mode
 CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
 
 # 2. The "Backend" stores the result (success/fail) of the tasks.

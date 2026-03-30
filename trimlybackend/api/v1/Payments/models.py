@@ -13,7 +13,6 @@ class Wallet(models.Model):
     # Money the vendor can actually withdraw to their bank
     available_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     
-    total_earned = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     updated_at = models.DateTimeField(auto_now=True)
 
 
@@ -66,3 +65,4 @@ class WithdrawalRequest(models.Model):
 
     def __str__(self):
         return f"{self.wallet.user.email} - {self.amount} - {self.status}"
+    

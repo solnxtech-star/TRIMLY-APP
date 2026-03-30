@@ -9,7 +9,7 @@ from .models import Notification
     retry_backoff=True, # Resend is stable, but always good to have backoff
     max_retries=3
 )
-def create_and_send_notification(recipient_id, actor_id, verb, target_model_name, target_id):
+def create_and_send_notification(self, recipient_id, actor_id, verb, target_model_name, target_id):
     # 1. Get the right model for the target (e.g., 'Booking')
     target_ct = ContentType.objects.get(model=target_model_name.lower())
     

@@ -12,10 +12,10 @@ from rest_framework.generics import GenericAPIView, RetrieveAPIView
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 import uuid
-from .serializers import PaymentInitSerializer, PaymentLinkResponseSerializer, WithdrawalRequestSerializer
+from .serializers import PaymentInitSerializer, PaymentLinkResponseSerializer, WithdrawalRequestSerializer, VerifyPaymentSerializer
 from api.v1.Bookings.models import Booking
 from django.db import IntegrityError
-from api.v1.Users.permissions import IsNINVerified
+from api.v1.Users.permissions import IsNINVerified,IsWalletOrTransactionObjOwner, IsTransactionOwner
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework.decorators import action
 from .models import Wallet, Transaction
@@ -169,6 +169,7 @@ class InitializePaymentView(GenericAPIView):
         flw_data = FlutterwaveService.initialize_payment(
             booking, vendor_user_id, amount
         )
+        print(flw_data)
 
         # 5. Handle the Response using the Response Serializer
         if flw_data.get('status') == 'success':
@@ -188,6 +189,7 @@ class InitializePaymentView(GenericAPIView):
 
 
 class RequestWithdrawalView(GenericAPIView):
+    
     '''Check NIN
     Check available_balance
     Call Flutterwave transfer
@@ -252,7 +254,7 @@ class RequestWithdrawalView(GenericAPIView):
                 Transaction.objects.create(
                     wallet=wallet,
                     amount=amount,
-                    tx_type='withdrawal',
+                    tx_type='payout',
                     tx_ref=my_reference,
                     status='pending'
                 )
@@ -321,19 +323,35 @@ class WalletAPIView(RetrieveAPIView):
     """
     Shows Balance and History for logged-in user
     """
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsWalletOrTransactionObjOwner]
     serializer_class = WalletSerializer
 
-    def get_queryset(self):
-        # A user should only see THEIR wallet
-        return Wallet.objects.filter(user=self.request.user)
-
+    def get_object(self): 
+        get_object_or_404(Wallet, user=self.request.user)
+  
+    
 class TransactionViewSet(ReadOnlyModelViewSet):
     """
     Simple Transaction History for the users wallet
     """
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsTransactionOwner, IsWalletOrTransactionObjOwner]
     serializer_class = TransactionSerializer
 
     def get_queryset(self):
         return Transaction.objects.filter(wallet__user=self.request.user).order_by('-created_at')
+
+class PaymentVerificationView(GenericAPIView):
+    """
+    sends a status to frontend if transaction is succesful from flutterwave
+    takes transaction id from user as path parameter
+    returns transacrion status
+    """
+    serializer_class = VerifyPaymentSerializer
+    def get(self, request):
+        serializer = self.get_serializer(request.data)
+        serializer.is_valid(raise_exception=True)
+        transaction_id = serializer.validated_data["transaction_id"]
+        verify_transaction = FlutterwaveService.verify_transaction(transaction_id)
+        return Response(verify_transaction, status=status.HTTP_200_OK)
+
+        

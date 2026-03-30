@@ -81,46 +81,6 @@ def get_available_slots(provider, date, service_duration):
     return slots
 
 
-#helper functions
-def normalize(value):
-    return " ".join(str(value).strip().lower().split())
-
-
-def names_match(user, api_entity):
-
-    user_first = normalize(user.first_name)
-    user_last = normalize(user.last_name)
-
-    api_full_name = " ".join([
-        normalize(api_entity.get("first_name", "")),
-        normalize(api_entity.get("middle_name", "")),
-        normalize(api_entity.get("last_name", "")),
-    ])
-
-    return user_first in api_full_name and user_last in api_full_name
-
-
-def dob_match(user, api_entity):
-
-    dob = api_entity.get("date_of_birth")
-
-    if not dob:
-        return False
-
-    for fmt in ("%Y-%m-%d", "%d-%m-%Y"):
-        try:
-            api_dob = datetime.strptime(dob, fmt).date()
-            return api_dob == user.date_of_birth
-        except ValueError:
-            continue
-
-    return False
-
-#nin service
-import requests
-from django.conf import settings
-from django.utils import timezone
-
 
 def verify_nin(vnin, user):
     """

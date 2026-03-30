@@ -16,11 +16,12 @@ class BookingSerializer(serializers.ModelSerializer):
     customer_name = serializers.ReadOnlyField(source="customer.get_full_name")
     vendor_service_name = serializers.ReadOnlyField(source="get_vendor_service_name")
     customer_image = serializers.ReadOnlyField(source="customer.customer_profile.profile_pic.url")
+
     
     class Meta:
         model = Booking
         fields = [
-            'id', 'customer_name', 'customer_image', 'vendor_name', 'vendor_image' ,'vendor_location', 'vendor_service_name', 
+            'id', 'customer_name', 'customer_image', 'salon_service', 'vendor_service', 'vendor_name', 'vendor_image' ,'vendor_location', 'vendor_service_name', 
             'date', 'start_time', 'end_time', 'status', 'payment_reference', 'is_rated','created_at'
         ]
         read_only_fields = ['id', 'status','is_rated', 'end_time' ]

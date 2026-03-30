@@ -12,7 +12,7 @@ from django.db import connections
     retry_backoff=True, # Resend is stable, but always good to have backoff
     max_retries=3
 )
-def send_booking_notifications(booking_id):
+def send_booking_notifications(self, booking_id):
     try:
         booking = Booking.objects.select_related('customer', 'salon_service', 'vendor_service').get(id=booking_id)
         

@@ -178,3 +178,22 @@ class IsNINVerified(permissions.BasePermission):
 
         # 3. If they are just a 'customer' or other role, deny access
         return False
+class IsWalletOrTransactionObjOwner(permissions.BasePermission):
+    '''allow wallet owners or transaction'''
+    def has_object_permission(self, request, view, obj):
+        user = request.user
+        if not request.user.is_authenticated:
+            return False
+        if not request.user.role in ["salon_owner", "individual_vendor"]:
+            return False
+        if hasattr(obj, user):
+            return obj.user == request.user
+        return obj.wallet.user == request.user
+
+    
+class IsTransactionOwner(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if not request.user.is_authenticated:
+            return False    
+        if not request.user.role in ["salon_owner", "individual_vendor"]:
+            return False   

@@ -1,5 +1,8 @@
 from rest_framework import serializers
 from .models import Wallet, Transaction
+from django.db.models import Sum
+from drf_spectacular.utils import extend_schema_field
+from drf_spectacular.types import OpenApiTypes
 
 class SubAccountSerializer(serializers.Serializer):
     account_bank = serializers.IntegerField(default = '035')
@@ -21,6 +24,7 @@ class PaymentInitSerializer(serializers.Serializer):
 class PaymentLinkResponseSerializer(serializers.Serializer):
     status = serializers.CharField()
     message = serializers.CharField()
+    # transaction_id = serializers.UUIDField()
     link = serializers.URLField(help_text="The Flutterwave checkout URL.")
 
 class WithdrawalRequestSerializer(serializers.Serializer):
@@ -39,11 +43,23 @@ class TransactionSerializer(serializers.ModelSerializer):
 class WalletSerializer(serializers.ModelSerializer):
     # We include the last 5 transactions for a "Quick View" on the dashboard
     recent_transactions = serializers.SerializerMethodField()
+    total_earned = serializers.SerializerMethodField()
+    
 
     class Meta:
         model = Wallet
         fields = ["available_balance", "pending_balance", "total_earned", "recent_transactions"]
 
+    @extend_schema_field(TransactionSerializer)
     def get_recent_transactions(self, obj):
         txs = Transaction.objects.filter(wallet=obj).order_by("-created_at")[:5]
         return TransactionSerializer(txs, many=True).data
+    
+    def get_total_earned(self, obj):
+        txs = Transaction.objects.filter(tx_type="payout", wallet=obj)
+
+        return txs.aggregate(total=Sum('amount'))["total"] or 0
+
+class VerifyPaymentSerializer(serializers.Serializer):
+    transaction_id = serializers.UUIDField(help_text="payment transaction id gotten from the payment initialization")
+    
