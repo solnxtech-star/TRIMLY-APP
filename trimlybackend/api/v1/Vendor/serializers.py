@@ -7,7 +7,7 @@ class VendorServicesSerializer(serializers.ModelSerializer):
     categories = CategorySerializer(many=True, read_only=True)
     class Meta:
         model = VendorServices
-        fields = ('vendor', 'name', 'description', 'price', 'duration_minutes', 'categories')
+        fields = ('id', 'vendor', 'name', 'description', 'price', 'duration_minutes', 'categories')
         read_only_fields = ["id", "vendor"]
 
 class VendorSerializer(serializers.ModelSerializer):
