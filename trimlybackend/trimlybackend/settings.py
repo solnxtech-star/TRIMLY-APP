@@ -370,9 +370,8 @@ import os
 # else:
 #     CELERY_BROKER_URL = "rediss://default:gQAAAAAAAR5BAAIncDFkYmU5ZDMyZjMyMmE0YzliODNiNGMzOGEzNGUwN2RiYnAxNzMyODE@complete-lioness-73281.upstash.io:6379"
 CELERY_TASK_ALWAYS_EAGER = True 
-CELERY_BROKER_URL = None
-# 2. The "Backend" stores the result (success/fail) of the tasks.
-CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+CELERY_BROKER_URL = 'memory://'  # Forces Celery to use RAM, not Redis
+CELERY_RESULT_BACKEND = None
 # 3. Timezone and Serialization
 CELERY_TIMEZONE = "UTC"  # Or your local timezone
 CELERY_TASK_SERIALIZER = 'json'
@@ -381,7 +380,7 @@ CELERY_ACCEPT_CONTENT = ['json']
 
 # 4. Windows Specifics: Prevent common memory leaks/hangs
 CELERY_WORKER_MAX_TASKS_PER_CHILD = 100 
-CELERY_TASK_ALWAYS_EAGER = False  # Set to True for testing without a worker
+ # Set to True for testing without a worker
 
 # 5. Task discovery configuration
 # This ensures Celery finds 'tasks.py' in all your apps automatically.
