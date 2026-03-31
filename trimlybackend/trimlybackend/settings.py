@@ -362,14 +362,15 @@ if os.name == 'nt':  # Windows
 import os
 
 # If we are on Render but don't have a worker yet
-RENDER = os.environ.get('RENDER')
-if RENDER:
-    # This forces tasks to run inside the Web process (No Redis/Worker needed)
-    CELERY_TASK_ALWAYS_EAGER = True 
-    CELERY_BROKER_URL = None # You don't even need Upstash for this mode
-else:
-    CELERY_BROKER_URL = "rediss://default:gQAAAAAAAR5BAAIncDFkYmU5ZDMyZjMyMmE0YzliODNiNGMzOGEzNGUwN2RiYnAxNzMyODE@complete-lioness-73281.upstash.io:6379"
-
+# RENDER = os.environ.get('RENDER')
+# if RENDER:
+#     # This forces tasks to run inside the Web process (No Redis/Worker needed)
+#     CELERY_TASK_ALWAYS_EAGER = True 
+#     CELERY_BROKER_URL = None # You don't even need Upstash for this mode
+# else:
+#     CELERY_BROKER_URL = "rediss://default:gQAAAAAAAR5BAAIncDFkYmU5ZDMyZjMyMmE0YzliODNiNGMzOGEzNGUwN2RiYnAxNzMyODE@complete-lioness-73281.upstash.io:6379"
+CELERY_TASK_ALWAYS_EAGER = True 
+CELERY_BROKER_URL = None
 # 2. The "Backend" stores the result (success/fail) of the tasks.
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 # 3. Timezone and Serialization
