@@ -93,7 +93,7 @@ class BookingActionPermission(permissions.BasePermission):
             return True
 
         # COMPLETE / CONFIRM → provider only
-        if view.action in ["complete"]:
+        if view.action in ["complete", "get_status"]:
             return  obj.customer == request.user
 
         # 4. CANCEL → customer or provider

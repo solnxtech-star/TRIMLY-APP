@@ -78,7 +78,7 @@ class BookingViewSet(ModelViewSet):
             transaction.on_commit(lambda: send_booking_notifications.delay(booking_id))
             # Trigger the notification task
             transaction.on_commit(lambda: create_and_send_notification.delay(
-            recipient_id=self.request.user.id, # The Individual Vendor
+            recipient_id=booking.get_vendor_user, # The Individual Vendor
             actor_id=self.request.user.id,  # The Customer
             verb="booked",
             target_model_name="Booking",
@@ -172,6 +172,16 @@ class BookingViewSet(ModelViewSet):
         except Exception as e:
             # If anything fails (like a database error), the status stays 'confirmed'
             return Response({"detail": f"Error releasing funds: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    @action(detail=True, methods=['get'], url_path='status')
+    def get_status(self, request, pk=None):
+        booking = self.get_object()
+        return Response({
+            "id": booking.id,
+            "status": booking.status,        # e.g., "pending", "confirmed"
+                # Assuming you have this BooleanField
+            "payment_reference": booking.payment_reference
+        })
     
 
 
