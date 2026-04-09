@@ -1,8 +1,11 @@
 from .models import Conversation, Message
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
+from .serializers import MessageSerializer
+from rest_framework import status
 
 class InitiateConversationView(GenericAPIView):
     
@@ -22,3 +25,14 @@ class InitiateConversationView(GenericAPIView):
             )
 
         return Response({"conversation_uuid": conversation.id, "is_new" : created})
+    
+class MessageAPIView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request, conversation_id):
+        
+        try:
+            messages = Message.objects.filter(conversation_id=conversation_id)
+            serializer =  MessageSerializer(messages, many=True)
+            return Response(data=serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(data={"error": e}, status=status.HTTP_400_BAD_REQUEST)

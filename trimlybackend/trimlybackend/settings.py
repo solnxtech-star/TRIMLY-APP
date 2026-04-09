@@ -362,22 +362,40 @@ if os.name == 'nt':  # Windows
 # settings.py
 import os
 
-# If we are on Render but don't have a worker yet
-# RENDER = os.environ.get('RENDER')
-# if RENDER:
-#     # This forces tasks to run inside the Web process (No Redis/Worker needed)
-#     CELERY_TASK_ALWAYS_EAGER = True 
-#     CELERY_BROKER_URL = None # You don't even need Upstash for this mode
-# else:
-#     CELERY_BROKER_URL = "rediss://default:gQAAAAAAAR5BAAIncDFkYmU5ZDMyZjMyMmE0YzliODNiNGMzOGEzNGUwN2RiYnAxNzMyODE@complete-lioness-73281.upstash.io:6379"
+# --- 1. CELERY CONFIG (Your "No-Worker" Hack) ---
+# This allows tasks to run without a separate 'celery worker' process
 CELERY_TASK_ALWAYS_EAGER = True 
-CELERY_BROKER_URL = 'memory://'  # Forces Celery to use RAM, not Redis
+CELERY_BROKER_URL = 'memory://'
 CELERY_RESULT_BACKEND = None
-# 3. Timezone and Serialization
-CELERY_TIMEZONE = "UTC"  # Or your local timezone
+CELERY_TIMEZONE = "UTC"
 CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
 CELERY_ACCEPT_CONTENT = ['json']
+
+# --- 2. CHANNELS CONFIG (The "Switchboard" for Tabs) ---
+# We need this to make sure Tab A can talk to Tab B
+RENDER = os.environ.get('RENDER')
+
+if RENDER:
+    # PRODUCTION: Use Upstash for WebSockets
+    # Make sure to set UPSTASH_REDIS_URL in Render Env Vars
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [os.environ.get('UPSTASH_REDIS_URL')],
+            },
+        },
+    }
+else:
+    # LOCAL: Use Memurai for WebSockets
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [("127.0.0.1", 6379)], # Memurai default port
+            },
+        },
+    }
 
 # 4. Windows Specifics: Prevent common memory leaks/hangs
 CELERY_WORKER_MAX_TASKS_PER_CHILD = 100 

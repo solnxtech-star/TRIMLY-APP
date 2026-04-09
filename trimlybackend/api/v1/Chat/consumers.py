@@ -47,7 +47,7 @@ class ChatConsumer(AsyncAPIConsumer):
     # Helper method to touch the DB
     @database_sync_to_async
     def check_room_access(self, uuid, user):
-        if not user.is_authenticated:
+        if user.is_anonymous :
             return False
         
         try:
@@ -89,27 +89,37 @@ class ChatConsumer(AsyncAPIConsumer):
 
 
     @action()
-    async def send_message(self,  message = None, **kwargs):
-        await aclose_old_connections()
-        # Broadcast the message to everyone in the group
+    
+    async def send_message(self, message=None, **kwargs):
+        # 1. Resolve the lazy user object into a real User instance
+        user = self.scope["user"]
+        if user.is_anonymous:
+            # Handle cases where the user isn't logged in
+            return await self.send_json({"action": "error", "message": "User not authenticated"})
+
+        # 2. Extract message if not provided in args
         if not message:
             message = kwargs.get('data', {}).get('message')
+
         try:
+            # Use the resolved 'user' variable here
             await self.create_message_object(
                 conversation_id=self.conversation_id,
                 message=message,
-                sender=self.scope["user"]
-                )
+                sender=user  # <--- Pass the resolved user
+            )
+            
+            # 3. Broadcast to the group
             await self.channel_layer.group_send(
                 self.group_name,
                 {
-                    "type": "chat.message", # Matches the method below
+                    "type": "chat.message",
                     "message": message,
-                    "sender": str(self.scope["user"].id)
+                    "sender": str(user.id)
                 }
             )
         except Exception as e:
-            print({"error" : e})
+            await self.send_json({"action": "send_message", "status": "error", "message": str(e)})
   
 
     async def chat_message(self, event):
