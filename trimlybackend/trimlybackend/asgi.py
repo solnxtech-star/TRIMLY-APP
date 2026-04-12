@@ -13,15 +13,33 @@ django_asgi_app = get_asgi_application()
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
 from api.v1.Chat.routing import chat_urlpatterns
+from api.v1.utils.middleware import JWTAuthMiddleware
 from api.v1.Notifications.routing import notification_urlpatterns
 combined_urlpatterns = chat_urlpatterns + notification_urlpatterns
-application = ProtocolTypeRouter({
-    # Use the initialized django_asgi_app here
-    "http": django_asgi_app,
+# application = ProtocolTypeRouter({
+#     # Use the initialized django_asgi_app here
+#     "http": django_asgi_app,
     
-    "websocket": AuthMiddlewareStack(
+#     "websocket": AuthMiddlewareStack(
+#         URLRouter(
+#           combined_urlpatterns
+#         )
+#     ),
+# })
+application = ProtocolTypeRouter({
+    "http": get_asgi_application(),
+    "websocket": JWTAuthMiddleware(
         URLRouter(
-          combined_urlpatterns
+            combined_urlpatterns
         )
     ),
 })
+
+# import os
+# from django.core.asgi import get_asgi_application
+# from channels.routing import ProtocolTypeRouter, URLRouter
+# from api.v1.utils.middleware import JWTAuthMiddleware # Import your class
+# import api.v1.chat.routing # Import your chat routing
+
+# os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'trimlybackend.settings')
+

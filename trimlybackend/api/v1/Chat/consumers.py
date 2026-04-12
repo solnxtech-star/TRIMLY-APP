@@ -13,6 +13,7 @@ class ChatConsumer(AsyncAPIConsumer):
         await aclose_old_connections()
         await self.accept()
         try:
+            print(self.scope["user"])
             self.user = self.scope["user"]
 
             self.conversation_id = self.scope["url_route"]['kwargs']["conversation_uuid"]
