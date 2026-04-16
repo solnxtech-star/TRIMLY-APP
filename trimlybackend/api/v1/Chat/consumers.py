@@ -1,3 +1,5 @@
+from datetime import timezone
+
 from djangochannelsrestframework.generics import AsyncAPIConsumer
 from djangochannelsrestframework.decorators import action
 from .models import Conversation , Message
@@ -65,6 +67,15 @@ class ChatConsumer(AsyncAPIConsumer):
            sender = sender,
            text = message
         )
+    
+    @database_sync_to_async
+    def get_recipient_id(self, conversation_id, sender_id):
+        conv = Conversation.objects.get(id=conversation_id)
+        # If the sender is the customer, the recipient is the vendor (and vice versa)
+        if conv.customer_id == sender_id:
+            return conv.vendor_id
+        return conv.customer_id
+
 
 # messaging/consumers.py
 
@@ -119,6 +130,25 @@ class ChatConsumer(AsyncAPIConsumer):
                     "sender": str(user.id)
                 }
             )
+            # 3. TRIGGER NOTIFICATION (For the person NOT in the chat)
+            recipient_id = await self.get_recipient_id(self.conversation_id, user.id)
+            
+            await self.channel_layer.group_send(
+                f"user_notifications_{recipient_id}",
+                {
+                    "type": "send_notification", # Matches method in NotificationConsumer
+                    "data": {
+                        "type": "chat_message",
+                        "conversation_id": str(self.conversation_id),
+                        "sender_name": f"{user.first_name}",
+                        "text": message[:50], # Snippet for the toast
+                        "created_at": str(timezone.now())
+                    }
+                }
+            )
+
+        except Exception as e:
+            await self.send_json({"action": "send_message", "status": "error", "message": str(e)})
         except Exception as e:
             await self.send_json({"action": "send_message", "status": "error", "message": str(e)})
   
@@ -137,3 +167,5 @@ class ChatConsumer(AsyncAPIConsumer):
                 self.channel_name
             )
         print(f"Cleanup complete for user {self.user.id}")
+
+
