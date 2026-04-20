@@ -72,7 +72,7 @@ class ChatConsumer(AsyncAPIConsumer):
     def get_recipient_id(self, conversation_id, sender_id):
         conv = Conversation.objects.get(id=conversation_id)
         # If the sender is the customer, the recipient is the vendor (and vice versa)
-        if conv.customer_id == sender_id:
+        if str(conv.customer_id) == str(sender_id):
             return conv.vendor_id
         return conv.customer_id
 
@@ -132,9 +132,13 @@ class ChatConsumer(AsyncAPIConsumer):
             )
             # 3. TRIGGER NOTIFICATION (For the person NOT in the chat)
             recipient_id = await self.get_recipient_id(self.conversation_id, user.id)
-            
+            print(f"SENDING TO GROUP: user_notifications_{recipient_id!r}")  # !r shows the type
+            recipient_id = await self.get_recipient_id(self.conversation_id, user.id)
+            print(f"DEBUG: Customer sending notification to user_notifications_{recipient_id}")
+            print(f"this is the recepient_id: {recipient_id}")
+            print(f"user_notifications_{recipient_id}"),
             await self.channel_layer.group_send(
-                f"user_notifications_{recipient_id}",
+                f"user_notifications_{str(recipient_id)}",
                 {
                     "type": "send_notification", # Matches method in NotificationConsumer
                     "data": {
@@ -157,6 +161,24 @@ class ChatConsumer(AsyncAPIConsumer):
         await aclose_old_connections()
         # This sends the actual data to the WebSocket
         await self.send_json(event)
+
+    # 2. Trigger the notification for the OTHER user
+    # Find the recipient_id logic you have and do this:
+        user = self.scope["user"]
+        recipient_id = await self.get_recipient_id(self.conversation_id, user.id)
+        recipient_group = f"user_notifications_{str(recipient_id)}" 
+        
+        await self.channel_layer.group_send(
+            recipient_group,
+            {
+                "type": "send_notification",  # This MUST match the method in NotificationConsumer
+                "data": {
+                    "message": event["message"],
+                    "sender": event["sender"],
+                    "type": "new_chat_message"
+                }
+            }
+        )
     # notifications/consumers.py
 
     async def disconnect(self, close_code):
