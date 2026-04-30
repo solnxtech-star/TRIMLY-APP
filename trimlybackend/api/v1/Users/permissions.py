@@ -191,9 +191,26 @@ class IsWalletOrTransactionObjOwner(permissions.BasePermission):
         return obj.wallet.user == request.user
 
     
+from rest_framework import permissions
+
 class IsTransactionOwner(permissions.BasePermission):
+    """
+    Handles both List access and Detail access for Transactions
+    """
     def has_permission(self, request, view):
-        if not request.user.is_authenticated:
-            return False    
-        if not request.user.role in ["salon_owner", "individual_vendor"]:
-            return False   
+        # 1. Basic Auth check
+        if not request.user or not request.user.is_authenticated:
+            return False
+        
+        # 2. Role check (Make sure these match your User model choices)
+        # Note: If you want to be lean, just check is_authenticated
+        allowed_roles = ["salon_owner", "individual_vendor"] 
+        if request.user.role not in allowed_roles:
+            return False
+            
+        return True # CRITICAL: You must return True here!
+
+    def has_object_permission(self, request, view, obj):
+        # Logic to check if the transaction belongs to the user's wallet
+        # Since Transaction usually has a FK to Wallet, and Wallet to User:
+        return obj.wallet.user == request.user

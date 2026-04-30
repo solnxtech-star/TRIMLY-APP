@@ -10,8 +10,10 @@ from .models import Booking
 class BookingSerializer(serializers.ModelSerializer):
     # We make end_time read_only because we want the system to calculate it 
     # based on the service duration automatically.
+    customer_address = serializers.ReadOnlyField(source='customer.customer_profile.customer_address')
+    vendor_id =serializers.ReadOnlyField(source='get_vendor_user.id')
     vendor_name = serializers.ReadOnlyField(source="get_vendor_user.get_full_name")
-    vendor_location = serializers.ReadOnlyField(source="get_vendor_user.get_full_name")
+    vendor_location = serializers.ReadOnlyField(source="get_vendor_user.individual_vendor_profile.address")
     vendor_image = serializers.ReadOnlyField(source="get_vendor_user.individual_vendor_profile.profile_pic.url")
     customer_name = serializers.ReadOnlyField(source="customer.get_full_name")
     vendor_service_name = serializers.ReadOnlyField(source="get_vendor_service_name")
@@ -21,7 +23,7 @@ class BookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
         fields = [
-            'id', 'customer_name', 'customer_image', 'salon_service', 'vendor_service', 'vendor_name', 'vendor_image' ,'vendor_location', 'vendor_service_name', 
+            'id', 'customer_name', 'customer_address', 'vendor_id', 'customer_image', 'salon_service', 'vendor_service', 'vendor_name', 'vendor_image' ,'vendor_location', 'vendor_service_name', 
             'date', 'start_time', 'end_time', 'status', 'payment_reference', 'is_rated','created_at'
         ]
         read_only_fields = ['id', 'status','is_rated', 'end_time' ]
@@ -86,23 +88,25 @@ class BookingSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
     
     
-class BookingDetailSerializer(serializers.ModelSerializer):
-    customer_name = serializers.CharField(source='customer.username', read_only=True)
+# class BookingDetailSerializer(serializers.ModelSerializer):
+#     customer_name = serializers.CharField(source='customer.username', read_only=True)
+#     customer_address = serializers.CharField(source='customer.address', read_only=True, allow_null=True)
+#     vendor_id =serializers.UUIDField(source='vendor_service.vendor.worker.id', read_only=True,)
 
+#     # Salon booking details
+#     salon_name = serializers.CharField(source='salon_service.salon.name', read_only=True, allow_null=True)
+#     salon_address = serializers.CharField(source='salon_service.salon.address', read_only=True, allow_null=True)
+#     service_name = serializers.CharField(source='salon_service.name', read_only=True, allow_null=True)
     
-    # Salon booking details
-    salon_name = serializers.CharField(source='salon_service.salon.name', read_only=True, allow_null=True)
-    salon_address = serializers.CharField(source='salon_service.salon.address', read_only=True, allow_null=True)
-    service_name = serializers.CharField(source='salon_service.name', read_only=True, allow_null=True)
+#     # Vendor booking details
+#     vendor_id =serializers.UUIDField(source='vendor_service.vendor.worker.id', read_only=True,)
+#     vendor_name = serializers.CharField(source='vendor_service.vendor.worker.username', read_only=True, allow_null=True)
+#     vendor_service_name = serializers.CharField(source='vendor_service.name', read_only=True, allow_null=True)
+#     customer_image = serializers.ReadOnlyField(source="customer.customer_profile.profile_pic.url")
     
-    # Vendor booking details
-    vendor_name = serializers.CharField(source='vendor_service.vendor.worker.username', read_only=True, allow_null=True)
-    vendor_service_name = serializers.CharField(source='vendor_service.name', read_only=True, allow_null=True)
-    customer_image = serializers.ReadOnlyField(source="customer.customer_profile.profile_pic.url")
-    
-    class Meta:
-        model = Booking
-        fields = ["customer_name", "customer_image", "salon_name", "salon_address", "service_name", "vendor_name", "vendor_service_name"]
+#     class Meta:
+#         model = Booking
+#         fields = ["customer_name", "customer_address", "customer_image", "salon_name", "salon_address", "service_name", "vendor_id", "vendor_name", "vendor_service_name"]
 
 class VerifyNinSerializer(serializers.Serializer):
     """

@@ -7,11 +7,12 @@ from .views import (
     TransferWebhookView,
     RequestWithdrawalView,
     WalletAPIView,
-    TransactionViewSet
+    TransactionViewSet,
+    PaymentVerificationView
 
 )
 router = DefaultRouter()
-router.register("my-wallet-transactions/", TransactionViewSet, basename="transaction_history")
+router.register("my-wallet-transactions", TransactionViewSet, basename="transaction_history")
 
 urlpatterns = router.urls + [
     path('create_subaccounts/', RegisterBankDetailsView.as_view(), name='sub-account'),
@@ -19,6 +20,7 @@ urlpatterns = router.urls + [
     path('webhook/', PaymentWebhookView.as_view(), name='payment-webhook'),
     path('withdraw/', RequestWithdrawalView.as_view(), name='withdraw-funds'),
     path('transfer-webhook/', TransferWebhookView.as_view(), name='transfer-webhook'),
-    path("my-wallet/", WalletAPIView.as_view(),  name="wallets")
+    path("my-wallet/", WalletAPIView.as_view(),  name="wallets"),
+    path("payment_verification/", PaymentVerificationView.as_view(),  name="payment_Verification")
     
 ] 

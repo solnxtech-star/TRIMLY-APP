@@ -157,37 +157,4 @@ class ChatConsumer(AsyncAPIConsumer):
             await self.send_json({"action": "send_message", "status": "error", "message": str(e)})
   
 
-    async def chat_message(self, event):
-        await aclose_old_connections()
-        # This sends the actual data to the WebSocket
-        await self.send_json(event)
-
-    # 2. Trigger the notification for the OTHER user
-    # Find the recipient_id logic you have and do this:
-        user = self.scope["user"]
-        recipient_id = await self.get_recipient_id(self.conversation_id, user.id)
-        recipient_group = f"user_notifications_{str(recipient_id)}" 
-        
-        await self.channel_layer.group_send(
-            recipient_group,
-            {
-                "type": "send_notification",  # This MUST match the method in NotificationConsumer
-                "data": {
-                    "message": event["message"],
-                    "sender": event["sender"],
-                    "type": "new_chat_message"
-                }
-            }
-        )
-    # notifications/consumers.py
-
-    async def disconnect(self, close_code):
-        # This is where you "clean up"
-        if hasattr(self, 'group_name'):
-            await self.channel_layer.group_discard(
-                self.group_name,
-                self.channel_name
-            )
-        print(f"Cleanup complete for user {self.user.id}")
-
-
+  

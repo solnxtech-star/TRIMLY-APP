@@ -327,14 +327,15 @@ class WalletAPIView(RetrieveAPIView):
     serializer_class = WalletSerializer
 
     def get_object(self): 
-        get_object_or_404(Wallet, user=self.request.user)
+        wallet = get_object_or_404(Wallet, user=self.request.user)
+        return wallet
   
     
 class TransactionViewSet(ReadOnlyModelViewSet):
     """
     Simple Transaction History for the users wallet
     """
-    permission_classes = [IsTransactionOwner, IsWalletOrTransactionObjOwner]
+    permission_classes = [IsTransactionOwner]
     serializer_class = TransactionSerializer
 
     def get_queryset(self):
@@ -344,11 +345,11 @@ class PaymentVerificationView(GenericAPIView):
     """
     sends a status to frontend if transaction is succesful from flutterwave
     takes transaction id from user as path parameter
-    returns transacrion status
+    returns transaction status
     """
     serializer_class = VerifyPaymentSerializer
-    def get(self, request):
-        serializer = self.get_serializer(request.data)
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         transaction_id = serializer.validated_data["transaction_id"]
         verify_transaction = FlutterwaveService.verify_transaction(transaction_id)

@@ -31,6 +31,7 @@ class CustomerProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="customer_profile")
     phone_number = models.CharField(max_length=15, null=True, blank=True)
     profile_pic = CloudinaryField('image', folder='profile_pic/customers', overwrite=True, resource_type="image", null=True, blank = True)
+    customer_address = models.CharField(max_length=200, null=True, blank=True)
     
 
     def __str__(self):

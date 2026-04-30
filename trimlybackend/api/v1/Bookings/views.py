@@ -6,7 +6,7 @@ from api.v1.Users.permissions import IsBookingOwnerOrProvider , BookingActionPer
 from .models import Booking
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter
-from .serializers import BookingSerializer, BookingDetailSerializer, VerifyNinSerializer
+from .serializers import BookingSerializer, VerifyNinSerializer
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
