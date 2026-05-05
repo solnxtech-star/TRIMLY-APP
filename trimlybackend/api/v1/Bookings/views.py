@@ -11,7 +11,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
 from django.db import transaction
-from .tasks import send_booking_notifications, send_reminder_task
+from .tasks import auto_complete_booking, send_booking_notifications, send_reminder_task, warn_customer_of_autocomplete
 from datetime import timedelta
 from api.v1.Notifications.tasks  import create_and_send_notification
 from rest_framework.views import APIView
@@ -28,150 +28,108 @@ class BookingViewSet(ModelViewSet):
     serializer_class = BookingSerializer
     permission_classes = [permissions.IsAuthenticated, IsBookingOwnerOrProvider, BookingActionPermission]
 
-    filter_backends = [
-        DjangoFilterBackend,
-        OrderingFilter,
-    ]
-
-    filterset_fields = [
-        "status",
-        "date",
-        "salon_service",
-        "vendor_service",
-    ]
-
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_fields = ["status", "date", "salon_service", "vendor_service"]
     ordering_fields = ["date", "created_at"]
 
     def get_queryset(self):
         user = self.request.user
-
         if user.role == "admin":
             queryset = Booking.objects.all()
-
         elif user.role == "salon_owner":
-            queryset =  Booking.objects.filter(
-                salon_service__salon__owner=user
-            )
-
+            queryset = Booking.objects.filter(salon_service__salon__owner=user)
         elif user.role == "individual_vendor":
-            queryset =  Booking.objects.filter(
-                vendor_service__vendor__worker=user
-            )
-
+            queryset = Booking.objects.filter(vendor_service__vendor__worker=user)
         else:
-           queryset =  Booking.objects.filter(customer=user)
+            queryset = Booking.objects.filter(customer=user)
+        
         if self.action == 'retrieve':
             queryset = queryset.select_related(
-                'customer',
-                'salon_service__salon',
-                'vendor_service__vendor__worker',
+                'customer', 'salon_service__salon', 'vendor_service__vendor__worker'
             )
         return queryset
-
 
     def perform_create(self, serializer):
         with transaction.atomic():
             booking = serializer.save(customer=self.request.user)
-            booking_id = booking.id  # ✅ Capture ID immediately
+            booking_id = booking.id
             
-            # Use the captured booking_id variable
+            # 1. IMMEDIATE: Notifications
             transaction.on_commit(lambda: send_booking_notifications.delay(booking_id))
-            # Trigger the notification task
             transaction.on_commit(lambda: create_and_send_notification.delay(
-            recipient_id=booking.get_vendor_user.id, # The Individual Vendor
-            actor_id=self.request.user.id,  # The Customer
-            verb="booked",
-            target_model_name="Booking",
-            target_id=booking_id
-        ))
-        
-        # Send reminder (this works because it's outside the lambda)
-        reminder_time = booking.created_at + timedelta(minutes=1)
-        
-        if booking.vendor_service:
-            vendor_email = booking.vendor_service.vendor.worker.email
-        else:
-            vendor_email = booking.salon_service.salon.owner.email
-        
-        send_reminder_task.apply_async(
-            args=[
-                booking.customer.email, 
-                vendor_email, 
-                booking.customer.username, 
-                booking.date, 
-                booking.start_time
-            ],
-            eta=reminder_time
-        )
-    def get_serializer_class(self):
-        if self.action in ['complete', 'cancel']:
-            return None  # This hides all those unnecessary fields in Swagger/Postman
-        # elif self.action == "retrieve":
-        #     return BookingDetailSerializer
-        else:
-            return BookingSerializer
+                recipient_id=booking.get_vendor_user.id,
+                actor_id=self.request.user.id,
+                verb="booked",
+                target_model_name="Booking",
+                target_id=booking_id
+            ))
 
+            # 2. SCHEDULING: The Algorithm
+            appt_time = booking.appointment_datetime
+            reminder_eta = booking.created_at + timedelta(minutes=1) # Original reminder
+            payout_eta = appt_time + timedelta(hours=24)            # Auto-payout 24h later
+            warning_eta = payout_eta - timedelta(hours=2)           # Warning 22h later
+
+            vendor_email = booking.vendor_service.vendor.worker.email if booking.vendor_service else booking.salon_service.salon.owner.email
+            
+            # Send Initial Reminder
+            send_reminder_task.apply_async(
+                args=[booking.customer.email, vendor_email, booking.customer.username, booking.date, booking.start_time],
+                eta=reminder_eta
+            )
+
+            # Schedule the Payout & Warning Flow
+            warn_customer_of_autocomplete.apply_async(args=[booking_id], eta=warning_eta)
+            auto_complete_booking.apply_async(args=[booking_id], eta=payout_eta)
 
     @action(detail=True, methods=["post"])
     def cancel(self, request, pk=None):
         booking = self.get_object()
-
         if booking.status in ["cancelled", "completed"]:
-            return Response(
-                {"detail": "This booking cannot be cancelled."},
-                status=status.HTTP_400_BAD_REQUEST
+            return Response({"detail": "This booking cannot be cancelled."}, status=400)
+
+        with transaction.atomic():
+            booking.status = "cancelled"
+            booking.save(update_fields=["status"])
+            
+            # Simple Refund Logic
+            wallet = booking.get_vendor_wallet
+            amount = booking.vendor_payout_amount
+            wallet.pending_balance -= amount
+            wallet.save()
+
+            Transaction.objects.create(
+                wallet=wallet, amount=amount, tx_type='refund',
+                status='completed', booking_id=booking.id, tx_ref=f"REFUND-{booking.id}"
             )
 
-        booking.status = "cancelled"
-        booking.save(update_fields=["status"])
-
-        return Response(
-            {"detail": "Booking cancelled."},
-            status=status.HTTP_200_OK)
-        
-
+        return Response({"detail": "Booking cancelled and refund initiated."}, status=200)
 
     @action(detail=True, methods=["post"])
     def complete(self, request, pk=None):
         booking = self.get_object()
-
-        # 1. Validation
         if booking.status != "confirmed":
-            return Response(
-                {"detail": "Only confirmed bookings can be completed."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"detail": "Only confirmed bookings can be completed."}, status=400)
 
-        # 2. Financial Logic (The "Money Move")
         try:
             with transaction.atomic():
-                # Update Status
                 booking.status = "completed"
                 booking.save(update_fields=["status"])
 
-                # Release Funds from Pending to Available
-                wallet = booking.get_vendor_wallet # Using the helper we discussed
-                amount_to_release = booking.vendor_payout_amount # Stored during the Webhook
+                wallet = booking.get_vendor_wallet
+                amount = booking.vendor_payout_amount
 
-                wallet.pending_balance -= amount_to_release
-                wallet.available_balance += amount_to_release
+                wallet.pending_balance -= amount
+                wallet.available_balance += amount
                 wallet.save()
 
-                # Record the move in your Transaction ledger
                 Transaction.objects.create(
-                    wallet=wallet,
-                    amount=amount_to_release,
-                    tx_type='payout_release',
-                    status='completed',
-                    booking_id = booking.id,
-                    tx_ref=f"RELEASE-{booking.id}"
+                    wallet=wallet, amount=amount, tx_type='payout_release',
+                    status='completed', booking_id=booking.id, tx_ref=f"RELEASE-{booking.id}"
                 )
-
-            return Response({"detail": "Booking completed and funds released."}, status=status.HTTP_200_OK)
-
+            return Response({"detail": "Booking completed and funds released."}, status=200)
         except Exception as e:
-            # If anything fails (like a database error), the status stays 'confirmed'
-            return Response({"detail": f"Error releasing funds: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"detail": str(e)}, status=500)
         
     @action(detail=True, methods=['get'], url_path='status')
     def get_status(self, request, pk=None):

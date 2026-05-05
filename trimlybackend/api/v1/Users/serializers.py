@@ -40,6 +40,7 @@ class SalonOwnerSerializer(serializers.ModelSerializer):
 class CustomerProfileSerializer(serializers.ModelSerializer):
     # Changed from SerializerMethodField to ImageField to allow uploads
     profile_pic = serializers.ImageField(required=False, allow_null=True)
+    
 
     class Meta:
         model = CustomerProfile
@@ -224,10 +225,11 @@ class RequestPasswordResetOTPSerializer(serializers.Serializer):
             )
             
             # Send OTP via email
+            import os
             send_mail(
                 'Reset Your Password',
                 f'Your password reset code is: {otp.code}\nThis code expires in 5 minutes.',
-                "onboarding@resend.dev",
+                os.getenv(settings.DEFAULT_FROM_EMAIL),
                 [self.user.email],
                 fail_silently=False,
             )
@@ -319,7 +321,7 @@ class ResendOTPSerializer(serializers.Serializer):
         send_mail(
             subject,
             message,
-            'onboarding@resend.dev',
+            settings.DEFAULT_FROM_EMAIL,
             [user.email],
             fail_silently=False,
         )
