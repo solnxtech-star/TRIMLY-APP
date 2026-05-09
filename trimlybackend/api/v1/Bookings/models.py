@@ -75,9 +75,18 @@ class Booking(models.Model):
         if self.vendor_service:
             return self.vendor_service.name
         return self.salon_service.name
-    
-    def __str__(self):
-        return f"Booking {self.id} - {self.customer}"
+    from datetime import datetime
+
+# Inside your Booking model class
+    @property
+    def appointment_datetime(self):
+        """Combines date and start_time into a single datetime object for timers"""
+        if self.date and self.start_time:
+            return datetime.combine(self.date, self.start_time)
+        return None
+
+        def __str__(self):
+            return f"Booking {self.id} - {self.customer}"
 
     # 🔑 Resolve provider dynamically
     

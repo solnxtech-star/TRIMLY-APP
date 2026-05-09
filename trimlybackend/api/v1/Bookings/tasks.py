@@ -18,6 +18,17 @@ from django.db import connections, transaction
 def send_booking_notifications(self, booking_id):
     try:
         booking = Booking.objects.select_related('customer', 'salon_service', 'vendor_service').get(id=booking_id)
+        # 1. TRIGGER WEBSOCKET NOTIFICATION
+        # We find the recipient (the vendor) and send the 'new_booking' verb
+        vendor_user = booking.get_vendor_user  # Ensure this property is on your model
+        
+        # create_and_send_notification.delay(
+        #     recipient_id=vendor_user.id,
+        #     actor_id=booking.customer.id,
+        #     verb="new_booking",
+        #     target_model_name="Booking",
+        #     target_id=booking_id
+        # )
         
         # 1. Email to Customer
         send_mail(

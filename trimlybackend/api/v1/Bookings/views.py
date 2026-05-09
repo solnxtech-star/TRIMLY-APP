@@ -54,15 +54,29 @@ class BookingViewSet(ModelViewSet):
             booking = serializer.save(customer=self.request.user)
             booking_id = booking.id
             
-            # 1. IMMEDIATE: Notifications
+            # Get the vendor ID safely
+            vendor_user = booking.get_vendor_user
+            if not vendor_user:
+                # If this fails, the notification can't be sent
+                print("ERROR: No vendor found for this booking")
+                return 
+
+            vendor_id_str = str(vendor_user.id)
+            customer_id_str = str(self.request.user.id)
+
+            # 1. IMMEDIATE: Emails
             transaction.on_commit(lambda: send_booking_notifications.delay(booking_id))
+            
+            # 2. IMMEDIATE: WebSocket Notification
+            # We explicitly pass strings to avoid UUID serialization issues
             transaction.on_commit(lambda: create_and_send_notification.delay(
-                recipient_id=booking.get_vendor_user.id,
-                actor_id=self.request.user.id,
+                recipient_id=vendor_id_str,
+                actor_id=customer_id_str,
                 verb="booked",
                 target_model_name="Booking",
                 target_id=booking_id
             ))
+
 
             # 2. SCHEDULING: The Algorithm
             appt_time = booking.appointment_datetime
