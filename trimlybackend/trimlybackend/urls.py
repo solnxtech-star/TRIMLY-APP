@@ -35,6 +35,7 @@ urlpatterns = [
     path('api/v1/toggle-status/', toggle_availability, name='toggle-availability'),
     path('api/v1/reviews/', include('api.v1.Reviews.urls')),
     path('api/v1/chat/', include('api.v1.Chat.urls')),
+    path('api/v1/notifications/', include('api.v1.Notifications.urls')),
     path('', HealthStatusView.as_view(), name="health_status"),
     #documentation
     path('swagger/', SpectacularSwaggerView.as_view(), name="schema"),
