@@ -7,29 +7,51 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 from .models import Booking
 
+from datetime import datetime, timedelta
+from django.utils import timezone
+from django.db import transaction
+from rest_framework import serializers
+from .models import Booking
+
 class BookingSerializer(serializers.ModelSerializer):
-    # We make end_time read_only because we want the system to calculate it 
-    # based on the service duration automatically.
+    # --- Existing Read-Only Fields ---
     customer_address = serializers.ReadOnlyField(source='customer.customer_profile.customer_address')
-    vendor_id =serializers.ReadOnlyField(source='get_vendor_user.id')
+    vendor_id = serializers.ReadOnlyField(source='get_vendor_user.id')
     vendor_name = serializers.ReadOnlyField(source="get_vendor_user.get_full_name")
     vendor_location = serializers.ReadOnlyField(source="get_vendor_user.individual_vendor_profile.address")
     vendor_image = serializers.ReadOnlyField(source="get_vendor_user.individual_vendor_profile.profile_pic.url")
     customer_name = serializers.ReadOnlyField(source="customer.get_full_name")
-    vendor_service_name = serializers.ReadOnlyField(source="get_vendor_service_name")
     customer_image = serializers.ReadOnlyField(source="customer.customer_profile.profile_pic.url")
+    vendor_service_name = serializers.ReadOnlyField(source="get_vendor_service_name")
 
-    
+    # --- New Fields for Amount and Duration ---
+    # Pulls price directly from whichever service is attached
+    amount = serializers.SerializerMethodField()
+    duration = serializers.SerializerMethodField()
+
     class Meta:
         model = Booking
         fields = [
-            'id', 'customer_name', 'customer_address', 'vendor_id', 'customer_image', 'salon_service', 'vendor_service', 'vendor_name', 'vendor_image' ,'vendor_location', 'vendor_service_name', 
-            'date', 'start_time', 'end_time', 'status', 'payment_reference', 'is_rated','created_at'
+            'id', 'customer_name', 'customer_address', 'vendor_id', 'customer_image', 
+            'salon_service', 'vendor_service', 'amount', 'duration', 'vendor_name', 
+            'vendor_image', 'vendor_location', 'vendor_service_name', 
+            'date', 'start_time', 'end_time', 'status', 'payment_reference', 
+            'is_rated', 'created_at'
         ]
-        read_only_fields = ['id', 'status','is_rated', 'end_time' ]
-    
+        # These fields cannot be changed by the frontend
+        read_only_fields = ['id', 'status', 'is_rated', 'end_time', 'amount', 'duration']
 
-        
+    def get_amount(self, obj):
+        """Pulls price from either SalonService or VendorService."""
+        service = obj.salon_service or obj.vendor_service
+        # Assuming your service models have a 'price' field
+        return getattr(service, 'price', 0) if service else 0
+
+    def get_duration(self, obj):
+        """Pulls duration from either SalonService or VendorService."""
+        service = obj.salon_service or obj.vendor_service
+        # Assuming your service models have a 'duration_minutes' field
+        return getattr(service, 'duration_minutes', 0) if service else 0
 
     def validate(self, data):
         salon_service = data.get('salon_service')
@@ -39,52 +61,50 @@ class BookingSerializer(serializers.ModelSerializer):
         status = data.get("status")
         is_rated = data.get("is_rated")
 
+        # 1. Service Selection Logic
         if not (salon_service or vendor_service):
             raise serializers.ValidationError("You must select a service.")
         if salon_service and vendor_service:
             raise serializers.ValidationError("Select either a salon or a vendor service, not both.")
 
+        # 2. Date/Time Validation
         if date < timezone.now().date():
             raise serializers.ValidationError("You cannot book an appointment in the past.")
         
-        if status:
-            raise serializers.ValidationError("you cannot insert status manually")
-        if is_rated:
-            raise serializers.ValidationError("you cannot insert this field manually")
+        if status or is_rated:
+            raise serializers.ValidationError("You cannot set status or rating manually.")
 
+        # 3. Calculate End Time (Stored for use in create())
         service = salon_service or vendor_service
         start_datetime = datetime.combine(date, start_time)
         end_datetime = start_datetime + timedelta(minutes=service.duration_minutes)
-        calculated_end_time = end_datetime.time()
-        
-        self.calculated_end_time = calculated_end_time
+        self.calculated_end_time = end_datetime.time()
 
+        # 4. Conflict/Capacity Check
         provider = salon_service.salon if salon_service else vendor_service.vendor
         
         overlapping_bookings = Booking.objects.filter(
             date=date,
             status__in=['pending', 'confirmed'],
-            start_time__lt=calculated_end_time,
+            start_time__lt=self.calculated_end_time,
             end_time__gt=start_time
         ).exclude(id=self.instance.id if self.instance else None)
 
+        # Filter by specific provider
         if salon_service:
             overlapping_bookings = overlapping_bookings.filter(salon_service__salon=provider)
-            capacity = 1 
         else:
             overlapping_bookings = overlapping_bookings.filter(vendor_service__vendor=provider)
-            capacity = 1
 
-        if overlapping_bookings.count() >= capacity:
+        if overlapping_bookings.count() >= 1: # Assuming capacity of 1 for now
             raise serializers.ValidationError("This time slot is no longer available.")
 
         return data
 
     @transaction.atomic
     def create(self, validated_data):
+        # Apply the end_time we calculated during validation
         validated_data['end_time'] = self.calculated_end_time
-        
-
         return super().create(validated_data)
     
     
