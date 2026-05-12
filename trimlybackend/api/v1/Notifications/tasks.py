@@ -30,7 +30,7 @@ def create_and_send_notification(self, recipient_id, actor_id, verb, target_mode
     elif verb == "booked":
         display_message = f"{actor_name} just booked an appointment with you"
     else:
-        display_message = f"New update from {actor_name}
+        display_message = f"New update from {actor_name}"
 
 
     # 3. Push to WebSocket
