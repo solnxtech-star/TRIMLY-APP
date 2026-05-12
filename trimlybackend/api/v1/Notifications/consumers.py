@@ -28,7 +28,15 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         if hasattr(self, 'group_name'):
             await self.channel_layer.group_discard(self.group_name, self.channel_name)
 
-    # Standard Channels looks for this method exactly as named in 'type'
-    async def send_notification(self, event):
-        print(f"DEBUG: !!! MESSAGE RECEIVED !!! for User {self.user.id}")
-        await self.send(text_data=json.dumps(event["data"]))
+async def send_notification(self, event):
+    # 'event' contains everything sent from the Celery task
+    # including the 'type' key which we don't need on the frontend.
+    
+    # Create a copy so we don't modify the original event
+    payload = dict(event)
+    payload.pop("type", None) # Remove the handler name
+
+    print(f"DEBUG: Sending to User {self.user.id}: {payload}")
+    
+    # Send the clean payload to the frontend
+    await self.send(text_data=json.dumps(payload))
