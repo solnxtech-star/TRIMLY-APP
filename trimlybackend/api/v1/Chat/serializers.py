@@ -7,14 +7,30 @@ class MessageSerializer(serializers.ModelSerializer):
         model = Message
         fields = "__all__"
 
-# api/v1/Chat/serializers.py
 class ConversationListSerializer(serializers.ModelSerializer):
     other_user = serializers.SerializerMethodField()
     last_message = serializers.SerializerMethodField()
+    is_last_message_unread = serializers.SerializerMethodField() # <--- New Field
 
     class Meta:
         model = Conversation
-        fields = ['id', 'other_user', 'last_message', 'last_message_at']
+        fields = ['id', 'other_user', 'last_message', 'last_message_at', 'is_last_message_unread']
+
+    def get_is_last_message_unread(self, obj):
+        request_user = self.context['request'].user
+        
+        # Because of your Meta ordering, .first() is the absolute latest message
+        last_msg = obj.message_set.first()
+        
+        if not last_msg:
+            return False # No messages, so nothing is 'unread'
+
+        # If YOU sent the last message, it's not 'unread' for you.
+        # It's only unread if the OTHER person sent it and is_read is False.
+        if last_msg.sender != request_user and not last_msg.is_read:
+            return True
+            
+        return False
 
     def get_other_user(self, obj):
         request_user = self.context['request'].user

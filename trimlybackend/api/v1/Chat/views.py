@@ -46,8 +46,6 @@ class ConversationViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = ConversationListSerializer
 
     def get_queryset(self):
-        user = self.request.user
-        # Get all conversations where the user is either the customer OR the vendor
         return Conversation.objects.filter(
-            Q(customer=user) | Q(vendor=user)
-        ).order_by('-last_message_at')
+            Q(customer=self.request.user) | Q(vendor=self.request.user)
+        ).prefetch_related('message_set').order_by('-last_message_at')
