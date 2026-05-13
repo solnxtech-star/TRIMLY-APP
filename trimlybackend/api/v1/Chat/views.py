@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from .serializers import MessageSerializer, ConversationListSerializer
 from rest_framework import status, viewsets
+from rest_framework.decorators import action
 
 class InitiateConversationView(GenericAPIView):
     
@@ -49,3 +50,24 @@ class ConversationViewSet(viewsets.ReadOnlyModelViewSet):
         return Conversation.objects.filter(
             Q(customer=self.request.user) | Q(vendor=self.request.user)
         ).prefetch_related('message_set').order_by('-last_message_at')
+    
+    @action(detail=True, methods=['post'], url_path='mark-read')
+    def mark_as_read(self, request, pk=None):
+        """
+        Endpoint: POST /api/v1/conversations/{uuid}/mark-read/
+        """
+        conversation = self.get_object()
+        user = request.user
+        
+        # Find all unread messages in THIS conversation sent by the OTHER person
+        unread_messages = Message.objects.filter(
+            conversation=conversation,
+            is_read=False
+        ).exclude(sender=user)
+        
+        count = unread_messages.update(is_read=True)
+        
+        return Response({
+            "status": "success",
+            "messages_marked_read": count
+        })

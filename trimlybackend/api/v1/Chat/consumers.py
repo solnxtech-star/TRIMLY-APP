@@ -134,3 +134,20 @@ class ChatConsumer(AsyncAPIConsumer):
 
         except Exception as e:
             await self.send_json({"action": "send_message", "status": "error", "message": str(e)})
+    
+    # --- Group Message Handlers ---
+
+    async def chat_broadcast_handler(self, event):
+        """
+        Receives messages from the channel layer group and sends them to the client.
+        """
+        # This sends the actual JSON to the Flutter app
+        await self.send_json({
+            "action": "new_message",
+            "data": {
+                "message": event["message"],
+                "sender_id": event["sender_id"],
+                "sender_name": event["sender_name"],
+                "created_at": timezone.now().isoformat(),
+            }
+        })
