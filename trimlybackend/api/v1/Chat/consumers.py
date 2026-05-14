@@ -123,8 +123,10 @@ class ChatConsumer(AsyncAPIConsumer):
             # 3. Trigger Notification (Standardized Format)
             recipient_id = await self.get_recipient_id(self.conversation_id, user.id)
             
-            # Match the "Booking" format exactly:
-            create_and_send_notification.delay(
+            # Use sync_to_async because Eager mode makes the task run SYNC-ly
+            # which can hang the async consumer loop
+            from asgiref.sync import sync_to_async
+            await sync_to_async(create_and_send_notification.delay)(
                 recipient_id=str(recipient_id),
                 actor_id=str(user.id),
                 verb="messaged",
