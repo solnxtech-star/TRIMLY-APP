@@ -54,10 +54,8 @@ class BookingViewSet(ModelViewSet):
             booking = serializer.save(customer=self.request.user)
             booking_id = booking.id
             
-            # Get the vendor ID safely
             vendor_user = booking.get_vendor_user
             if not vendor_user:
-                # If this fails, the notification can't be sent
                 print("ERROR: No vendor found for this booking")
                 return 
 
@@ -67,8 +65,7 @@ class BookingViewSet(ModelViewSet):
             # 1. IMMEDIATE: Emails
             transaction.on_commit(lambda: send_booking_notifications.delay(booking_id))
             
-            # 2. IMMEDIATE: WebSocket Notification
-            # We explicitly pass strings to avoid UUID serialization issues
+            # 2. IMMEDIATE: WebSocket Notification (To Vendor)
             transaction.on_commit(lambda: create_and_send_notification.delay(
                 recipient_id=vendor_id_str,
                 actor_id=customer_id_str,
@@ -77,22 +74,19 @@ class BookingViewSet(ModelViewSet):
                 target_id=booking_id
             ))
 
-
-            # 2. SCHEDULING: The Algorithm
+            # 3. SCHEDULING: The Algorithm
             appt_time = booking.appointment_datetime
-            reminder_eta = booking.created_at + timedelta(minutes=1) # Original reminder
-            payout_eta = appt_time + timedelta(hours=24)            # Auto-payout 24h later
-            warning_eta = payout_eta - timedelta(hours=2)           # Warning 22h later
+            reminder_eta = booking.created_at + timedelta(minutes=1)
+            payout_eta = appt_time + timedelta(hours=24)
+            warning_eta = payout_eta - timedelta(hours=2)
 
             vendor_email = booking.vendor_service.vendor.worker.email if booking.vendor_service else booking.salon_service.salon.owner.email
             
-            # Send Initial Reminder
             send_reminder_task.apply_async(
                 args=[booking.customer.email, vendor_email, booking.customer.username, booking.date, booking.start_time],
                 eta=reminder_eta
             )
 
-            # Schedule the Payout & Warning Flow
             warn_customer_of_autocomplete.apply_async(args=[booking_id], eta=warning_eta)
             auto_complete_booking.apply_async(args=[booking_id], eta=payout_eta)
 
@@ -106,16 +100,41 @@ class BookingViewSet(ModelViewSet):
             booking.status = "cancelled"
             booking.save(update_fields=["status"])
             
-            # Simple Refund Logic
+            # 1. Handle the Wallet Rollbacks
             wallet = booking.get_vendor_wallet
             amount = booking.vendor_payout_amount
             wallet.pending_balance -= amount
             wallet.save()
 
+            # 2. Record the Refund Transaction Log
             Transaction.objects.create(
                 wallet=wallet, amount=amount, tx_type='refund',
                 status='completed', booking_id=booking.id, tx_ref=f"REFUND-{booking.id}"
             )
+
+            # 3. Securely Fetch Vendor User
+            vendor_user = booking.get_vendor_user
+            if not vendor_user:
+                return Response({"detail": "Booking cancellation processed, but target vendor account could not be resolved for notifications."}, status=200)
+
+            # 4. EXPLANATION OF NOTIFICATION ROUTING LOGIC:
+            # We compare standard strings of the primary keys (IDs).
+            # If the ID of the person making this API request matches the Vendor's ID, 
+            # the Vendor is the one cancelling, so we route the notification to the Customer.
+            # Otherwise, the Customer is cancelling, so we route it to the Vendor.
+            if str(request.user.id) == str(vendor_user.id):
+                recipient_id = str(booking.customer.id)
+            else:
+                recipient_id = str(vendor_user.id)
+
+            # 5. Broadcast via WebSocket once DB transaction is completely safely saved
+            transaction.on_commit(lambda: create_and_send_notification.delay(
+                recipient_id=recipient_id,
+                actor_id=str(request.user.id),
+                verb="cancelled",
+                target_model_name="Booking",
+                target_id=booking.id
+            ))
 
         return Response({"detail": "Booking cancelled and refund initiated."}, status=200)
 
@@ -141,6 +160,17 @@ class BookingViewSet(ModelViewSet):
                     wallet=wallet, amount=amount, tx_type='payout_release',
                     status='completed', booking_id=booking.id, tx_ref=f"RELEASE-{booking.id}"
                 )
+                
+                # Completion is usually marked by the Vendor or Autocomplete system.
+                # The customer needs to receive this confirmation notification.
+                transaction.on_commit(lambda: create_and_send_notification.delay(
+                    recipient_id=str(booking.customer.id),
+                    actor_id=str(request.user.id),
+                    verb="completed",
+                    target_model_name="Booking",
+                    target_id=booking.id
+                ))
+                
             return Response({"detail": "Booking completed and funds released."}, status=200)
         except Exception as e:
             return Response({"detail": str(e)}, status=500)
@@ -150,11 +180,9 @@ class BookingViewSet(ModelViewSet):
         booking = self.get_object()
         return Response({
             "id": booking.id,
-            "status": booking.status,        # e.g., "pending", "confirmed"
-                # Assuming you have this BooleanField
+            "status": booking.status,
             "payment_reference": booking.payment_reference
         })
-    
 
 
 
