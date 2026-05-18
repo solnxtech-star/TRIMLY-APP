@@ -8,12 +8,24 @@ from asgiref.sync import async_to_sync, sync_to_async
 @shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=True, max_retries=3)
 def create_and_send_notification(self, recipient_id, actor_id, verb, target_model_name, target_id):
     # 1. Helper to run DB logic safely in Eager/Sync mode
+        # 2. Message Phrasing
+    if verb == "messaged":
+        display_message = f"You have a new message from {actor_name}"
+    elif verb == "booked":
+        display_message = f"{actor_name} just booked an appointment with you"
+    elif verb == "cancelled":
+        display_message = f"Booking update: {actor_name} has cancelled the appointment"
+    elif verb == "completed":
+        display_message = f"Your booking has been marked as completed by {actor_name}"
+    else:
+        display_message = f"New update from {actor_name}"
     def get_data():
         target_ct = ContentType.objects.get(model=target_model_name.lower())
         notif = Notification.objects.create(
             recipient_id=recipient_id,
             actor_id=actor_id,
             verb=verb,
+            message = display_message,
             content_type=target_ct,
             object_id=target_id,
             is_read=False
@@ -23,13 +35,6 @@ def create_and_send_notification(self, recipient_id, actor_id, verb, target_mode
     # Execute DB logic
     notif, actor_name = get_data()
 
-    # 2. Message Phrasing
-    if verb == "messaged":
-        display_message = f"You have a new message from {actor_name}"
-    elif verb == "booked":
-        display_message = f"{actor_name} just booked an appointment with you"
-    else:
-        display_message = f"New update from {actor_name}"
 
     # 3. Push to WebSocket
     channel_layer = get_channel_layer()
