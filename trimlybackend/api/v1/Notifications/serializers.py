@@ -19,6 +19,7 @@ class NotificationSerializer(serializers.ModelSerializer):
             'actor_name', 
             'actor_image',
             'verb', 
+            'message',
             'target_type', 
             'object_id', 
             'is_read', 
