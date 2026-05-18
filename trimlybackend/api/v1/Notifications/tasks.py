@@ -5,10 +5,33 @@ from django.contrib.contenttypes.models import ContentType
 from .models import Notification
 from asgiref.sync import async_to_sync, sync_to_async
 
-@shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=True, max_retries=3)
+@shared_task(
+    bind=True, 
+    autoretry_for=(Exception,), 
+    retry_backoff=True, 
+    max_retries=3
+)
 def create_and_send_notification(self, recipient_id, actor_id, verb, target_model_name, target_id):
-    # 1. Helper to run DB logic safely in Eager/Sync mode
-        # 2. Message Phrasing
+    # 1. Thread-safe DB execution block
+    def save_notification_to_db():
+        target_ct = ContentType.objects.get(model=target_model_name.lower())
+        
+        notif_obj = Notification.objects.create(
+            recipient_id=recipient_id,
+            actor_id=actor_id,
+            verb=verb,
+            content_type=target_ct,
+            object_id=target_id,
+            is_read=False
+        )
+        # Fetch name immediately while we have direct access to the record
+        name = notif_obj.actor.get_full_name() or notif_obj.actor.username
+        return notif_obj, name
+
+    # 2. Run the DB function and unpack variables safely
+    notif, actor_name = save_notification_to_db()
+    
+    # 3. Formulate the text (Now actor_name is guaranteed to exist here)
     if verb == "messaged":
         display_message = f"You have a new message from {actor_name}"
     elif verb == "booked":
@@ -19,29 +42,10 @@ def create_and_send_notification(self, recipient_id, actor_id, verb, target_mode
         display_message = f"Your booking has been marked as completed by {actor_name}"
     else:
         display_message = f"New update from {actor_name}"
-    def get_data():
-        target_ct = ContentType.objects.get(model=target_model_name.lower())
-        notif = Notification.objects.create(
-            recipient_id=recipient_id,
-            actor_id=actor_id,
-            verb=verb,
-            message = display_message,
-            content_type=target_ct,
-            object_id=target_id,
-            is_read=False
-        )
-        return notif, notif.actor.get_full_name()
 
-    # Execute DB logic
-    notif, actor_name = get_data()
-
-
-    # 3. Push to WebSocket
+    # 4. Push to Upstash Redis Channel Layer
     channel_layer = get_channel_layer()
-    
-    # FIX: Ensure this matches your NotificationConsumer.py group name!
-    # Usually it's notifications_{id} or user_notifications_{id}
-    group_name = f"notifications_{str(recipient_id)}" 
+    group_name = f"user_notifications_{str(recipient_id)}"
     
     async_to_sync(channel_layer.group_send)(
         group_name,
@@ -55,7 +59,7 @@ def create_and_send_notification(self, recipient_id, actor_id, verb, target_mode
                 "target_type": target_model_name.lower(),
                 "message": display_message,
                 "is_read": notif.is_read,
-                "created_at": notif.created_at.isoformat()
+                "created_at": notif.created_at.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
             }
         }
     )
