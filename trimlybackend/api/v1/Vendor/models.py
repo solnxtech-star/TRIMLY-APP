@@ -10,6 +10,7 @@ class IndividualVendorProfile(models.Model):
     category = models.ForeignKey(ServiceCategory, on_delete=models.SET_NULL, null=True)
     date_of_birth = models.DateTimeField(auto_now_add=True)
     bio = models.TextField()
+    phone_number = models.IntegerField(null=True, blank=True)
     profile_pic = CloudinaryField('image', folder='profile_pic/vendors', overwrite=True, resource_type="image", null=True, blank = True)
     years_of_experience = models.IntegerField()
     Gender = models.CharField(max_length=10, choices=[('male', 'male'), ('female', 'female')], default='male')
