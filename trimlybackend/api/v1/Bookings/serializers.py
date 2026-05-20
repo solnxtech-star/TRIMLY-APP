@@ -16,7 +16,7 @@ from .models import Booking
 class BookingSerializer(serializers.ModelSerializer):
     # --- Existing Read-Only Fields ---
     customer_address = serializers.ReadOnlyField(source='customer.customer_profile.customer_address')
-    vendor_id = serializers.ReadOnlyField(source='get_vendor_user.id')
+    vendor_id = serializers.ReadOnlyField(source='get_vendor_user.individual_vendor_profile.id')
     vendor_name = serializers.ReadOnlyField(source="get_vendor_user.get_full_name")
     vendor_location = serializers.ReadOnlyField(source="get_vendor_user.individual_vendor_profile.address")
     vendor_image = serializers.ReadOnlyField(source="get_vendor_user.individual_vendor_profile.profile_pic.url")
