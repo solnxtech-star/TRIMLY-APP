@@ -82,6 +82,9 @@ class VendorViewset(viewsets.ModelViewSet):
             return VendorDetailSerializer
         else:
             return VendorSerializer
+    def perform_create(self, serializer):
+        # Automatically set the 'worker' field to the current authenticated user instance
+        serializer.save(worker=self.request.user)
 
     
 class VendorGalleryUploadAPIView(generics.ListCreateAPIView):
