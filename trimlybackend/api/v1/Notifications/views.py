@@ -8,16 +8,21 @@ from .serializers import NotificationSerializer
 class NotificationViewSet(viewsets.ModelViewSet):
     serializer_class = NotificationSerializer
     permission_classes = [IsAuthenticated]
+    
+    # 1. KILL PAGINATION FOR THIS VIEWSET ONLY
+    pagination_class = None
 
     def get_queryset(self):
-        # Users can ONLY see notifications where they are the recipient
-        return Notification.objects.filter(recipient=self.request.user)
+        # Users can ONLY see notifications where they are the recipient.
+        # Added ordering so unread notifications show up first, followed by newest created.
+        return Notification.objects.filter(
+            recipient=self.request.user
+        ).order_by('is_read', '-created_at')
 
     @action(detail=False, methods=['post'], url_path='mark-all-read')
     def mark_all_as_read(self, request):
         """
         Endpoint: POST /api/v1/notifications/mark-all-read/
-        Flipping all unread notifications to True in one SQL hit.
         """
         unread = self.get_queryset().filter(is_read=False)
         count = unread.update(is_read=True)
