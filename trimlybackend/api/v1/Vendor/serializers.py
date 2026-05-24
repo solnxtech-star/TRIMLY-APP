@@ -17,7 +17,6 @@ class VendorSerializer(serializers.ModelSerializer):
     vendor_name = serializers.CharField(read_only=True, source="worker.get_full_name")
     review_count = serializers.IntegerField(read_only=True)
     average_rating = serializers.FloatField(read_only=True)
-    
     longitude = serializers.FloatField(required=False)
     latitude = serializers.FloatField(required=False)
 
@@ -28,7 +27,8 @@ class VendorSerializer(serializers.ModelSerializer):
             "years_of_experience", "latitude", "longitude", "address", "review_count", 
             "total_earnings", "average_rating", "is_active", "is_available", "is_nin_verified", "nin_verified_at", "tags"
         ]
-        read_only_fields = ["vendor", "id", "is_active", "is_available", "is_nin_verified", "nin_verified_at"]
+        # Secured: Bank information fields are completely absent from editable fields
+        read_only_fields = ["vendor", "id", "is_active", "is_available", "is_nin_verified", "nin_verified_at", "total_earnings"]
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -43,15 +43,18 @@ class VendorSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         latitude = attrs.pop('latitude', None)
         longitude = attrs.pop('longitude', None)
-
         if latitude is not None and longitude is not None:
             try:
                 attrs['location'] = Point(float(longitude), float(latitude))
             except (ValueError, TypeError):
-                raise serializers.ValidationError(
-                    {"location": "Invalid latitude or longitude format structure."}
-                )
+                raise serializers.ValidationError({"location": "Invalid coordinate format."})
         return attrs
+
+
+# Verification-Specific DTO Input Structure
+class VerifyBankAccountSerializer(serializers.Serializer):
+    bank_code = serializers.CharField(max_length=15)
+    account_number = serializers.CharField(max_length=15)
 
 
 class VendorDetailSerializer(serializers.ModelSerializer):

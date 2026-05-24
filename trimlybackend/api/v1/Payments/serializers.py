@@ -63,3 +63,7 @@ class WalletSerializer(serializers.ModelSerializer):
 class VerifyPaymentSerializer(serializers.Serializer):
     transaction_id = serializers.UUIDField(help_text="payment transaction id gotten from the payment initialization")
     
+# Verification-Specific DTO Input Structure
+class VerifyBankAccountSerializer(serializers.Serializer):
+    bank_code = serializers.CharField(max_length=15)
+    account_number = serializers.CharField(max_length=15)

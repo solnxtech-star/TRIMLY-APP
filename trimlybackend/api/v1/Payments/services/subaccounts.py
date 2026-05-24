@@ -95,3 +95,42 @@ class FlutterwaveService:
         url = f"{FlutterwaveService.BASE_URL}/transactions/{transaction_id}/verify"
         response = requests.get(url, headers=FlutterwaveService.HEADERS)
         return response.json()
+    
+    @staticmethod
+    def verify_bank_account(account_number, bank_code):
+        """
+        Calls Flutterwave to verify the account number matches the bank code.
+        Returns the resolved account name if valid.
+        """
+        url = f"{FlutterwaveService.BASE_URL}/accounts/resolve"
+        headers = {
+            "Authorization": f"Bearer {settings.FLW_SECRET_KEY}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "account_number": account_number,
+            "account_bank": bank_code
+        }
+        
+        try:
+            response = requests.post(url, json=payload, headers=headers, timeout=15)
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            return {"status": "error", "message": f"Network error: {str(e)}"}
+    
+    @staticmethod
+    def get_all_nigerian_banks():
+        """
+        IRL Step: Frontend calls this to populate the dropdown menu.
+        Fetches the complete list of banks in Nigeria with their official codes.
+        """
+        url = "https://api.flutterwave.com/v3/banks/NG"
+        headers = {
+            "Authorization": f"Bearer {settings.FLW_SECRET_KEY}",
+            "Content-Type": "application/json"
+        }
+        try:
+            response = requests.get(url, headers=headers, timeout=10)
+            return response.json() # Returns a list of dicts: {"id": 1, "code": "058", "name": "GTBank"}
+        except requests.exceptions.RequestException as e:
+            return {"status": "error", "message": str(e)}

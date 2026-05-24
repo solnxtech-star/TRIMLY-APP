@@ -2,7 +2,7 @@ import json
 from rest_framework import permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.conf import settings
 from api.v1.Payments.serializers import SubAccountSerializer
 from api.v1.Payments.services.subaccounts import FlutterwaveService
@@ -19,7 +19,7 @@ from api.v1.Users.permissions import IsNINVerified,IsWalletOrTransactionObjOwner
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework.decorators import action
 from .models import Wallet, Transaction
-from .serializers import WalletSerializer, TransactionSerializer
+from .serializers import WalletSerializer, TransactionSerializer, VerifyBankAccountSerializer
 
 from decimal import Decimal
 
@@ -187,17 +187,66 @@ class InitializePaymentView(GenericAPIView):
         return Response(flw_data, status=status.HTTP_400_BAD_REQUEST)
     
 
+class SaveBankDetailsView(GenericAPIView):
+    """
+    Verifies bank details with Flutterwave and securely attaches them to the profile.
+    """
+    serializer_class = VerifyBankAccountSerializer
 
-class RequestWithdrawalView(GenericAPIView):
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        bank_code = serializer.validated_data['bank_code']
+        account_number = serializer.validated_data['account_number']
+        user = request.user
+
+        if user.role not in ['individual_vendor', 'salon_owner']:
+            return Response({"error": "Only providers can register bank details."}, status=403)
+
+        # Communicate with Flutterwave resolution utility API
+        flw_response = FlutterwaveService.verify_bank_account(account_number, bank_code)
+        print(flw_response)
+
+        if flw_response.get('status') != 'success':
+            return Response({"error": "Bank account verification failed. Check credentials."}, status=400)
+
+        resolved_name = flw_response['data'].get('account_name')
+
+        with transaction.atomic():
+            profile = user.individual_vendor_profile if user.role == 'individual_vendor' else user.salon_owner_profile
+            profile.bank_code = bank_code
+            profile.account_number = account_number
+            profile.account_name = resolved_name
+            profile.save()
+
+            Wallet.objects.get_or_create(user=user)
+
+        return Response({
+            "message": "Bank profile locked and saved successfully.",
+            "data": {"account_name": resolved_name}
+        }, status=status.HTTP_200_OK)
+
+
+class GetBankListAPIView(APIView):
+    """
+    Returns a clean array of banks and codes directly from Flutterwave 
+    so the frontend mobile app can display them in a dropdown.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        banks_data = FlutterwaveService.get_all_nigerian_banks()
+        if banks_data.get('status') == 'success':
+            return Response(banks_data.get('data', []), status=200)
+        return Response({"error": "Failed to fetch bank routing codes."}, status=400)
     
-    '''Check NIN
-    Check available_balance
-    Call Flutterwave transfer
-    available_balance -= amount
-    Create withdrawal record
-    '''
+class RequestWithdrawalView(GenericAPIView):
+    """
+    Verifies state prerequisites, pulls locked bank metrics, and initiates payout.
+    """
     serializer_class = WithdrawalRequestSerializer
-    permission_classes = [IsNINVerified,]
+    permission_classes = [IsNINVerified]
 
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
@@ -210,16 +259,17 @@ class RequestWithdrawalView(GenericAPIView):
         wallet = get_object_or_404(Wallet, user=user)
 
         if wallet.available_balance < amount:
-            return Response({"error": "Insufficient funds"}, status=400)
+            return Response({"error": "Insufficient wallet funds"}, status=400)
 
-        # 1. Create the command reference
+        profile = getattr(user, 'individual_vendor_profile', None) or getattr(user, 'salon_owner_profile', None)
+        if not profile or not profile.account_number or not profile.bank_code:
+            return Response({"error": "Verified payout accounts structure missing."}, status=400)
+
         my_reference = f"WD-{client_id}_PMCKDU_1"
 
         try:
             with transaction.atomic():
-                #verify nin
-                # 2. Call Flutterwave FIRST
-                profile = user.individual_vendor_profile or user.salon_owner_profile
+                # Direct parameters read strictly out of verified model fields
                 flw_resp = FlutterwaveService.initiate_transfer(
                     account_bank=profile.bank_code,
                     account_number=profile.account_number,
@@ -227,51 +277,30 @@ class RequestWithdrawalView(GenericAPIView):
                     reference=my_reference 
                 )
 
-                # 3. Check if Flutterwave accepted it
                 if flw_resp.get('status') != 'success':
-                    error_msg = flw_resp.get('message', 'API Error')
-                    raise ValueError(f"Flutterwave Error: {error_msg}")
+                    raise ValueError(flw_resp.get('message', 'Flutterwave Payout Rejected'))
 
-                # 4. NOW extract the ID and create records
-                # Since we are inside 'with transaction.atomic()', if anything 
-                # below fails, the money won't be deducted.
                 flw_id = flw_resp.get('data', {}).get('id')
 
-                # A. Deduct money
                 wallet.available_balance -= amount
                 wallet.save()
 
-                # B. Create Withdrawal Record with the ID
                 WithdrawalRequest.objects.create(
-                    wallet=wallet,
-                    amount=amount,
-                    reference=my_reference,
-                    status='pending',
-                    flw_transfer_id=flw_id  # Use the ID we just got
+                    wallet=wallet, amount=amount, reference=my_reference,
+                    status='pending', flw_transfer_id=flw_id
                 )
 
-                # C. Create Transaction Record
                 Transaction.objects.create(
-                    wallet=wallet,
-                    amount=amount,
-                    tx_type='payout',
-                    tx_ref=my_reference,
-                    status='pending'
+                    wallet=wallet, amount=amount, tx_type='payout',
+                    tx_ref=my_reference, status='pending'
                 )
 
-            return Response({
-                "message": "Transfer initiated. Webhook will trigger in 60s.", 
-                "ref": my_reference,
-                "flw_id": flw_id
-            })
+            return Response({"message": "Payout transfer batch dispatched successfully.", "ref": my_reference})
 
-        except IntegrityError:
-            return Response({"error": "Duplicate reference. Try a new request ID."}, status=400)
         except ValueError as e:
-            return Response({"error": str(e)}, status=400)
+            return Response({"error": f"Gateway rejection: {str(e)}"}, status=400)
         except Exception as e:
-            return Response({"error": f"Something went wrong: {str(e)}"}, status=400)
-        
+            return Response({"error": f"System processing error: {str(e)}"}, status=400)
    
 class TransferWebhookView(APIView):
     permission_classes = [AllowAny] # Flutterwave calls this, not a user

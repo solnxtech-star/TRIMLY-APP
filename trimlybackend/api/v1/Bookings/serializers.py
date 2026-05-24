@@ -32,7 +32,7 @@ class BookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
         fields = [
-            'id', 'customer_name', 'customer_address', 'vendor_id', 'customer_image', 
+            'id', 'customer_id', 'customer_name', 'customer_address', 'vendor_id', 'customer_image', 
             'salon_service', 'vendor_service', 'amount', 'duration', 'vendor_name', 
             'vendor_image', 'vendor_location', 'vendor_service_name', 
             'date', 'start_time', 'end_time', 'status', 'payment_reference', 

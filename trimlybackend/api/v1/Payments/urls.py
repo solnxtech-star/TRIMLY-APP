@@ -1,9 +1,11 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 from .views import ( 
+    GetBankListAPIView,
     RegisterBankDetailsView,
     InitializePaymentView, 
-    PaymentWebhookView, 
+    PaymentWebhookView,
+    SaveBankDetailsView, 
     TransferWebhookView,
     RequestWithdrawalView,
     WalletAPIView,
@@ -15,7 +17,8 @@ router = DefaultRouter()
 router.register("my-wallet-transactions", TransactionViewSet, basename="transaction_history")
 
 urlpatterns = router.urls + [
-    path('create_subaccounts/', RegisterBankDetailsView.as_view(), name='sub-account'),
+    path("banks-list/", GetBankListAPIView.as_view(), name="banks_list"),
+    path("save-bank-details/", SaveBankDetailsView.as_view(), name="save_bank_details"),
     path('initialize/', InitializePaymentView.as_view(), name='init-payment'),
     path('webhook/', PaymentWebhookView.as_view(), name='payment-webhook'),
     path('withdraw/', RequestWithdrawalView.as_view(), name='withdraw-funds'),
