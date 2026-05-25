@@ -187,13 +187,50 @@ class InitializePaymentView(GenericAPIView):
         return Response(flw_data, status=status.HTTP_400_BAD_REQUEST)
     
 
-class SaveBankDetailsView(GenericAPIView):
+
+class VerifyBankDetailsView(GenericAPIView):
     """
-    Verifies bank details with Flutterwave and securely attaches them to the profile.
+    STEP 1: Check Flutterwave to see who owns the account.
+    
+    This does NOT save anything to the database. It allows the user to verify 
+    the account name and correct any typos before locking it in.
     """
     serializer_class = VerifyBankAccountSerializer
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
+        # Your request parameters are visible in Swagger/Redoc again!
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        bank_code = serializer.validated_data['bank_code']
+        account_number = serializer.validated_data['account_number']
+
+        # Query the Flutterwave resolution endpoint
+        flw_response = FlutterwaveService.verify_bank_account(account_number, bank_code)
+
+        if flw_response.get('status') != 'success':
+            return Response({
+                "error": "Could not resolve bank account. Please check the number and bank selection."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        resolved_name = flw_response['data'].get('account_name')
+
+        return Response({
+            "suggested_account_name": resolved_name,
+            "message": "Account resolved. Please confirm if this name matches your bank account."
+        }, status=status.HTTP_200_OK)
+
+
+class SaveBankDetailsView(GenericAPIView):
+    """
+    STEP 2: Explicitly save or overwrite the bank details.
+    
+    Hit this endpoint when the user confirms the name matches. It runs a final 
+    verification check to prevent request tampering, then saves or updates the profile.
+    """
+    serializer_class = VerifyBankAccountSerializer
+
+    def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
@@ -202,31 +239,28 @@ class SaveBankDetailsView(GenericAPIView):
         user = request.user
 
         if user.role not in ['individual_vendor', 'salon_owner']:
-            return Response({"error": "Only providers can register bank details."}, status=403)
+            return Response({"error": "Unauthorized role."}, status=status.HTTP_403_FORBIDDEN)
 
-        # Communicate with Flutterwave resolution utility API
+        # Anti-tampering check right before saving
         flw_response = FlutterwaveService.verify_bank_account(account_number, bank_code)
-        print(flw_response)
-
         if flw_response.get('status') != 'success':
-            return Response({"error": "Bank account verification failed. Check credentials."}, status=400)
+            return Response({"error": "Verification failed re-running parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
         resolved_name = flw_response['data'].get('account_name')
 
+        # Atomic update/overwrite logic
         with transaction.atomic():
             profile = user.individual_vendor_profile if user.role == 'individual_vendor' else user.salon_owner_profile
+            
             profile.bank_code = bank_code
             profile.account_number = account_number
-            profile.account_name = resolved_name
+            profile.account_name = resolved_name  
             profile.save()
 
-            Wallet.objects.get_or_create(user=user)
-
         return Response({
-            "message": "Bank profile locked and saved successfully.",
-            "data": {"account_name": resolved_name}
+            "message": "Bank profile updated successfully.",
+            "account_name": resolved_name
         }, status=status.HTTP_200_OK)
-
 
 class GetBankListAPIView(APIView):
     """
