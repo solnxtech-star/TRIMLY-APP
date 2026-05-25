@@ -19,8 +19,8 @@ router.register("my-wallet-transactions", TransactionViewSet, basename="transact
 
 urlpatterns = router.urls + [
     path("banks-list/", GetBankListAPIView.as_view(), name="banks_list"),
-    path("payments/verify-bank/", VerifyBankDetailsView.as_view(), name="verify_bank"),
-    path("payments/save-bank-details/", SaveBankDetailsView.as_view(), name="save_bank_details"),
+    path("verify-bank/", VerifyBankDetailsView.as_view(), name="verify_bank"),
+    path("save-bank-details/", SaveBankDetailsView.as_view(), name="save_bank_details"),
     path("save-bank-details/", SaveBankDetailsView.as_view(), name="save_bank_details"),
     path('initialize/', InitializePaymentView.as_view(), name='init-payment'),
     path('webhook/', PaymentWebhookView.as_view(), name='payment-webhook'),
