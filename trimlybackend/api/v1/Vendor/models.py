@@ -21,6 +21,8 @@ class IndividualVendorProfile(models.Model):
     bank_code = models.CharField(max_length=15, null=True, blank=True)
     account_number = models.CharField(max_length=15, null=True, blank=True)
     account_name = models.CharField(max_length=100, null=True, blank=True) # Lock field for security matching
+    bank_name = models.CharField(max_length=100, null=True, blank=True)
+    
     
     total_earnings = models.BigIntegerField(default=0)
     is_active = models.BooleanField(default=True)

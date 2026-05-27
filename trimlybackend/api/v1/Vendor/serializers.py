@@ -25,10 +25,11 @@ class VendorSerializer(serializers.ModelSerializer):
         fields = [
             "id", "vendor_name", "category", "bio", "profile_pic", "phone_number",
             "years_of_experience", "latitude", "longitude", "address", "review_count", 
-            "total_earnings", "average_rating", "is_active", "is_available", "is_nin_verified", "nin_verified_at", "tags"
+            "total_earnings", "average_rating", "is_active", "is_available", "is_nin_verified", "nin_verified_at", "tags",
+            "bank_name", "account_number", "account_name"
         ]
         # Secured: Bank information fields are completely absent from editable fields
-        read_only_fields = ["vendor", "id", "is_active", "is_available", "is_nin_verified", "nin_verified_at", "total_earnings"]
+        read_only_fields = ["vendor", "id", "is_active", "is_available", "is_nin_verified", "nin_verified_at", "total_earnings", "bank_name", "account_number", "account_name"]
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -51,10 +52,6 @@ class VendorSerializer(serializers.ModelSerializer):
         return attrs
 
 
-# Verification-Specific DTO Input Structure
-class VerifyBankAccountSerializer(serializers.Serializer):
-    bank_code = serializers.CharField(max_length=15)
-    account_number = serializers.CharField(max_length=15)
 
 
 class VendorDetailSerializer(serializers.ModelSerializer):
@@ -73,13 +70,13 @@ class VendorDetailSerializer(serializers.ModelSerializer):
         fields = [
             "id", "worker", "vendor_name", "category", "bio", "profile_pic", "phone_number", "years_of_experience", "total_earnings", "tags",
             "latitude", "longitude", "address", "is_active", "is_available", "is_nin_verified", "nin_verified_at",
-            "vendor_services", "vendor_portfolio", "vendor_reviews", "review_count", "average_rating"
+            "vendor_services", "vendor_portfolio", "vendor_reviews", "review_count", "average_rating", "bank_name", "account_number", "account_name"
         ]
         # Added 'worker' here to ensure it doesn't complain about validation on direct POST calls
         read_only_fields = [
             "id", "worker", "total_earnings", "vendor_services", "vendor_portfolio", 
             "vendor_reviews", "review_count", "average_rating", "is_active", "is_available",
-            "is_nin_verified", "nin_verified_at"
+            "is_nin_verified", "nin_verified_at","bank_name", "account_number", "account_name"
         ]
 
     def to_representation(self, instance):

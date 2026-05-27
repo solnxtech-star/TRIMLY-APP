@@ -223,10 +223,8 @@ class VerifyBankDetailsView(GenericAPIView):
 
 class SaveBankDetailsView(GenericAPIView):
     """
-    STEP 2: Explicitly save or overwrite the bank details.
-    
-    Hit this endpoint when the user confirms the name matches. It runs a final 
-    verification check to prevent request tampering, then saves or updates the profile.
+    STEP 2: Saves bank details, dynamically resolving the bank code 
+    to a human-readable bank name for frontend display layout tracking.
     """
     serializer_class = VerifyBankAccountSerializer
 
@@ -241,27 +239,43 @@ class SaveBankDetailsView(GenericAPIView):
         if user.role not in ['individual_vendor', 'salon_owner']:
             return Response({"error": "Unauthorized role."}, status=status.HTTP_403_FORBIDDEN)
 
-        # Anti-tampering check right before saving
+        # 1. Anti-tampering check: Resolve account owner name
         flw_response = FlutterwaveService.verify_bank_account(account_number, bank_code)
         if flw_response.get('status') != 'success':
             return Response({"error": "Verification failed re-running parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
-        resolved_name = flw_response['data'].get('account_name')
+        resolved_account_name = flw_response['data'].get('account_name')
 
-        # Atomic update/overwrite logic
+        # 2. Resolve Bank Name String from Bank Code
+        resolved_bank_name = "Unknown Bank"
+        banks_list_response = FlutterwaveService.get_all_nigerian_banks()
+        
+        if banks_list_response.get('status') == 'success':
+            # Search through the list of bank dicts to match the 'code' key
+            for bank in banks_list_response.get('data', []):
+                if bank.get('code') == bank_code:
+                    resolved_bank_name = bank.get('name')
+                    break
+
+        # 3. Save or Overwrite everything atomically
         with transaction.atomic():
             profile = user.individual_vendor_profile if user.role == 'individual_vendor' else user.salon_owner_profile
             
             profile.bank_code = bank_code
+            profile.bank_name = resolved_bank_name       # Now saved natively: e.g., "Access Bank"
             profile.account_number = account_number
-            profile.account_name = resolved_name  
+            profile.account_name = resolved_account_name # e.g., "FAVOUR DANIEL"
             profile.save()
 
         return Response({
             "message": "Bank profile updated successfully.",
-            "account_name": resolved_name
+            "data": {
+                "bank_name": resolved_bank_name,
+                "account_name": resolved_account_name,
+                "account_number": account_number
+            }
         }, status=status.HTTP_200_OK)
-
+    
 class GetBankListAPIView(APIView):
     """
     Returns a clean array of banks and codes directly from Flutterwave 

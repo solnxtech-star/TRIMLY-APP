@@ -26,7 +26,7 @@ class VendorServicesListCreateAPIView(generics.ListCreateAPIView):
         vendor_id = self.kwargs["id"]
         return VendorServices.objects.prefetch_related("categories").filter(vendor_id=vendor_id)
     def perform_create(self, serializer):
-        return serializer.save(vendor=self.request.user)
+        return serializer.save(vendor=self.request.user.individual_vendor_profile)
 
 class VendorServicesRetrieveUpdateDeleteAPIView(generics.RetrieveUpdateDestroyAPIView):
     """
