@@ -3,14 +3,64 @@ from django.contrib.gis.geos import Point
 from api.v1.Category.serializers import CategorySerializer, GallerySerializer
 from api.v1.Reviews.serializers import ReviewSerializer
 from .models import IndividualVendorProfile, VendorServices
+from api.v1.Category.models import ServiceCategory
+
 
 class VendorServicesSerializer(serializers.ModelSerializer):
+    # 1. READ-ONLY FIELD: Used to output full nested objects during GET requests
     categories = CategorySerializer(many=True, read_only=True)
+    
+    # 2. WRITE-ONLY FIELD: Accepts an array of category Primary Keys during POST/PUT requests
+    category_ids = serializers.PrimaryKeyRelatedField(
+        queryset=ServiceCategory.objects.all(),
+        many=True,
+        write_only=True,
+        source='categories', # Automatically maps this array to the model's many-to-many relationship
+        help_text="An array of category IDs to link to this vendor service."
+    )
     
     class Meta:
         model = VendorServices
-        fields = ('id', 'vendor', 'name', 'description', 'price', 'duration_minutes', 'categories')
+        fields = (
+            'id', 
+            'vendor', 
+            'name', 
+            'description', 
+            'price', 
+            'duration_minutes', 
+            'categories',   # Visible in response payloads
+            'category_ids'  # Visible in request inputs
+        )
         read_only_fields = ["id", "vendor"]
+
+    def create(self, validated_data):
+        # DRF's default create handler cannot save nested many-to-many data automatically 
+        # when customized models are involved, so we extract and handle them cleanly.
+        categories = validated_data.pop('categories', [])
+        
+        # Save the primary service asset instance
+        vendor_service = VendorServices.objects.create(**validated_data)
+        
+        # Attach the many-to-many category relationships cleanly
+        if categories:
+            vendor_service.categories.set(categories)
+            
+        return vendor_service
+
+    def update(self, instance, validated_data):
+        # Handle many-to-many updates safely for PUT/PATCH operations
+        categories = validated_data.pop('categories', None)
+        
+        # Update the standard text/numeric fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        
+        # Overwrite the many-to-many mapping if category arrays are included in payload
+        if categories is not None:
+            instance.categories.set(categories)
+            
+        return instance
 
 
 class VendorSerializer(serializers.ModelSerializer):
