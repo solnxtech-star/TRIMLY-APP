@@ -36,8 +36,22 @@ class VendorServicesRetrieveUpdateDeleteAPIView(generics.RetrieveUpdateDestroyAP
     permission_classes = [IsAdminOrVendorServiceObject]
     def get_queryset(self):
         qs = VendorServices.objects.prefetch_related("categories").filter(vendor_id = self.kwargs["vendor_id"])
-
         return qs
+    def get_object(self):
+        """
+        Retrieves the specific service instance by its own ID.
+        Raises a 404 error if the service does not exist or doesn't match the vendor.
+        """
+        queryset = self.get_queryset()
+        service_id = self.kwargs.get("id")  # Matches <uuid:id> from your path
+        
+        try:
+            return queryset.get(id=service_id)
+        except VendorServices.DoesNotExist:
+            return ("No service found matching the given IDs.")
+
+
+
 
 class VendorViewset(viewsets.ModelViewSet):
     """"
