@@ -124,27 +124,45 @@ class VendorGalleryUploadAPIView(generics.ListCreateAPIView):
         
         return [permission() for permission in permission_classes]
     
+from rest_framework import generics, status
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+from api.v1.Vendor.models import IndividualVendorProfile # Assuming standard path
+
 class VendorAvailabilityListCreateAPIView(generics.ListCreateAPIView):
     """
-    Instantiates and Returns vendor Avalaibility
+    Returns or updates/instantiates the complete weekly recurring availability matrix for a vendor.
     """
-    serializer_class = AvailaibilitySerializer
+    permission_classes = [IsAdminVendorOrReadOnly]
+
+    def get_serializer_class(self):
+        # Use bulk writer for POST operations, standard serialization for listing GET arrays
+        if self.request.method == "POST":
+            return BulkAvailabilitySerializer
+        return IndividualAvailabilityDaySerializer
 
     def get_queryset(self):
-        return Availability.objects.filter(
-            vendor_id=self.kwargs["vendor_id"]
-        )
+        return Availability.objects.filter(vendor_id=self.kwargs["vendor_id"])
 
-    def perform_create(self, serializer):
-        vendor = get_object_or_404(IndividualVendorProfile, id = self.kwargs["vendor_id"])
-        serializer.save(vendor = vendor)
+    def get_serializer_context(self):
+        """
+        Pass the vendor database object directly into serializer processing context
+        """
+        context = super().get_serializer_context()
+        if self.request.method == "POST":
+            context["vendor"] = get_object_or_404(IndividualVendorProfile, id=self.kwargs["vendor_id"])
+        return context
 
-    def get_permissions(self):
-        if self.request.method == "GET":
-            permission_classes = [IsAuthenticated]
-        else:
-            permission_classes = [IsAdminVendorOrReadOnly]
-        return [p() for p in permission_classes]
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        # Execute the transaction creation routine
+        instances = serializer.save()
+        
+        # Return the created items utilizing our read-only layout out of the list matrix
+        response_serializer = IndividualAvailabilityDaySerializer(instances, many=True)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
     
 
 
