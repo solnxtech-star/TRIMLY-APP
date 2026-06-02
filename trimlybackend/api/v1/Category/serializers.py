@@ -19,6 +19,33 @@ class GallerySerializer(serializers.ModelSerializer):
             if vendor and salon or not vendor or not salon:
                 raise serializers.ValidationError("must choose one provider")
             return data
+class BulkGalleryUploadSerializer(serializers.Serializer):
+    # This accepts an array of files via multipart form-data
+    images = serializers.ListField(
+        child=serializers.ImageField(max_length=100000, allow_empty_file=False, use_url=True),
+        write_only=True
+    )
+    caption = serializers.CharField(max_length=255, required=False, default="")
+
+    def create(self, validated_data):
+        images = validated_data.pop('images')
+        caption = validated_data.get('caption', '')
+        vendor = self.context.get('vendor')
+        salon = self.context.get('salon')
+
+        gallery_instances = []
+        for img in images:
+            gallery_instances.append(
+                Gallery(
+                    vendor=vendor,
+                    salon=salon,
+                    image=img,
+                    caption=caption
+                )
+            )
+        
+        # Bulk create them for database speed
+        return Gallery.objects.bulk_create(gallery_instances)
 
     
 from django.db import transaction

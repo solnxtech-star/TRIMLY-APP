@@ -1,7 +1,7 @@
 from datetime import datetime
 from django.shortcuts import get_object_or_404
 from api.v1.Category.models import Availability, AvailabilityException, Gallery
-from api.v1.Category.serializers import AvailabilityExceptionSerializer, AvailaibilitySerializer, GallerySerializer
+from api.v1.Category.serializers import AvailabilityExceptionSerializer, AvailaibilitySerializer, BulkAvailabilitySerializer, BulkGalleryUploadSerializer, GallerySerializer, IndividualAvailabilityDaySerializer
 from api.v1.Reviews.models import Review
 from .models import IndividualVendorProfile, VendorServices
 from .serializers import SlotResponseSerializer, VendorSerializer, VendorServicesSerializer, VendorDetailSerializer
@@ -103,26 +103,33 @@ class VendorViewset(viewsets.ModelViewSet):
     
 class VendorGalleryUploadAPIView(generics.ListCreateAPIView):
     """
-    Handle vendor Gallery and Portfolio
+    Handle uploading multiple portfolio images at once and listing them
     """
-    serializer_class = GallerySerializer
     parser_classes = (parsers.MultiPartParser, parsers.FormParser)
+
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return BulkGalleryUploadSerializer
+        return GallerySerializer # Your original ModelSerializer for returning lists
 
     def get_queryset(self):
         return Gallery.objects.filter(vendor_id=self.kwargs["id"])
 
-    def perform_create(self, serializer):
-        vendor = get_object_or_404(IndividualVendorProfile, worker_id=self.kwargs["id"])
-        serializer.save(
-            vendor=vendor
-        )
-    def get_permissions(self):
-        if self.request.method == "GET":
-            permission_classes = [IsAuthenticated]
-        else :
-            permission_classes = [IsAdminVendorOrReadOnly]
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        if self.request.method == "POST":
+            # Pass the profile down safely to the bulk engine
+            context["vendor"] = get_object_or_404(IndividualVendorProfile, worker_id=self.kwargs["id"])
+        return context
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        instances = serializer.save()
         
-        return [permission() for permission in permission_classes]
+        # Respond back with the list of created image items serialized cleanly
+        response_serializer = GallerySerializer(instances, many=True)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
     
 from rest_framework import generics, status
 from rest_framework.response import Response
@@ -166,19 +173,35 @@ class VendorAvailabilityListCreateAPIView(generics.ListCreateAPIView):
     
 
 
-class VendorAvailabilityRetrieveUpdateDeleteAPIView(
-    generics.RetrieveUpdateDestroyAPIView
-):
+class VendorGalleryUploadAPIView(generics.ListCreateAPIView):
     """
-    Instantiates and Returns vendor Avalaibility objects(Id)
+    Handle uploading multiple portfolio images at once and listing them
     """
-   
-    serializer_class = AvailaibilitySerializer
-    permission_classes = [IsAdminOrVendorServiceObject]
-    def get_queryset(self):
-        qs = Availability.objects.filter(vendor_id = self.kwargs["vendor_id"])
-        return qs
+    parser_classes = (parsers.MultiPartParser, parsers.FormParser)
 
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return BulkGalleryUploadSerializer
+        return GallerySerializer # Your original ModelSerializer for returning lists
+
+    def get_queryset(self):
+        return Gallery.objects.filter(vendor_id=self.kwargs["id"])
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        if self.request.method == "POST":
+            # Pass the profile down safely to the bulk engine
+            context["vendor"] = get_object_or_404(IndividualVendorProfile, worker_id=self.kwargs["id"])
+        return context
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        instances = serializer.save()
+        
+        # Respond back with the list of created image items serialized cleanly
+        response_serializer = GallerySerializer(instances, many=True)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 class VendorAvailabilityExceptionListCreateAPIView(generics.ListCreateAPIView):
     """
     Instantiates and Returns vendor Avalaibility Exception
