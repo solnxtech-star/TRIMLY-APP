@@ -1,11 +1,11 @@
 from datetime import datetime
 from django.shortcuts import get_object_or_404
 from api.v1.Category.models import Availability, AvailabilityException, Gallery
-from api.v1.Category.serializers import AvailabilityExceptionSerializer, AvailaibilitySerializer, BulkAvailabilitySerializer, BulkGalleryUploadSerializer, GallerySerializer, IndividualAvailabilityDaySerializer
+from api.v1.Category.serializers import AvailabilityExceptionSerializer, BulkAvailabilitySerializer, BulkGalleryUploadSerializer, GallerySerializer, IndividualAvailabilityDaySerializer
 from api.v1.Reviews.models import Review
 from .models import IndividualVendorProfile, VendorServices
 from .serializers import SlotResponseSerializer, VendorSerializer, VendorServicesSerializer, VendorDetailSerializer
-from rest_framework import generics, viewsets, permissions, parsers
+from rest_framework import generics, viewsets, permissions, parsers,status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from api.v1.Users.permissions import IsAdminVendorOrReadOnly, IsAdminOrVendorServiceObject, IsVendorAvailabilityOwner, IsOwnerOfTargetProvider
 from rest_framework.views import APIView
@@ -15,6 +15,8 @@ from drf_spectacular.utils import extend_schema, OpenApiParameter
 from drf_spectacular.types import OpenApiTypes
 from django.db.models import Prefetch, Count, Avg, Value, FloatField
 from django.db.models.functions import Coalesce 
+from rest_framework import generics, status
+from django.db import transaction
 
 class VendorServicesListCreateAPIView(generics.ListCreateAPIView):
     """
@@ -131,10 +133,7 @@ class VendorGalleryUploadAPIView(generics.ListCreateAPIView):
         response_serializer = GallerySerializer(instances, many=True)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
     
-from rest_framework import generics, status
-from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
-from api.v1.Vendor.models import IndividualVendorProfile # Assuming standard path
+
 
 class VendorAvailabilityListCreateAPIView(generics.ListCreateAPIView):
     """
@@ -173,6 +172,47 @@ class VendorAvailabilityListCreateAPIView(generics.ListCreateAPIView):
     
 
 
+class VendorAvailabilitySyncAPIView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    GET: Fetches the entire weekly calendar list for this vendor.
+    PUT/PATCH: Replaces/Syncs the entire calendar matrix safely for the vendor.
+    DELETE: Wipes out the recurring weekly schedule entirely.
+    """
+    serializer_class = BulkAvailabilitySerializer
+    permission_classes = [IsAdminOrVendorServiceObject]
+
+    def get_queryset(self):
+        return Availability.objects.filter(vendor_id=self.kwargs["vendor_id"])
+
+    def retrieve(self, request, *args, **kwargs):
+        # Instead of returning 1 instance by pk, we return the entire list for this vendor
+        queryset = self.get_queryset()
+        serializer = IndividualAvailabilityDaySerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def update(self, request, *args, **kwargs):
+        # We handle PUT/PATCH as an atomic 'Sync' operation
+        vendor = get_object_or_404(IndividualVendorProfile, id=self.kwargs["vendor_id"])
+        
+        serializer = BulkAvailabilitySerializer(data=request.data, context={"vendor": vendor})
+        serializer.is_valid(raise_exception=True)
+
+        with transaction.atomic():
+            # 1. Wipe out the old recurring records so we don't have duplicate days/stale slots
+            self.get_queryset().delete()
+            
+            # 2. Bulk insert the updated configurations cleanly
+            instances = serializer.save()
+
+        response_serializer = IndividualAvailabilityDaySerializer(instances, many=True)
+        return Response(response_serializer.data, status=status.HTTP_200_OK)
+
+    def destroy(self, request, *args, **kwargs):
+        # Clear out the complete weekly matrix if they want to reset it
+        queryset = self.get_queryset()
+        queryset.delete()
+        return Response({"detail": "Weekly schedule wiped successfully."}, status=status.HTTP_204_NO_CONTENT)
+
 class VendorGalleryUploadAPIView(generics.ListCreateAPIView):
     """
     Handle uploading multiple portfolio images at once and listing them
@@ -202,6 +242,18 @@ class VendorGalleryUploadAPIView(generics.ListCreateAPIView):
         # Respond back with the list of created image items serialized cleanly
         response_serializer = GallerySerializer(instances, many=True)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+    
+
+
+class GalleryImageDeleteAPIView(generics.DestroyAPIView):
+    """
+    Deletes a specific gallery image asset by its unique UUID ID.
+    """
+    queryset = Gallery.objects.all()
+    serializer_class = GallerySerializer
+    permission_classes = [IsAdminVendorOrReadOnly] # Ensure ownership validation matches your rules
+    lookup_field = "id"
+    
 class VendorAvailabilityExceptionListCreateAPIView(generics.ListCreateAPIView):
     """
     Instantiates and Returns vendor Avalaibility Exception

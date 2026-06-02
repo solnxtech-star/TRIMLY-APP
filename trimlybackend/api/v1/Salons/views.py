@@ -3,7 +3,7 @@ from django.shortcuts import render
 from rest_framework import viewsets, generics, parsers
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.shortcuts import get_object_or_404
-from api.v1.Category.serializers import AvailabilityExceptionSerializer, GallerySerializer, AvailaibilitySerializer
+from api.v1.Category.serializers import AvailabilityExceptionSerializer, GallerySerializer, IndividualAvailabilityDaySerializer
 from api.v1.Bookings.utils import get_available_slots
 from api.v1.Reviews.models import Review
 from .models import SalonProfile, SalonServices
@@ -128,7 +128,7 @@ class SalonAvailabilityListCreateAPIView(generics.ListCreateAPIView):
     """
     Instantiates and Returns Salon Avalaibility
     """
-    serializer_class = AvailaibilitySerializer
+    serializer_class = IndividualAvailabilityDaySerializer
     permission_classes = [permissions.IsOwnerOfTargetProvider]
 
     def get_queryset(self):
@@ -147,7 +147,7 @@ class SalonAvailabilityRetrieveUpdateDeleteAPIView(
     """
     Instantiates and Returns Salon Avalaibility objects(Id)
     """
-    serializer_class = AvailaibilitySerializer
+    serializer_class = IndividualAvailabilityDaySerializer
     permission_classes = [permissions.IsAdminOrSalonOwnerObject]
     def get_queryset(self):
         qs = Availability.objects.filter(salon_id = self.kwargs["salon_id"])
