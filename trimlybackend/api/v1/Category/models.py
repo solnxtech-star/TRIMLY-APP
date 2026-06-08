@@ -14,23 +14,34 @@ class ServiceCategory(models.Model):
     def __str__(self):
         return self.name
 
-class Gallery(models.Model):
+
+
+class GalleryPost(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    image = CloudinaryField('image', folder='gallery/', overwrite=True, resource_type="image")
-    salon = models.ForeignKey('Salons.SalonProfile', related_name="salon_portfolio", on_delete=models.CASCADE, null=True, blank=True)
-    vendor = models.ForeignKey('Vendor.IndividualVendorProfile', related_name = "vendor_portfolio", null=True, blank=True, on_delete=models.CASCADE)
-    caption = models.CharField(max_length=255, blank=True)
+    salon = models.ForeignKey('Salons.SalonProfile', related_name="salon_gallery_posts", on_delete=models.CASCADE, null=True, blank=True)
+    vendor = models.ForeignKey('Vendor.IndividualVendorProfile', related_name="vendor_gallery_posts", null=True, blank=True, on_delete=models.CASCADE)
+    caption = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def clean(self):
-        # exactly ONE must be set
+        # Exactly ONE must be set
         if not self.salon and not self.vendor:
-            raise ValidationError("Gallery must belong to a salon or a vendor")
+            raise ValidationError("Gallery post must belong to a salon or a vendor")
         if self.salon and self.vendor:
-            raise ValidationError("Gallery cannot belong to both salon and vendor")
+            raise ValidationError("Gallery post cannot belong to both salon and vendor")
 
     def __str__(self):
-        return f"Image {self.id}"
+        return f"Post {self.id} by {self.vendor or self.salon}"
+
+
+class GalleryImage(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    post = models.ForeignKey(GalleryPost, on_delete=models.CASCADE, related_name="images")
+    image = CloudinaryField('image', folder='gallery/', overwrite=True, resource_type="image")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Image {self.id} for Post {self.post.id}"
 
 
 class Availability(models.Model):

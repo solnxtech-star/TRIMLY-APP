@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.gis.geos import Point
-from api.v1.Category.serializers import CategorySerializer, GallerySerializer
+from api.v1.Category.serializers import CategorySerializer, GalleryPostSerializer
 from api.v1.Reviews.serializers import ReviewSerializer
 from .models import IndividualVendorProfile, VendorServices
 from api.v1.Category.models import ServiceCategory
@@ -109,7 +109,7 @@ class VendorDetailSerializer(serializers.ModelSerializer):
     vendor_services = VendorServicesSerializer(many=True, read_only=True)
     review_count = serializers.IntegerField(read_only=True)
     average_rating = serializers.FloatField(read_only=True)
-    vendor_portfolio = GallerySerializer(many=True, read_only=True)
+    vendor_portfolio = GalleryPostSerializer(many=True, read_only=True)
     vendor_reviews = ReviewSerializer(many=True, read_only=True, source='reviews') 
     
     longitude = serializers.FloatField(required=False)

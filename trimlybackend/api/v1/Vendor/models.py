@@ -1,6 +1,6 @@
 from django.db import models
 from cloudinary.models import CloudinaryField
-from api.v1.Category.models import Gallery, ServiceCategory
+from api.v1.Category.models import ServiceCategory
 from api.v1.Users.models import User
 from django.contrib.gis.db.models import PointField
 import uuid

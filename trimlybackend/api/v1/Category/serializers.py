@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Availability, AvailabilityException, ServiceCategory, Gallery
+from .models import Availability, AvailabilityException, ServiceCategory
 from django.core.exceptions import ValidationError as DjangoValidationError
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -8,44 +8,57 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ("id", "name", "category_image", "created_at")
         read_only_fields = ["id", "created_at"]
 
-class GallerySerializer(serializers.ModelSerializer):
+
+from .models import GalleryPost, GalleryImage
+
+class GalleryImageSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Gallery
-        fields = ("id", "salon", "vendor", "caption","image", "created_at")
-        read_only_fields = ("id", "salon", "vendor", "created_at")
-        def validate(self, data):
-            salon = data["salon"]
-            vendor = data["vendor"]
-            if vendor and salon or not vendor or not salon:
-                raise serializers.ValidationError("must choose one provider")
-            return data
-class BulkGalleryUploadSerializer(serializers.Serializer):
-    # This accepts an array of files via multipart form-data
-    images = serializers.ListField(
+        model = GalleryImage
+        fields = ("id", "image", "created_at")
+
+
+class GalleryPostSerializer(serializers.ModelSerializer):
+    images = GalleryImageSerializer(many=True, read_only=True)
+    # This key receives the file array from the mobile client
+    uploaded_images = serializers.ListField(
         child=serializers.ImageField(max_length=100000, allow_empty_file=False, use_url=True),
         write_only=True
     )
-    caption = serializers.CharField(max_length=255, required=False, default="")
+
+    class Meta:
+        model = GalleryPost
+        fields = ("id", "salon", "vendor", "caption", "images", "uploaded_images", "created_at")
+        read_only_fields = ("id", "salon", "vendor", "created_at")
+
+    def validate(self, data):
+        # Resolved indentation tracking issue from Meta block
+        salon = data.get("salon")
+        vendor = data.get("vendor")
+        if (vendor and salon) or (not vendor and not salon):
+            raise serializers.ValidationError("Must choose exactly one provider (salon or vendor).")
+        return data
 
     def create(self, validated_data):
-        images = validated_data.pop('images')
+        uploaded_images = validated_data.pop('uploaded_images')
         caption = validated_data.get('caption', '')
         vendor = self.context.get('vendor')
         salon = self.context.get('salon')
 
-        gallery_instances = []
-        for img in images:
-            gallery_instances.append(
-                Gallery(
-                    vendor=vendor,
-                    salon=salon,
-                    image=img,
-                    caption=caption
-                )
+        with transaction.atomic():
+            # 1. Create a single post instance with the shared caption
+            post = GalleryPost.objects.create(
+                vendor=vendor,
+                salon=salon,
+                caption=caption
             )
-        
-        # Bulk create them for database speed
-        return Gallery.objects.bulk_create(gallery_instances)
+            
+            # 2. Map all files cleanly onto that wrapper post
+            image_instances = [
+                GalleryImage(post=post, image=img) for img in uploaded_images
+            ]
+            GalleryImage.objects.bulk_create(image_instances)
+            
+        return post
 
     
 from django.db import transaction

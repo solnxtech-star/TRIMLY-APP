@@ -1,5 +1,5 @@
 from django.db import models
-from api.v1.Category.models import ServiceCategory, Gallery
+from api.v1.Category.models import ServiceCategory, GalleryPost
 from api.v1.Users.models import User
 import uuid
 from cloudinary.models import CloudinaryField

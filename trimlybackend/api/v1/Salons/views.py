@@ -3,11 +3,11 @@ from django.shortcuts import render
 from rest_framework import viewsets, generics, parsers
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.shortcuts import get_object_or_404
-from api.v1.Category.serializers import AvailabilityExceptionSerializer, GallerySerializer, IndividualAvailabilityDaySerializer
+from api.v1.Category.serializers import AvailabilityExceptionSerializer, GalleryPostSerializer, IndividualAvailabilityDaySerializer
 from api.v1.Bookings.utils import get_available_slots
 from api.v1.Reviews.models import Review
 from .models import SalonProfile, SalonServices
-from api.v1.Category.models import AvailabilityException, Gallery, Availability
+from api.v1.Category.models import AvailabilityException, GalleryPost, Availability
 from .serializers import SalonProfileSerializer, SalonServicesSerializer, SalonDetailSerializer,SlotResponseSerializer
 from api.v1.Users import permissions
 from rest_framework.response import Response
@@ -104,10 +104,10 @@ class SalonGalleryUploadAPIView(generics.ListCreateAPIView):
     """
     Handle Salon Gallery and Portfolio
     """
-    serializer_class = GallerySerializer
+    serializer_class = GalleryPostSerializer
     parser_classes = (parsers.MultiPartParser, parsers.FormParser)
     def get_queryset(self):
-        return Gallery.objects.select_related("salon").filter(salon_id=self.kwargs["salon_id"])
+        return GalleryPostSerializer.objects.select_related("salon").filter(salon_id=self.kwargs["salon_id"])
 
     def perform_create(self, serializer):
         salon = get_object_or_404(SalonProfile, salon_id=self.kwargs["salon_id"])

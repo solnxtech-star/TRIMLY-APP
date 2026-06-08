@@ -7,8 +7,8 @@ from api.v1.Reviews.serializers import ReviewSerializer
 from api.v1.Vendor.models import IndividualVendorProfile
 from .models import SalonProfile, SalonServices
 from rest_framework import serializers
-from api.v1.Category.serializers import CategorySerializer, GallerySerializer
-from api.v1.Category.models import Gallery, Availability
+from api.v1.Category.serializers import CategorySerializer, GalleryPostSerializer
+from api.v1.Category.models import GalleryPost, Availability
 from django.core.exceptions import ValidationError as DjangoValidationError
 
 class SalonServicesSerializer(serializers.ModelSerializer):
@@ -35,7 +35,7 @@ class SalonProfileSerializer(serializers.ModelSerializer):
 class SalonDetailSerializer(serializers.ModelSerializer):
     salon_services = SalonServicesSerializer(many=True, read_only=True)
     categories = CategorySerializer(many=True, read_only=True) # Usually a salon has 1 category
-    salon_portfolio = GallerySerializer(many=True, read_only=True)
+    salon_portfolio = GalleryPostSerializer(many=True, read_only=True)
     review_count = serializers.IntegerField(read_only=True)
     average_rating = serializers.FloatField(read_only=True)
     salon_reviews = ReviewSerializer(many=True, read_only=True, source='reviews') 

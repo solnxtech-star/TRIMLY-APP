@@ -1,7 +1,7 @@
 from datetime import datetime
 from django.shortcuts import get_object_or_404
-from api.v1.Category.models import Availability, AvailabilityException, Gallery
-from api.v1.Category.serializers import AvailabilityExceptionSerializer, BulkAvailabilitySerializer, BulkGalleryUploadSerializer, GallerySerializer, IndividualAvailabilityDaySerializer
+from api.v1.Category.models import Availability, AvailabilityException, GalleryPost
+from api.v1.Category.serializers import AvailabilityExceptionSerializer, BulkAvailabilitySerializer , GalleryPostSerializer, IndividualAvailabilityDaySerializer
 from api.v1.Reviews.models import Review
 from .models import IndividualVendorProfile, VendorServices
 from .serializers import SlotResponseSerializer, VendorSerializer, VendorServicesSerializer, VendorDetailSerializer
@@ -29,7 +29,7 @@ class VendorServicesListCreateAPIView(generics.ListCreateAPIView):
         return VendorServices.objects.prefetch_related("categories").filter(vendor_id=vendor_id)
     def perform_create(self, serializer):
         return serializer.save(vendor=self.request.user.individual_vendor_profile)
-
+    
 class VendorServicesRetrieveUpdateDeleteAPIView(generics.RetrieveUpdateDestroyAPIView):
     """
    Retrieves vendor Services objects(Id)
@@ -52,19 +52,19 @@ class VendorServicesRetrieveUpdateDeleteAPIView(generics.RetrieveUpdateDestroyAP
         except VendorServices.DoesNotExist:
             return ("No service found matching the given IDs.")
 
-
-
-
 class VendorViewset(viewsets.ModelViewSet):
     """"
-    A viewset for viewing and editing vendor instances.
+    A viewset for viewing and editing vendor instances with multi-category filters.
     """
     serializer_class = VendorSerializer
+
     def get_queryset(self):
-        return IndividualVendorProfile.objects.select_related(
-            'worker',
-            'category'
+        # 1. Start with optimized base selection
+        # SWAPPED: Removed 'category' from select_related since it's now multi-relational
+        queryset = IndividualVendorProfile.objects.select_related(
+            'worker'
         ).prefetch_related(
+            'categories', # Prefetching your updated categories field array
             Prefetch(
                 'vendor_services',
                 queryset=VendorServices.objects.prefetch_related('categories')
@@ -73,7 +73,7 @@ class VendorViewset(viewsets.ModelViewSet):
                 'reviews',
                 queryset=Review.objects.select_related('customer')
             ),
-            'vendor_portfolio'
+            'vendor_gallery_posts' # Updated relationship string pointing to parent post model
         ).annotate(
             review_count=Count('reviews'),
             average_rating=Coalesce(
@@ -83,13 +83,25 @@ class VendorViewset(viewsets.ModelViewSet):
             )
         ).order_by("-average_rating")
 
+        # 2. Extract multi-category query parameters (e.g., ?categories=uuid1,uuid2)
+        categories_param = self.request.query_params.get("categories")
+        if categories_param:
+            # Clean and parse the comma-separated string into a list of clean IDs
+            category_ids = [cat_id.strip() for cat_id in categories_param.split(",") if cat_id.strip()]
+            
+            if category_ids:
+                # Use __in lookup across the relationship bridge and use .distinct() to avoid duplicate records
+                queryset = queryset.filter(categories__id__in=category_ids).distinct()
+
+        return queryset
+
     def get_permissions(self):
         if self.action in ["list", "retrieve"]:
-            permission_classes = [IsAuthenticated,]
+            permission_classes = [IsAuthenticated]
         elif self.action == "create":
-            permission_classes = [IsAdminVendorOrReadOnly,]
+            permission_classes = [IsAdminVendorOrReadOnly]
         else:
-            permission_classes = [IsAdminOrVendorServiceObject,]
+            permission_classes = [IsAdminOrVendorServiceObject]
 
         return [permission() for permission in permission_classes]
     
@@ -98,8 +110,8 @@ class VendorViewset(viewsets.ModelViewSet):
             return VendorDetailSerializer
         else:
             return VendorSerializer
+
     def perform_create(self, serializer):
-        # Automatically set the 'worker' field to the current authenticated user instance
         serializer.save(worker=self.request.user)
 
     
@@ -109,13 +121,10 @@ class VendorGalleryUploadAPIView(generics.ListCreateAPIView):
     """
     parser_classes = (parsers.MultiPartParser, parsers.FormParser)
 
-    def get_serializer_class(self):
-        if self.request.method == "POST":
-            return BulkGalleryUploadSerializer
-        return GallerySerializer # Your original ModelSerializer for returning lists
+    serializer_class = GalleryPostSerializer
 
     def get_queryset(self):
-        return Gallery.objects.filter(vendor_id=self.kwargs["id"])
+        return GalleryPost.objects.filter(vendor_id=self.kwargs["id"])
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -213,44 +222,15 @@ class VendorAvailabilitySyncAPIView(generics.RetrieveUpdateDestroyAPIView):
         queryset.delete()
         return Response({"detail": "Weekly schedule wiped successfully."}, status=status.HTTP_204_NO_CONTENT)
 
-class VendorGalleryUploadAPIView(generics.ListCreateAPIView):
-    """
-    Handle uploading multiple portfolio images at once and listing them
-    """
-    parser_classes = (parsers.MultiPartParser, parsers.FormParser)
 
-    def get_serializer_class(self):
-        if self.request.method == "POST":
-            return BulkGalleryUploadSerializer
-        return GallerySerializer # Your original ModelSerializer for returning lists
-
-    def get_queryset(self):
-        return Gallery.objects.filter(vendor_id=self.kwargs["id"])
-
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        if self.request.method == "POST":
-            # Pass the profile down safely to the bulk engine
-            context["vendor"] = get_object_or_404(IndividualVendorProfile, worker_id=self.kwargs["id"])
-        return context
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        instances = serializer.save()
-        
-        # Respond back with the list of created image items serialized cleanly
-        response_serializer = GallerySerializer(instances, many=True)
-        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
-    
 
 
 class GalleryImageDeleteAPIView(generics.DestroyAPIView):
     """
     Deletes a specific gallery image asset by its unique UUID ID.
     """
-    queryset = Gallery.objects.all()
-    serializer_class = GallerySerializer
+    queryset = GalleryPost.objects.all()
+    serializer_class = GalleryPostSerializer
     permission_classes = [IsAdminVendorOrReadOnly] # Ensure ownership validation matches your rules
     lookup_field = "id"
     
