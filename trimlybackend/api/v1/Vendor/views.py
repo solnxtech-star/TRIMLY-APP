@@ -52,6 +52,26 @@ class VendorServicesRetrieveUpdateDeleteAPIView(generics.RetrieveUpdateDestroyAP
         except VendorServices.DoesNotExist:
             return ("No service found matching the given IDs.")
 
+
+from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiParameter
+
+
+# FORCE SWAGGER TO SHOW THE CATEGORIES FILTER
+@extend_schema_view(
+    list=extend_schema(
+        summary="List all vendors with multi-category filtering",
+        description="Fetch all vendors. You can pass a comma-separated list of category UUIDs to filter results.",
+        parameters=[
+            OpenApiParameter(
+                name='categories',
+                type=str,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Comma-separated category IDs. Example: `8b4c2e6d-...,1a2b3c4d-...`"
+            )
+        ]
+    )
+)
 class VendorViewset(viewsets.ModelViewSet):
     """"
     A viewset for viewing and editing vendor instances with multi-category filters.
@@ -59,12 +79,10 @@ class VendorViewset(viewsets.ModelViewSet):
     serializer_class = VendorSerializer
 
     def get_queryset(self):
-        # 1. Start with optimized base selection
-        # SWAPPED: Removed 'category' from select_related since it's now multi-relational
         queryset = IndividualVendorProfile.objects.select_related(
             'worker'
         ).prefetch_related(
-            'categories', # Prefetching your updated categories field array
+            'categories', 
             Prefetch(
                 'vendor_services',
                 queryset=VendorServices.objects.prefetch_related('categories')
@@ -73,7 +91,7 @@ class VendorViewset(viewsets.ModelViewSet):
                 'reviews',
                 queryset=Review.objects.select_related('customer')
             ),
-            'vendor_gallery_posts' # Updated relationship string pointing to parent post model
+            'vendor_gallery_posts' 
         ).annotate(
             review_count=Count('reviews'),
             average_rating=Coalesce(
@@ -83,17 +101,15 @@ class VendorViewset(viewsets.ModelViewSet):
             )
         ).order_by("-average_rating")
 
-        # 2. Extract multi-category query parameters (e.g., ?categories=uuid1,uuid2)
         categories_param = self.request.query_params.get("categories")
         if categories_param:
-            # Clean and parse the comma-separated string into a list of clean IDs
             category_ids = [cat_id.strip() for cat_id in categories_param.split(",") if cat_id.strip()]
-            
             if category_ids:
-                # Use __in lookup across the relationship bridge and use .distinct() to avoid duplicate records
                 queryset = queryset.filter(categories__id__in=category_ids).distinct()
 
         return queryset
+
+    # ... keep your get_permissions, get_serializer_class, and perform_create layout the same
 
     def get_permissions(self):
         if self.action in ["list", "retrieve"]:
