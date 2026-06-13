@@ -85,8 +85,8 @@ class Booking(models.Model):
             return datetime.combine(self.date, self.start_time)
         return None
 
-        def __str__(self):
-            return f"Booking {self.id} - {self.customer}"
+    def __str__(self):
+        return f"Booking {self.id} - {self.customer}"
 
     # 🔑 Resolve provider dynamically
     

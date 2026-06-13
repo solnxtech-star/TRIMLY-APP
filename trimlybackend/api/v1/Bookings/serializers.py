@@ -16,43 +16,61 @@ from .models import Booking
 class BookingSerializer(serializers.ModelSerializer):
     # --- Existing Read-Only Fields ---
     customer_address = serializers.ReadOnlyField(source='customer.customer_profile.customer_address')
-    vendor_id = serializers.ReadOnlyField(source='get_vendor_user.individual_vendor_profile.id')
-    vendor_name = serializers.ReadOnlyField(source="get_vendor_user.get_full_name")
-    vendor_location = serializers.ReadOnlyField(source="get_vendor_user.individual_vendor_profile.address")
-    vendor_image = serializers.ReadOnlyField(source="get_vendor_user.individual_vendor_profile.profile_pic.url")
     customer_name = serializers.ReadOnlyField(source="customer.get_full_name")
     customer_image = serializers.ReadOnlyField(source="customer.customer_profile.profile_pic.url")
     vendor_service_name = serializers.ReadOnlyField(source="get_vendor_service_name")
 
-    # --- New Fields for Amount and Duration ---
-    # Pulls price directly from whichever service is attached
+    # --- Decoupled Profile IDs (Crucial for Frontend Review Routing) ---
+    vendor_id = serializers.ReadOnlyField(source='vendor_service.vendor.id')
+    salon_id = serializers.ReadOnlyField(source='salon_service.salon.id')
+
+    # --- Context-Aware Display Fields ---
+    # Automatically pulls business name or individual provider name
+    provider_name = serializers.SerializerMethodField()
+    provider_image = serializers.SerializerMethodField()
+    provider_location = serializers.SerializerMethodField()
+
     amount = serializers.SerializerMethodField()
     duration = serializers.SerializerMethodField()
 
     class Meta:
         model = Booking
         fields = [
-            'id', 'customer_id', 'customer_name', 'customer_address', 'vendor_id', 'customer_image', 
-            'salon_service', 'vendor_service', 'amount', 'duration', 'vendor_name', 
-            'vendor_image', 'vendor_location', 'vendor_service_name', 
+            'id', 'customer_id', 'customer_name', 'customer_address', 
+            'vendor_id', 'salon_id', 'customer_image', 
+            'salon_service', 'vendor_service', 'amount', 'duration', 
+            'provider_name', 'provider_image', 'provider_location', 'vendor_service_name', 
             'date', 'start_time', 'end_time', 'status', 'payment_reference', 
             'is_rated', 'created_at'
         ]
-        # These fields cannot be changed by the frontend
         read_only_fields = ['id', 'status', 'is_rated', 'end_time', 'amount', 'duration']
 
+    def get_provider_name(self, obj):
+        if obj.vendor_service:
+            return obj.vendor_service.vendor.worker.get_full_name()
+        return obj.salon_service.salon.name
+
+    def get_provider_image(self, obj):
+        if obj.vendor_service and obj.vendor_service.vendor.profile_pic:
+            return obj.vendor_service.vendor.profile_pic.url
+        if obj.salon_service and obj.salon_service.salon.logo:  # adjust key matching salon profile setup
+            return obj.salon_service.salon.logo.url
+        return None
+
+    def get_provider_location(self, obj):
+        if obj.vendor_service:
+            return obj.vendor_service.vendor.address
+        return obj.salon_service.salon.address
+
     def get_amount(self, obj):
-        """Pulls price from either SalonService or VendorService."""
         service = obj.salon_service or obj.vendor_service
-        # Assuming your service models have a 'price' field
         return getattr(service, 'price', 0) if service else 0
 
     def get_duration(self, obj):
-        """Pulls duration from either SalonService or VendorService."""
         service = obj.salon_service or obj.vendor_service
-        # Assuming your service models have a 'duration_minutes' field
         return getattr(service, 'duration_minutes', 0) if service else 0
 
+    # ... keep your validate() and create() logic completely identical ...
     def validate(self, data):
         salon_service = data.get('salon_service')
         vendor_service = data.get('vendor_service')
