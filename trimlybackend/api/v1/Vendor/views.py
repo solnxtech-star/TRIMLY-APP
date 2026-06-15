@@ -172,7 +172,7 @@ class VendorGalleryUploadAPIView(generics.ListCreateAPIView):
         instances = serializer.save()
         
         # Respond back with the list of created image items serialized cleanly
-        response_serializer = GallerySerializer(instances, many=True)
+        response_serializer = GalleryPostSerializer(instances, many=True)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
 class VendorAvailabilityListCreateAPIView(generics.ListCreateAPIView):
