@@ -19,7 +19,6 @@ class GalleryImageSerializer(serializers.ModelSerializer):
 
 class GalleryPostSerializer(serializers.ModelSerializer):
     images = GalleryImageSerializer(many=True, read_only=True)
-    # This key receives the file array from the mobile client
     uploaded_images = serializers.ListField(
         child=serializers.ImageField(max_length=100000, allow_empty_file=False, use_url=True),
         write_only=True
@@ -31,11 +30,13 @@ class GalleryPostSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "salon", "vendor", "created_at")
 
     def validate(self, data):
-        # Resolved indentation tracking issue from Meta block
-        salon = data.get("salon")
-        vendor = data.get("vendor")
+        # FIX: Read from context (passed by the view via URL), NOT from the request body data
+        vendor = self.context.get('vendor')
+        salon = self.context.get('salon')
+        
         if (vendor and salon) or (not vendor and not salon):
-            raise serializers.ValidationError("Must choose exactly one provider (salon or vendor).")
+            raise serializers.ValidationError("System error: View must provide exactly one provider context.")
+        
         return data
 
     def create(self, validated_data):
@@ -45,14 +46,12 @@ class GalleryPostSerializer(serializers.ModelSerializer):
         salon = self.context.get('salon')
 
         with transaction.atomic():
-            # 1. Create a single post instance with the shared caption
             post = GalleryPost.objects.create(
                 vendor=vendor,
                 salon=salon,
                 caption=caption
             )
             
-            # 2. Map all files cleanly onto that wrapper post
             image_instances = [
                 GalleryImage(post=post, image=img) for img in uploaded_images
             ]
