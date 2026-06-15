@@ -1,4 +1,5 @@
 from datetime import datetime
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from api.v1.Category.models import Availability, AvailabilityException, GalleryPost
 from api.v1.Category.serializers import AvailabilityExceptionSerializer, BulkAvailabilitySerializer , GalleryPostSerializer, IndividualAvailabilityDaySerializer
@@ -13,7 +14,7 @@ from rest_framework.response import Response
 from api.v1.Bookings.utils import get_available_slots
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from drf_spectacular.types import OpenApiTypes
-from django.db.models import Prefetch, Count, Avg, Value, FloatField
+from django.db.models import Q, Prefetch, Count, Avg, Value, FloatField
 from django.db.models.functions import Coalesce 
 from rest_framework import generics, status
 from django.db import transaction
@@ -133,20 +134,36 @@ class VendorViewset(viewsets.ModelViewSet):
     
 class VendorGalleryUploadAPIView(generics.ListCreateAPIView):
     """
-    Handle uploading multiple portfolio images at once and listing them
+    Handle uploading multiple portfolio images at once and listing them.
+    Supports lookups by either Profile ID or User ID (worker_id).
     """
     parser_classes = (parsers.MultiPartParser, parsers.FormParser)
-
     serializer_class = GalleryPostSerializer
 
     def get_queryset(self):
-        return GalleryPost.objects.filter(vendor_id=self.kwargs["id"])
+        # We also apply a dual filter here to ensure both listing 
+        # and uploading remain unified.
+        vendor_id = self.kwargs["id"]
+        return GalleryPost.objects.filter(
+            Q(vendor_id=vendor_id) | Q(vendor__worker_id=vendor_id)
+        )
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
         if self.request.method == "POST":
+            vendor_id = self.kwargs["id"]
+            
+            # ROBUST LOOKUP: Look for a match in either 'pk' or 'worker_id'
+            vendor_profile = IndividualVendorProfile.objects.filter(
+                Q(pk=vendor_id) | Q(worker_id=vendor_id)
+            ).first()
+            
+            if not vendor_profile:
+                raise Http404("No IndividualVendorProfile matches the given query.")
+                
             # Pass the profile down safely to the bulk engine
-            context["vendor"] = get_object_or_404(IndividualVendorProfile, worker_id=self.kwargs["id"])
+            context["vendor"] = vendor_profile
+            
         return context
 
     def create(self, request, *args, **kwargs):
@@ -157,8 +174,6 @@ class VendorGalleryUploadAPIView(generics.ListCreateAPIView):
         # Respond back with the list of created image items serialized cleanly
         response_serializer = GallerySerializer(instances, many=True)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
-    
-
 
 class VendorAvailabilityListCreateAPIView(generics.ListCreateAPIView):
     """
