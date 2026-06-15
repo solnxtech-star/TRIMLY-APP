@@ -133,46 +133,45 @@ class VendorViewset(viewsets.ModelViewSet):
 
     
 class VendorGalleryUploadAPIView(generics.ListCreateAPIView):
-    """
-    Handle uploading multiple portfolio images at once and listing them.
-    Supports lookups by either Profile ID or User ID (worker_id).
-    """
-    parser_classes = (parsers.MultiPartParser, parsers.FormParser)
     serializer_class = GalleryPostSerializer
 
     def get_queryset(self):
-        # We also apply a dual filter here to ensure both listing 
-        # and uploading remain unified.
-        vendor_id = self.kwargs["id"]
-        return GalleryPost.objects.filter(
-            Q(vendor_id=vendor_id) | Q(vendor__worker_id=vendor_id)
-        )
+        """
+        Handles the GET request: Returns all gallery posts belonging 
+        to the vendor specified in the URL path parameter.
+        """
+        vendor_id = self.kwargs.get("id")
+        return GalleryPost.objects.filter(vendor_id=vendor_id).prefetch_related('images')
 
     def get_serializer_context(self):
+        """
+        Injects the vendor context directly into the serializer 
+        so validation and creation can see it automatically.
+        """
         context = super().get_serializer_context()
-        if self.request.method == "POST":
-            vendor_id = self.kwargs["id"]
-            
-            # ROBUST LOOKUP: Look for a match in either 'pk' or 'worker_id'
-            vendor_profile = IndividualVendorProfile.objects.filter(
-                Q(pk=vendor_id) | Q(worker_id=vendor_id)
-            ).first()
-            
-            if not vendor_profile:
-                raise Http404("No IndividualVendorProfile matches the given query.")
-                
-            # Pass the profile down safely to the bulk engine
-            context["vendor"] = vendor_profile
-            
+        vendor_id = self.kwargs.get("id")
+        
+        # Fetch the vendor object safely from the URL parameter
+        vendor = get_object_or_404(IndividualVendorProfile, id=vendor_id)
+        
+        context['vendor'] = vendor
+        context['salon'] = None  # Explicitly None because this is the Vendor endpoint
         return context
 
     def create(self, request, *args, **kwargs):
+        """
+        Handles the POST request: Validates incoming files and 
+        returns the cleanly structured single nested dictionary.
+        """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        instances = serializer.save()
         
-        # Respond back with the list of created image items serialized cleanly
-        response_serializer = GalleryPostSerializer(instances, many=True)
+        # This triggers your custom serializer create() method and returns one instance
+        post_instance = serializer.save()
+        
+        # FIX: Notice NO many=True here. We pass the single post_instance directly.
+        response_serializer = GalleryPostSerializer(post_instance, context=self.get_serializer_context())
+        
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
 class VendorAvailabilityListCreateAPIView(generics.ListCreateAPIView):
