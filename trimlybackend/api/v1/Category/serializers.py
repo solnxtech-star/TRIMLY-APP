@@ -81,8 +81,8 @@ class IndividualAvailabilityDaySerializer(serializers.ModelSerializer):
 
 class BulkAvailabilitySerializer(serializers.Serializer):
     """
-    Accepts an array of schedules, validates them collectively against database overlaps, 
-    and saves them efficiently in a single bulk operation.
+    Accepts an array of schedules, replaces any existing schedule configuration 
+    for the provider, and saves them efficiently in a single atomic bulk operation.
     """
     schedules = IndividualAvailabilityDaySerializer(many=True, allow_empty=False)
 
@@ -96,38 +96,8 @@ class BulkAvailabilitySerializer(serializers.Serializer):
                 {"schedules": "You cannot submit duplicate configurations for the same day of the week."}
             )
 
-        # Extract the contextual vendor profile passed from the perform_create method
-        vendor = self.context.get("vendor")
-        salon = self.context.get("salon")
-
-        # 2. Query for existing database schedules to perform overlap and collision logic
-        # Note: Your model filters on day_of_week, not date. Fixed from original snippet.
-        qs = Availability.objects.all()
-        if salon:
-            qs = qs.filter(salon=salon)
-        elif vendor:
-            qs = qs.filter(vendor=vendor)
-
-        for day_data in schedules_data:
-            day = day_data["day_of_week"]
-            start = day_data["start_time"]
-            end = day_data["end_time"]
-
-            # Filter existing records for this specific weekday
-            day_qs = qs.filter(day_of_week=day)
-
-            # If you are updating, you'll want to exclude records handled in this payload
-            # (Though for bulk setups, wiping and replacing or explicit syncing is cleaner)
-            overlap_exists = day_qs.filter(
-                start_time__lt=end,
-                end_time__gt=start,
-            ).exists()
-
-            if overlap_exists:
-                raise serializers.ValidationError(
-                    f"The schedule configuration for day index {day} overlaps with a schedule already saved in the database."
-                )
-
+        # Note: Database overlap checks are removed here because we drop 
+        # previous rows during execution to clear the slate.
         return attrs
 
     def create(self, validated_data):
@@ -139,6 +109,14 @@ class BulkAvailabilitySerializer(serializers.Serializer):
         
         # Use an atomic transaction block to make sure it's all-or-nothing
         with transaction.atomic():
+            # 1. Purge existing configurations for this specific provider first
+            old_schedules = Availability.objects.all()
+            if salon:
+                old_schedules.filter(salon=salon).delete()
+            elif vendor:
+                old_schedules.filter(vendor=vendor).delete()
+
+            # 2. Map new configurations into model instances
             for day_data in schedules_data:
                 instance = Availability(
                     vendor=vendor,
@@ -151,7 +129,6 @@ class BulkAvailabilitySerializer(serializers.Serializer):
             
             # Efficient database operation instead of loop-saving
             return Availability.objects.bulk_create(availability_instances)
-
 
 
 class AvailabilityExceptionSerializer(serializers.ModelSerializer):
