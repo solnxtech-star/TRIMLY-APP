@@ -39,7 +39,7 @@ class SalonViewset(viewsets.ModelViewSet):
                 'reviews',
                 queryset=Review.objects.select_related('customer')
             ),
-            'salon_portfolio'
+            'salon_gallery_posts'
         ).annotate(
             review_count=Count('reviews'),
             average_rating=Coalesce(
