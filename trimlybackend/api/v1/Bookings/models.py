@@ -50,6 +50,10 @@ class Booking(models.Model):
     vendor_payout_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     is_rated = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    # Storage for scheduled Celery task tracking IDs (used for revocation on reschedule/cancellation)
+    reminder_task_id = models.CharField(max_length=255, null=True, blank=True)
+    warning_task_id = models.CharField(max_length=255, null=True, blank=True)
+    payout_task_id = models.CharField(max_length=255, null=True, blank=True)
 
     class Meta:
         ordering = ["-created_at"]

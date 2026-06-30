@@ -161,3 +161,59 @@ class VerifyNinSerializer(serializers.Serializer):
             raise serializers.ValidationError("vNIN must be exactly 16 digits")
 
         return value
+    
+from datetime import datetime
+from rest_framework import serializers
+from .models import Booking
+
+class BookingRescheduleSerializer(serializers.ModelSerializer):
+    # Explicitly define these fields so the frontend can send them easily
+    booking_date = serializers.DateField(source="date")
+    start_time = serializers.TimeField()
+    end_time = serializers.TimeField()
+
+    class Meta:
+        model = Booking
+        fields = ["booking_date", "start_time", "end_time"]
+
+    def validate(self, attrs):
+        # 1. Re-map fields to check against your database structure
+        new_date = attrs.get("date")
+        new_start = attrs.get("start_time")
+        new_end = attrs.get("end_time")
+
+        # Fallback to instance values if partial updates don't pass all fields
+        if not new_date:
+            new_date = self.instance.date
+        if not new_start:
+            new_start = self.instance.start_time
+        if not new_end:
+            new_end = self.instance.end_time
+
+        # 2. Check for basic time inversion (e.g., setting 5:00 PM to 2:00 PM)
+        if new_start >= new_end:
+            raise serializers.ValidationError(
+                {"start_time": "The appointment start time must occur before the end time."}
+            )
+
+        # 3. CRITICAL: Prevent double-booking conflicts
+        # Find if this specific vendor/salon is already booked at the new slot
+        # Exclude the current booking instance ID so it doesn't conflict with itself!
+        duplicate_query = Booking.objects.filter(
+            date=new_date,
+            status="confirmed",
+            start_time__lt=new_end,
+            end_time__gt=new_start
+        ).exclude(id=self.instance.id)
+
+        if self.instance.vendor_service:
+            duplicate_query = duplicate_query.filter(vendor_service__vendor=self.instance.vendor_service.vendor)
+        elif self.instance.salon_service:
+            duplicate_query = duplicate_query.filter(salon_service__salon=self.instance.salon_service.salon)
+
+        if duplicate_query.exists():
+            raise serializers.ValidationError(
+                {"booking_date": "The selected time slot is already occupied by another client. Please choose another slot."}
+            )
+
+        return attrs

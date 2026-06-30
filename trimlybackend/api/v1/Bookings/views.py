@@ -1,5 +1,5 @@
 from api.v1.Payments.models import Transaction
-from .serializers import BookingSerializer
+from .serializers import BookingRescheduleSerializer, BookingSerializer
 from rest_framework.viewsets import ModelViewSet
 from rest_framework import  permissions
 from api.v1.Users.permissions import IsBookingOwnerOrProvider , BookingActionPermission
@@ -21,9 +21,24 @@ from drf_spectacular.utils import extend_schema
 
 
 
+import os
+from datetime import datetime, timedelta
+from django.db import transaction
+from django.utils import timezone
+from rest_framework import permissions, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import OrderingFilter
+from celery import current_app
+
+
+
 class BookingViewSet(ModelViewSet):
     """
-    Handles bookings for all users (salon, vendors, users)
+    Production Engine handling Bookings for Admins, Salon Owners, Independent Vendors, and Clients.
+    Manages state machine transitions, automated escrow/wallet entries, and real-time Celery task synchronization.
     """
     serializer_class = BookingSerializer
     permission_classes = [permissions.IsAuthenticated, IsBookingOwnerOrProvider, BookingActionPermission]
@@ -49,6 +64,66 @@ class BookingViewSet(ModelViewSet):
             )
         return queryset
 
+    def get_permissions(self):
+        """
+        Dynamically adjusts permission boundaries based on the current execution target.
+        """
+        if self.action == 'reschedule':
+            # Customers only need to be authenticated and verify they own the booking
+            return [permissions.IsAuthenticated(), IsBookingOwnerOrProvider()]
+        
+        # Fall back to the default class-level rules for everything else
+        return [permission() for permission in self.permission_classes]
+
+    def schedule_booking_automation_tasks(self, booking):
+        """
+        PRODUCTION TASK ENGINE:
+        Evicts any dead or historical scheduled tasks from the Celery message broker
+        and maps out fresh execution timelines to keep notifications and autocompletes accurate.
+        """
+        # 1. Evict any scheduled tasks linked to this instance from the Redis/RabbitMQ pool
+        old_task_ids = [booking.reminder_task_id, booking.warning_task_id, booking.payout_task_id]
+        for task_id in old_task_ids:
+            if task_id:
+                try:
+                    current_app.control.revoke(task_id, terminate=True)
+                except Exception as e:
+                    print(f"[-] Non-breaking task eviction failure on Broker level: {e}")
+
+        # 2. Establish production timeline limits based on target appointment time
+        appt_time = booking.appointment_datetime  
+        reminder_eta = timezone.now() + timedelta(hours=1) 
+        payout_eta = appt_time + timedelta(hours=24)
+        warning_eta = payout_eta - timedelta(hours=2)
+
+        vendor_email = (
+            booking.vendor_service.vendor.worker.email 
+            if booking.vendor_service 
+            else booking.salon_service.salon.owner.email
+        )
+
+        # 3. Offload fresh tasks to Celery and trap unique message IDs
+        reminder_res = send_reminder_task.apply_async(
+            args=[booking.customer.email, vendor_email, booking.customer.username, booking.date, booking.start_time],
+            eta=reminder_eta
+        )
+        
+        warning_res = warn_customer_of_autocomplete.apply_async(
+            args=[booking.id], 
+            eta=warning_eta
+        )
+        
+        payout_res = auto_complete_booking.apply_async(
+            args=[booking.id], 
+            eta=payout_eta
+        )
+
+        # 4. Save task IDs to the database so we can find them if the user reschedules again later
+        booking.reminder_task_id = reminder_res.id
+        booking.warning_task_id = warning_res.id
+        booking.payout_task_id = payout_res.id
+        booking.save(update_fields=['reminder_task_id', 'warning_task_id', 'payout_task_id'])
+
     def perform_create(self, serializer):
         with transaction.atomic():
             booking = serializer.save(customer=self.request.user)
@@ -56,99 +131,131 @@ class BookingViewSet(ModelViewSet):
             
             vendor_user = booking.get_vendor_user
             if not vendor_user:
-                print("ERROR: No vendor found for this booking")
+                print("[-] Integrity Error: Target vendor could not be resolved.")
                 return 
 
             vendor_id_str = str(vendor_user.id)
             customer_id_str = str(self.request.user.id)
 
-            # 1. IMMEDIATE: Emails
+            # Fire off high-priority notifications instantly upon database commit confirmation
             transaction.on_commit(lambda: send_booking_notifications.delay(booking_id))
-            
-            # 2. IMMEDIATE: WebSocket Notification (To Vendor)
             transaction.on_commit(lambda: create_and_send_notification.delay(
-                recipient_id=vendor_id_str,
-                actor_id=customer_id_str,
-                verb="booked",
-                target_model_name="Booking",
-                target_id=booking_id
+                recipient_id=vendor_id_str, actor_id=customer_id_str,
+                verb="booked", target_model_name="Booking", target_id=booking_id
             ))
 
-            # 3. SCHEDULING: The Algorithm
-            appt_time = booking.appointment_datetime
-            reminder_eta = booking.created_at + timedelta(minutes=1)
-            payout_eta = appt_time + timedelta(hours=24)
-            warning_eta = payout_eta - timedelta(hours=2)
-
-            vendor_email = booking.vendor_service.vendor.worker.email if booking.vendor_service else booking.salon_service.salon.owner.email
-            
-            send_reminder_task.apply_async(
-                args=[booking.customer.email, vendor_email, booking.customer.username, booking.date, booking.start_time],
-                eta=reminder_eta
-            )
-
-            warn_customer_of_autocomplete.apply_async(args=[booking_id], eta=warning_eta)
-            auto_complete_booking.apply_async(args=[booking_id], eta=payout_eta)
+            # Initialize the background execution timers
+            transaction.on_commit(lambda: self.schedule_booking_automation_tasks(booking))
 
     @action(detail=True, methods=["post"])
     def cancel(self, request, pk=None):
         booking = self.get_object()
+        vendor_user = booking.get_vendor_user
+        is_vendor = vendor_user and (str(request.user.id) == str(vendor_user.id))
+
         if booking.status in ["cancelled", "completed"]:
-            return Response({"detail": "This booking cannot be cancelled."}, status=400)
+            return Response({"detail": "This booking cannot be altered in its current state."}, status=400)
+
+        # STRICT LOCKOUT: Prevent customers from canceling paid or confirmed bookings
+        if getattr(booking, 'is_paid', False) or booking.status == "confirmed":
+            if not is_vendor:
+                return Response(
+                    {"detail": "Paid appointments cannot be cancelled. You can reschedule your appointment up to 24 hours prior."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
         with transaction.atomic():
             booking.status = "cancelled"
             booking.save(update_fields=["status"])
             
-            # 1. Handle the Wallet Rollbacks
+            # Revert escrow fields in vendor wallets
             wallet = booking.get_vendor_wallet
             amount = booking.vendor_payout_amount
             wallet.pending_balance -= amount
             wallet.save()
 
-            # 2. Record the Refund Transaction Log
+            # Generate formal refund transaction statement logs
             Transaction.objects.create(
                 wallet=wallet, amount=amount, tx_type='refund',
                 status='completed', booking_id=booking.id, tx_ref=f"REFUND-{booking.id}"
             )
 
-            # 3. Securely Fetch Vendor User
-            vendor_user = booking.get_vendor_user
+            # Evict pending automation tasks since the booking is dead
+            old_task_ids = [booking.reminder_task_id, booking.warning_task_id, booking.payout_task_id]
+            for task_id in old_task_ids:
+                if task_id:
+                    transaction.on_commit(lambda tid=task_id: current_app.control.revoke(tid, terminate=True))
+
             if not vendor_user:
-                return Response({"detail": "Booking cancellation processed, but target vendor account could not be resolved for notifications."}, status=200)
+                return Response({"detail": "Cancellation processed without notification sync."}, status=200)
 
-            # 4. EXPLANATION OF NOTIFICATION ROUTING LOGIC:
-            # We compare standard strings of the primary keys (IDs).
-            # If the ID of the person making this API request matches the Vendor's ID, 
-            # the Vendor is the one cancelling, so we route the notification to the Customer.
-            # Otherwise, the Customer is cancelling, so we route it to the Vendor.
-            if str(request.user.id) == str(vendor_user.id):
-                recipient_id = str(booking.customer.id)
-            else:
-                recipient_id = str(vendor_user.id)
+            recipient_id = str(booking.customer.id) if is_vendor else str(vendor_user.id)
 
-            # 5. Broadcast via WebSocket once DB transaction is completely safely saved
             transaction.on_commit(lambda: create_and_send_notification.delay(
-                recipient_id=recipient_id,
-                actor_id=str(request.user.id),
-                verb="cancelled",
-                target_model_name="Booking",
-                target_id=booking.id
+                recipient_id=recipient_id, actor_id=str(request.user.id),
+                verb="cancelled", target_model_name="Booking", target_id=booking.id
             ))
 
-        return Response({"detail": "Booking cancelled and refund initiated."}, status=200)
+        return Response({"detail": "Booking cancelled cleanly."}, status=200)
+
+    @extend_schema(
+        request=BookingRescheduleSerializer,
+        responses={200: BookingRescheduleSerializer}
+    )
+    @action(detail=True, methods=["post"])
+    def reschedule(self, request, pk=None):
+        booking = self.get_object()
+        
+        if booking.status not in ["confirmed", "pending"]:
+            return Response({"detail": "Inactive bookings cannot be modified."}, status=400)
+
+        vendor_user = booking.get_vendor_user
+        is_vendor = vendor_user and (str(request.user.id) == str(vendor_user.id))
+        
+        # FIXED LOCKOUT METHOD: Combines timezone handling safely via explicit thresholds
+        if not is_vendor:
+            current_now = timezone.now()
+            naive_booking_dt = datetime.combine(booking.date, booking.start_time)
+            booking_datetime = timezone.make_aware(naive_booking_dt, current_now.tzinfo)
+            
+            lockout_threshold = current_now + timedelta(hours=24)
+            
+            if booking_datetime < lockout_threshold:
+                return Response(
+                    {"detail": "This appointment is less than 24 hours away and can no longer be rescheduled online. Please reach out to your provider directly."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        serializer = BookingRescheduleSerializer(booking, data=request.data, partial=True, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        
+        with transaction.atomic():
+            updated_booking = serializer.save()
+            recipient_id = str(booking.customer.id) if is_vendor else str(vendor_user.id)
+            
+            # Alert the counterparty over WebSocket
+            transaction.on_commit(lambda: create_and_send_notification.delay(
+                recipient_id=recipient_id, actor_id=str(request.user.id),
+                verb="rescheduled", target_model_name="Booking", target_id=updated_booking.id
+            ))
+            
+            # Recalculate and reset the Celery automation tasks for the new date/time
+            transaction.on_commit(lambda: self.schedule_booking_automation_tasks(updated_booking))
+
+        return Response({"detail": "Appointment successfully rescheduled.", "data": serializer.data}, status=200)
 
     @action(detail=True, methods=["post"])
     def complete(self, request, pk=None):
         booking = self.get_object()
         if booking.status != "confirmed":
-            return Response({"detail": "Only confirmed bookings can be completed."}, status=400)
+            return Response({"detail": "Only confirmed bookings can be finalized."}, status=400)
 
         try:
             with transaction.atomic():
                 booking.status = "completed"
                 booking.save(update_fields=["status"])
 
+                # Move funds out of temporary escrow and into clear balance profiles
                 wallet = booking.get_vendor_wallet
                 amount = booking.vendor_payout_amount
 
@@ -161,19 +268,23 @@ class BookingViewSet(ModelViewSet):
                     status='completed', booking_id=booking.id, tx_ref=f"RELEASE-{booking.id}"
                 )
                 
-                # Completion is usually marked by the Vendor or Autocomplete system.
-                # The customer needs to receive this confirmation notification.
                 transaction.on_commit(lambda: create_and_send_notification.delay(
-                    recipient_id=str(booking.customer.id),
-                    actor_id=str(request.user.id),
-                    verb="completed",
-                    target_model_name="Booking",
-                    target_id=booking.id
+                    recipient_id=str(booking.customer.id), actor_id=str(request.user.id),
+                    verb="completed", target_model_name="Booking", target_id=booking.id
                 ))
                 
-            return Response({"detail": "Booking completed and funds released."}, status=200)
+            return Response({"detail": "Booking finalized and payout moved to available balance."}, status=200)
         except Exception as e:
             return Response({"detail": str(e)}, status=500)
+        
+    @action(detail=True, methods=['get'], url_path='status')
+    def get_status(self, request, pk=None):
+        booking = self.get_object()
+        return Response({
+            "id": booking.id,
+            "status": booking.status,
+            "payment_reference": booking.payment_reference
+        })
         
     @action(detail=True, methods=['get'], url_path='status')
     def get_status(self, request, pk=None):

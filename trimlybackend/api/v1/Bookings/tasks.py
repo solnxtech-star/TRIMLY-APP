@@ -4,8 +4,8 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.db import connections, transaction
 
-from trimlybackend.apps.notifications.tasks import create_and_send_notification
-from trimlybackend.apps.payments.models import Transaction
+from api.v1.Notifications.tasks import create_and_send_notification
+from api.v1.Payments.models import Transaction
 from .models import Booking
 
 logger = logging.getLogger(__name__)
