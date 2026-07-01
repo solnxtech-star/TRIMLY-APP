@@ -2,15 +2,18 @@ from rest_framework import serializers
 from .models import Conversation, Message
 
 class MessageSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Message
         fields = "__all__"
 
+
 class ConversationListSerializer(serializers.ModelSerializer):
     other_user = serializers.SerializerMethodField()
     last_message = serializers.SerializerMethodField()
-    is_last_message_unread = serializers.SerializerMethodField() # <--- New Field
+    is_last_message_unread = serializers.SerializerMethodField()
+    
+    # PRODUCTION FIX: Explicitly format to standard ISO-8601 so the frontend sorts perfectly
+    last_message_at = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S.%fZ", read_only=True)
 
     class Meta:
         model = Conversation
@@ -23,11 +26,10 @@ class ConversationListSerializer(serializers.ModelSerializer):
         last_msg = obj.message_set.first()
         
         if not last_msg:
-            return False # No messages, so nothing is 'unread'
+            return False  # No messages, so nothing is 'unread'
 
-        # If YOU sent the last message, it's not 'unread' for you.
         # It's only unread if the OTHER person sent it and is_read is False.
-        if last_msg.sender != request_user and not last_msg.is_read:
+        if last_msg.sender != request_user and not getattr(last_msg, 'is_read', False):
             return True
             
         return False
@@ -44,12 +46,12 @@ class ConversationListSerializer(serializers.ModelSerializer):
         if profile and hasattr(profile, 'profile_pic') and profile.profile_pic:
             try:
                 pic_url = profile.profile_pic.url
-            except ValueError: # Case where field exists but file is missing
+            except ValueError:  # Case where field exists but file is missing
                 pic_url = None
 
         return {
             "id": other.id,
-            "full_name": other.get_full_name(),
+            "full_name": other.get_full_name() if hasattr(other, 'get_full_name') else other.username,
             "profile_pic": pic_url
         }
 
@@ -58,7 +60,7 @@ class ConversationListSerializer(serializers.ModelSerializer):
         if not last_msg:
             return ""
         
-        if last_msg.text:
+        if getattr(last_msg, 'text', None):
             return last_msg.text
             
         # Check for image field safely
