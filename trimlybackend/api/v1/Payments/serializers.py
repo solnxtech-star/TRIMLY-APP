@@ -61,7 +61,7 @@ class WalletSerializer(serializers.ModelSerializer):
         return txs.aggregate(total=Sum('amount'))["total"] or 0
 
 class VerifyPaymentSerializer(serializers.Serializer):
-    transaction_id = serializers.UUIDField(help_text="payment transaction id gotten from the payment initialization")
+    transaction_id = serializers.CharField(help_text="payment transaction id gotten from the payment initialization", max_length=255)
     
 # Verification-Specific DTO Input Structure
 class VerifyBankAccountSerializer(serializers.Serializer):
