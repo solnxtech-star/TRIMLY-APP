@@ -1,7 +1,7 @@
 from datetime import datetime
 from django.http import Http404
 from django.shortcuts import get_object_or_404
-from api.v1.Category.models import Availability, AvailabilityException, GalleryPost
+from api.v1.Category.models import Availability, AvailabilityException, GalleryPost, GalleryImage
 from api.v1.Category.serializers import AvailabilityExceptionSerializer, BulkAvailabilitySerializer , GalleryPostSerializer, IndividualAvailabilityDaySerializer
 from api.v1.Reviews.models import Review
 from .models import IndividualVendorProfile, VendorServices
@@ -252,18 +252,30 @@ class VendorAvailabilitySyncAPIView(generics.RetrieveUpdateDestroyAPIView):
         queryset.delete()
         return Response({"detail": "Weekly schedule wiped successfully."}, status=status.HTTP_204_NO_CONTENT)
 
+ # Ensure GalleryImage is imported
+from .serializers import GalleryPostSerializer # (Or GalleryImageSerializer if you use one)
 
-
+# Ensure you use your custom permission so vendors can only delete their own posts
+from api.v1.Users.permissions import IsGalleryOwner 
 
 class GalleryImageDeleteAPIView(generics.DestroyAPIView):
     """
     Deletes a specific gallery image asset by its unique UUID ID.
     """
-    queryset = GalleryPost.objects.all()
-    serializer_class = GalleryPostSerializer
-    permission_classes = [IsAdminVendorOrReadOnly] # Ensure ownership validation matches your rules
+    # ✅ FIXED: Now points to GalleryImage model
+    queryset = GalleryImage.objects.all() 
+    permission_classes = [IsAuthenticated, IsGalleryOwner] 
     lookup_field = "id"
     
+
+class GalleryPostDeleteAPIView(generics.DestroyAPIView):
+    """
+    Deletes an entire gallery post and all associated images inside it.
+    """
+    queryset = GalleryPost.objects.all()
+    permission_classes = [IsAuthenticated, IsGalleryOwner]
+    lookup_field = 'id'
+
 class VendorAvailabilityExceptionListCreateAPIView(generics.ListCreateAPIView):
     """
     Instantiates and Returns vendor Avalaibility Exception

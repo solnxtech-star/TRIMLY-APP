@@ -214,3 +214,25 @@ class IsTransactionOwner(permissions.BasePermission):
         # Logic to check if the transaction belongs to the user's wallet
         # Since Transaction usually has a FK to Wallet, and Wallet to User:
         return obj.wallet.user == request.user
+    
+    from rest_framework import permissions
+
+class IsGalleryOwner(permissions.BasePermission):
+    """
+    Permission to allow only the vendor who created the gallery item to delete it.
+    """
+    def has_object_permission(self, request, view, obj):
+        # Safe methods (GET, HEAD, OPTIONS) are allowed if you want profiles to be public
+        if request.method in permissions.SAFE_METHODS:
+            return True
+            
+        # Check ownership based on the model instance type
+        # If it's a GalleryPost, check obj.vendor
+        if hasattr(obj, 'vendor'):
+            return obj.vendor == request.user
+            
+        # If it's a GalleryImage, look up to its parent post's vendor
+        if hasattr(obj, 'post'):
+            return obj.post.vendor == request.user
+            
+        return False

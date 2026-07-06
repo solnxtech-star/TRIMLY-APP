@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import GalleryImageDeleteAPIView, VendorAvailabilitySyncAPIView, VendorServicesListCreateAPIView, VendorViewset, VendorServicesRetrieveUpdateDeleteAPIView,VendorGalleryUploadAPIView, VendorAvailabilityListCreateAPIView, VendorAvailabilityExceptionListCreateAPIView, VendorAvailabilityExceptionRetrieveAPIView, VendorSlotsAPIView
+from .views import GalleryImageDeleteAPIView, GalleryPostDeleteAPIView, VendorAvailabilitySyncAPIView, VendorServicesListCreateAPIView, VendorViewset, VendorServicesRetrieveUpdateDeleteAPIView,VendorGalleryUploadAPIView, VendorAvailabilityListCreateAPIView, VendorAvailabilityExceptionListCreateAPIView, VendorAvailabilityExceptionRetrieveAPIView, VendorSlotsAPIView
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
@@ -13,6 +13,7 @@ urlpatterns = [
         GalleryImageDeleteAPIView.as_view(), 
         name="gallery_image_delete"
     ),
+    path('gallery/posts/<uuid:id>/', GalleryPostDeleteAPIView.as_view(), name='delete-gallery-post'),
     path("vendors/<uuid:vendor_id>/availability/", VendorAvailabilityListCreateAPIView.as_view(), name="vendor_availability"),
     path(
         "vendors/<uuid:vendor_id>/availabilities/sync/", 
