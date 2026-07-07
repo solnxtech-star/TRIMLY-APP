@@ -2,6 +2,7 @@ from rest_framework import permissions
 
 from api.v1.Salons.models import SalonProfile
 from api.v1.Vendor.models import IndividualVendorProfile
+from trimlybackend.api.v1.Category.models import GalleryImage, GalleryPost
 
 class IsApplicationAdmin(permissions.BasePermission):
     """
@@ -217,22 +218,24 @@ class IsTransactionOwner(permissions.BasePermission):
     
     from rest_framework import permissions
 
+# api/v1/Users/permissions.py
+ # or wherever your models are imported
+
 class IsGalleryOwner(permissions.BasePermission):
     """
-    Permission to allow only the vendor who created the gallery item to delete it.
+    Allows access only to the vendor who owns the gallery post or image asset.
     """
+    def has_permission(self, request, view):
+        # Ensure the user is logged in
+        return request.user and request.user.is_authenticated
+
     def has_object_permission(self, request, view, obj):
-        # Safe methods (GET, HEAD, OPTIONS) are allowed if you want profiles to be public
-        if request.method in permissions.SAFE_METHODS:
-            return True
-            
-        # Check ownership based on the model instance type
-        # If it's a GalleryPost, check obj.vendor
-        if hasattr(obj, 'vendor'):
-            return obj.vendor == request.user
-            
-        # If it's a GalleryImage, look up to its parent post's vendor
-        if hasattr(obj, 'post'):
-            return obj.post.vendor == request.user
-            
+        # 1. If it's a direct GalleryPost instance
+        if isinstance(obj, GalleryPost):
+            return obj.vendor == request.user  # Adjust 'vendor' if your field is named 'user'
+
+        # 2. If it's a single GalleryImage asset, check through its parent post relationship
+        if isinstance(obj, GalleryImage):
+            return obj.post.vendor == request.user  # Traverses the foreign key relation
+
         return False
