@@ -1,7 +1,9 @@
 import os
 import django
 from django.core.asgi import get_asgi_application
+from dotenv import load_dotenv  # <-- Add this
 
+load_dotenv()  # <-- Add this
 # 1. Set the settings module first
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'trimlybackend.settings')
 
@@ -11,7 +13,7 @@ django_asgi_app = get_asgi_application()
 
 # 3. NOW you can import things that depend on Django settings/models
 from channels.routing import ProtocolTypeRouter, URLRouter
-from channels.auth import AuthMiddlewareStack
+# from channels.auth import AuthMiddlewareStack
 from api.v1.Chat.routing import chat_urlpatterns
 from api.v1.utils.middleware import JWTAuthMiddleware
 from api.v1.Notifications.routing import notification_urlpatterns
