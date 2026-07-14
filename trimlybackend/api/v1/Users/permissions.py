@@ -2,7 +2,7 @@ from rest_framework import permissions
 
 from api.v1.Salons.models import SalonProfile
 from api.v1.Vendor.models import IndividualVendorProfile
-from trimlybackend.api.v1.Category.models import GalleryImage, GalleryPost
+from api.v1.Category.models import GalleryImage, GalleryPost
 
 class IsApplicationAdmin(permissions.BasePermission):
     """
@@ -232,10 +232,10 @@ class IsGalleryOwner(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         # 1. If it's a direct GalleryPost instance
         if isinstance(obj, GalleryPost):
-            return obj.vendor == request.user  # Adjust 'vendor' if your field is named 'user'
+            return obj.vendor.worker == request.user  # Adjust 'vendor' if your field is named 'user'
 
         # 2. If it's a single GalleryImage asset, check through its parent post relationship
         if isinstance(obj, GalleryImage):
-            return obj.post.vendor == request.user  # Traverses the foreign key relation
+            return obj.post.vendor.worker == request.user  # Traverses the foreign key relation
 
         return False
