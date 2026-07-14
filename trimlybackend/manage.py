@@ -3,6 +3,11 @@
 import os
 import sys
 
+from dotenv import load_dotenv  # <-- Add this
+
+# Load the .env file from the root directory
+load_dotenv()  # <-- Add this
+
 
 def main():
     """Run administrative tasks."""
