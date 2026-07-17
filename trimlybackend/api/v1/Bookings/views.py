@@ -212,7 +212,6 @@ class BookingViewSet(ModelViewSet):
         vendor_user = booking.get_vendor_user
         is_vendor = vendor_user and (str(request.user.id) == str(vendor_user.id))
         
-        # FIXED LOCKOUT METHOD: Combines timezone handling safely via explicit thresholds
         if not is_vendor:
             current_now = timezone.now()
             naive_booking_dt = datetime.combine(booking.date, booking.start_time)
@@ -231,6 +230,13 @@ class BookingViewSet(ModelViewSet):
         
         with transaction.atomic():
             updated_booking = serializer.save()
+            
+            # 1. FIX: Explicitly recalculate the datetime field so Celery doesn't receive a stale past timestamp
+            current_tz = timezone.get_current_timezone()
+            naive_dt = datetime.combine(updated_booking.date, updated_booking.start_time)
+            updated_booking.appointment_datetime = timezone.make_aware(naive_dt, current_tz)
+            updated_booking.save(update_fields=['appointment_datetime'])
+            
             recipient_id = str(booking.customer.id) if is_vendor else str(vendor_user.id)
             
             # Alert the counterparty over WebSocket
@@ -239,8 +245,15 @@ class BookingViewSet(ModelViewSet):
                 verb="rescheduled", target_model_name="Booking", target_id=updated_booking.id
             ))
             
-            # Recalculate and reset the Celery automation tasks for the new date/time
-            transaction.on_commit(lambda: self.schedule_booking_automation_tasks(updated_booking))
+            # 2. FIX: Only synchronize autocomplete/payout timers if the booking is actively CONFIRMED
+            if updated_booking.status == "confirmed":
+                transaction.on_commit(lambda: self.schedule_booking_automation_tasks(updated_booking))
+            else:
+                # If it's pending, just evict old tasks so historical timelines don't execute
+                old_task_ids = [updated_booking.reminder_task_id, updated_booking.warning_task_id, updated_booking.payout_task_id]
+                for task_id in old_task_ids:
+                    if task_id:
+                        transaction.on_commit(lambda tid=task_id: current_app.control.revoke(tid, terminate=True))
 
         return Response({"detail": "Appointment successfully rescheduled.", "data": serializer.data}, status=200)
 
