@@ -90,11 +90,18 @@ class BookingViewSet(ModelViewSet):
                 except Exception as e:
                     print(f"[-] Non-breaking task eviction failure on Broker level: {e}")
 
-        # 2. Establish production timeline limits based on target appointment time
+        # 2. Establish production timeline limits based on target appointment time property
         appt_time = booking.appointment_datetime  
-        reminder_eta = timezone.now() + timedelta(hours=1) 
+        if not appt_time:
+            print("[-] Automation Error: appointment_datetime could not be parsed.")
+            return
+
+        # Fixed: Reminder fires 1 hour BEFORE the appointment, not 1 hour from now
+        reminder_eta = appt_time - timedelta(hours=1) 
         payout_eta = appt_time + timedelta(hours=24)
         warning_eta = payout_eta - timedelta(hours=2)
+
+        now = timezone.now()
 
         vendor_email = (
             booking.vendor_service.vendor.worker.email 
@@ -102,26 +109,35 @@ class BookingViewSet(ModelViewSet):
             else booking.salon_service.salon.owner.email
         )
 
-        # 3. Offload fresh tasks to Celery and trap unique message IDs
-        reminder_res = send_reminder_task.apply_async(
-            args=[booking.customer.email, vendor_email, booking.customer.username, booking.date, booking.start_time],
-            eta=reminder_eta
-        )
-        
-        warning_res = warn_customer_of_autocomplete.apply_async(
-            args=[booking.id], 
-            eta=warning_eta
-        )
-        
-        payout_res = auto_complete_booking.apply_async(
-            args=[booking.id], 
-            eta=payout_eta
-        )
+        # 3. Offload fresh tasks to Celery with strict future-only ETA validation guards
+        if reminder_eta > now:
+            reminder_res = send_reminder_task.apply_async(
+                args=[booking.customer.email, vendor_email, booking.customer.username, booking.date, booking.start_time],
+                eta=reminder_eta
+            )
+            booking.reminder_task_id = reminder_res.id
+        else:
+            booking.reminder_task_id = None
 
-        # 4. Save task IDs to the database so we can find them if the user reschedules again later
-        booking.reminder_task_id = reminder_res.id
-        booking.warning_task_id = warning_res.id
-        booking.payout_task_id = payout_res.id
+        if warning_eta > now:
+            warning_res = warn_customer_of_autocomplete.apply_async(
+                args=[booking.id], 
+                eta=warning_eta
+            )
+            booking.warning_task_id = warning_res.id
+        else:
+            booking.warning_task_id = None
+        
+        if payout_eta > now:
+            payout_res = auto_complete_booking.apply_async(
+                args=[booking.id], 
+                eta=payout_eta
+            )
+            booking.payout_task_id = payout_res.id
+        else:
+            booking.payout_task_id = None
+
+        # 4. Save task IDs to the database so we can track or evict them later
         booking.save(update_fields=['reminder_task_id', 'warning_task_id', 'payout_task_id'])
 
     def perform_create(self, serializer):
@@ -144,8 +160,43 @@ class BookingViewSet(ModelViewSet):
                 verb="booked", target_model_name="Booking", target_id=booking_id
             ))
 
-            # Initialize the background execution timers
-            transaction.on_commit(lambda: self.schedule_booking_automation_tasks(booking))
+            # Fixed: Only schedule automation tasks if the initial status is confirmed
+            if booking.status == "confirmed":
+                transaction.on_commit(lambda: self.schedule_booking_automation_tasks(booking))
+
+    @action(detail=True, methods=['post'], url_path='reschedule')
+    def reschedule(self, request, pk=None):
+        """
+        Updates appointment timeline parameters and recalculates active Celery task distributions.
+        """
+        booking = self.get_object()
+        serializer = RescheduleBookingSerializer(booking, data=request.data, context={'request': request})
+        
+        if serializer.is_valid():
+            with transaction.atomic():
+                # Safe Mutation: Modifies date/time fields. Read-only property recalculates itself.
+                updated_booking = serializer.save()
+                
+                # Check status conditions before setting up automation timelines
+                if updated_booking.status == "confirmed":
+                    transaction.on_commit(lambda: self.schedule_booking_automation_tasks(updated_booking))
+                else:
+                    # Clean up/revoke old active tasks if the status changes or drops back to unconfirmed/pending
+                    old_task_ids = [booking.reminder_task_id, booking.warning_task_id, booking.payout_task_id]
+                    for task_id in old_task_ids:
+                        if task_id:
+                            try:
+                                current_app.control.revoke(task_id, terminate=True)
+                            except Exception as e:
+                                print(f"[-] Non-breaking task eviction failure: {e}")
+                
+                return Response({
+                    "status": "success",
+                    "message": "Booking rescheduled successfully.",
+                    "data": serializer.data
+                }, status=status.HTTP_200_OK)
+                
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=["post"])
     def cancel(self, request, pk=None):
