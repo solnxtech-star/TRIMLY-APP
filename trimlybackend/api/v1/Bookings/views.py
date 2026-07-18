@@ -69,10 +69,7 @@ class BookingViewSet(ModelViewSet):
         Dynamically adjusts permission boundaries based on the current execution target.
         """
         if self.action == 'reschedule':
-            # Customers only need to be authenticated and verify they own the booking
             return [permissions.IsAuthenticated(), IsBookingOwnerOrProvider()]
-        
-        # Fall back to the default class-level rules for everything else
         return [permission() for permission in self.permission_classes]
 
     def schedule_booking_automation_tasks(self, booking):
@@ -81,7 +78,6 @@ class BookingViewSet(ModelViewSet):
         Evicts any dead or historical scheduled tasks from the Celery message broker
         and maps out fresh execution timelines to keep notifications and autocompletes accurate.
         """
-        # 1. Evict any scheduled tasks linked to this instance from the Redis/RabbitMQ pool
         old_task_ids = [booking.reminder_task_id, booking.warning_task_id, booking.payout_task_id]
         for task_id in old_task_ids:
             if task_id:
@@ -90,13 +86,11 @@ class BookingViewSet(ModelViewSet):
                 except Exception as e:
                     print(f"[-] Non-breaking task eviction failure on Broker level: {e}")
 
-        # 2. Establish production timeline limits based on target appointment time property
         appt_time = booking.appointment_datetime  
         if not appt_time:
             print("[-] Automation Error: appointment_datetime could not be parsed.")
             return
 
-        # Fixed: Reminder fires 1 hour BEFORE the appointment, not 1 hour from now
         reminder_eta = appt_time - timedelta(hours=1) 
         payout_eta = appt_time + timedelta(hours=24)
         warning_eta = payout_eta - timedelta(hours=2)
@@ -109,7 +103,6 @@ class BookingViewSet(ModelViewSet):
             else booking.salon_service.salon.owner.email
         )
 
-        # 3. Offload fresh tasks to Celery with strict future-only ETA validation guards
         if reminder_eta > now:
             reminder_res = send_reminder_task.apply_async(
                 args=[booking.customer.email, vendor_email, booking.customer.username, booking.date, booking.start_time],
@@ -137,7 +130,6 @@ class BookingViewSet(ModelViewSet):
         else:
             booking.payout_task_id = None
 
-        # 4. Save task IDs to the database so we can track or evict them later
         booking.save(update_fields=['reminder_task_id', 'warning_task_id', 'payout_task_id'])
 
     def perform_create(self, serializer):
@@ -153,50 +145,14 @@ class BookingViewSet(ModelViewSet):
             vendor_id_str = str(vendor_user.id)
             customer_id_str = str(self.request.user.id)
 
-            # Fire off high-priority notifications instantly upon database commit confirmation
             transaction.on_commit(lambda: send_booking_notifications.delay(booking_id))
             transaction.on_commit(lambda: create_and_send_notification.delay(
                 recipient_id=vendor_id_str, actor_id=customer_id_str,
                 verb="booked", target_model_name="Booking", target_id=booking_id
             ))
 
-            # Fixed: Only schedule automation tasks if the initial status is confirmed
             if booking.status == "confirmed":
                 transaction.on_commit(lambda: self.schedule_booking_automation_tasks(booking))
-
-    @action(detail=True, methods=['post'], url_path='reschedule')
-    def reschedule(self, request, pk=None):
-        """
-        Updates appointment timeline parameters and recalculates active Celery task distributions.
-        """
-        booking = self.get_object()
-        serializer = RescheduleBookingSerializer(booking, data=request.data, context={'request': request})
-        
-        if serializer.is_valid():
-            with transaction.atomic():
-                # Safe Mutation: Modifies date/time fields. Read-only property recalculates itself.
-                updated_booking = serializer.save()
-                
-                # Check status conditions before setting up automation timelines
-                if updated_booking.status == "confirmed":
-                    transaction.on_commit(lambda: self.schedule_booking_automation_tasks(updated_booking))
-                else:
-                    # Clean up/revoke old active tasks if the status changes or drops back to unconfirmed/pending
-                    old_task_ids = [booking.reminder_task_id, booking.warning_task_id, booking.payout_task_id]
-                    for task_id in old_task_ids:
-                        if task_id:
-                            try:
-                                current_app.control.revoke(task_id, terminate=True)
-                            except Exception as e:
-                                print(f"[-] Non-breaking task eviction failure: {e}")
-                
-                return Response({
-                    "status": "success",
-                    "message": "Booking rescheduled successfully.",
-                    "data": serializer.data
-                }, status=status.HTTP_200_OK)
-                
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=["post"])
     def cancel(self, request, pk=None):
@@ -207,7 +163,6 @@ class BookingViewSet(ModelViewSet):
         if booking.status in ["cancelled", "completed"]:
             return Response({"detail": "This booking cannot be altered in its current state."}, status=400)
 
-        # STRICT LOCKOUT: Prevent customers from canceling paid or confirmed bookings
         if getattr(booking, 'is_paid', False) or booking.status == "confirmed":
             if not is_vendor:
                 return Response(
@@ -219,19 +174,16 @@ class BookingViewSet(ModelViewSet):
             booking.status = "cancelled"
             booking.save(update_fields=["status"])
             
-            # Revert escrow fields in vendor wallets
             wallet = booking.get_vendor_wallet
             amount = booking.vendor_payout_amount
             wallet.pending_balance -= amount
             wallet.save()
 
-            # Generate formal refund transaction statement logs
             Transaction.objects.create(
                 wallet=wallet, amount=amount, tx_type='refund',
                 status='completed', booking_id=booking.id, tx_ref=f"REFUND-{booking.id}"
             )
 
-            # Evict pending automation tasks since the booking is dead
             old_task_ids = [booking.reminder_task_id, booking.warning_task_id, booking.payout_task_id]
             for task_id in old_task_ids:
                 if task_id:
@@ -253,8 +205,11 @@ class BookingViewSet(ModelViewSet):
         request=BookingRescheduleSerializer,
         responses={200: BookingRescheduleSerializer}
     )
-    @action(detail=True, methods=["post"])
+    @action(detail=True, methods=["post"], url_path='reschedule')
     def reschedule(self, request, pk=None):
+        """
+        Updates appointment timeline parameters and recalculates active Celery task distributions.
+        """
         booking = self.get_object()
         
         if booking.status not in ["confirmed", "pending"]:
@@ -263,13 +218,13 @@ class BookingViewSet(ModelViewSet):
         vendor_user = booking.get_vendor_user
         is_vendor = vendor_user and (str(request.user.id) == str(vendor_user.id))
         
+        # 24-hour Lockout Enforcement
         if not is_vendor:
             current_now = timezone.now()
             naive_booking_dt = datetime.combine(booking.date, booking.start_time)
             booking_datetime = timezone.make_aware(naive_booking_dt, current_now.tzinfo)
             
             lockout_threshold = current_now + timedelta(hours=24)
-            
             if booking_datetime < lockout_threshold:
                 return Response(
                     {"detail": "This appointment is less than 24 hours away and can no longer be rescheduled online. Please reach out to your provider directly."},
@@ -280,27 +235,20 @@ class BookingViewSet(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         
         with transaction.atomic():
+            # Mutation happens safely inside the serializer (updates date and start_time columns)
             updated_booking = serializer.save()
-            
-            # 1. FIX: Explicitly recalculate the datetime field so Celery doesn't receive a stale past timestamp
-            current_tz = timezone.get_current_timezone()
-            naive_dt = datetime.combine(updated_booking.date, updated_booking.start_time)
-            updated_booking.appointment_datetime = timezone.make_aware(naive_dt, current_tz)
-            updated_booking.save(update_fields=['appointment_datetime'])
             
             recipient_id = str(booking.customer.id) if is_vendor else str(vendor_user.id)
             
-            # Alert the counterparty over WebSocket
             transaction.on_commit(lambda: create_and_send_notification.delay(
                 recipient_id=recipient_id, actor_id=str(request.user.id),
                 verb="rescheduled", target_model_name="Booking", target_id=updated_booking.id
             ))
             
-            # 2. FIX: Only synchronize autocomplete/payout timers if the booking is actively CONFIRMED
+            # Recalculate or evict timers based on the fresh instance state
             if updated_booking.status == "confirmed":
                 transaction.on_commit(lambda: self.schedule_booking_automation_tasks(updated_booking))
             else:
-                # If it's pending, just evict old tasks so historical timelines don't execute
                 old_task_ids = [updated_booking.reminder_task_id, updated_booking.warning_task_id, updated_booking.payout_task_id]
                 for task_id in old_task_ids:
                     if task_id:
@@ -319,7 +267,6 @@ class BookingViewSet(ModelViewSet):
                 booking.status = "completed"
                 booking.save(update_fields=["status"])
 
-                # Move funds out of temporary escrow and into clear balance profiles
                 wallet = booking.get_vendor_wallet
                 amount = booking.vendor_payout_amount
 
@@ -340,15 +287,6 @@ class BookingViewSet(ModelViewSet):
             return Response({"detail": "Booking finalized and payout moved to available balance."}, status=200)
         except Exception as e:
             return Response({"detail": str(e)}, status=500)
-        
-    @action(detail=True, methods=['get'], url_path='status')
-    def get_status(self, request, pk=None):
-        booking = self.get_object()
-        return Response({
-            "id": booking.id,
-            "status": booking.status,
-            "payment_reference": booking.payment_reference
-        })
         
     @action(detail=True, methods=['get'], url_path='status')
     def get_status(self, request, pk=None):
