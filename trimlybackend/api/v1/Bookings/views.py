@@ -73,64 +73,73 @@ class BookingViewSet(ModelViewSet):
         return [permission() for permission in self.permission_classes]
 
     def schedule_booking_automation_tasks(self, booking):
-        """
-        PRODUCTION TASK ENGINE:
-        Evicts any dead or historical scheduled tasks from the Celery message broker
-        and maps out fresh execution timelines to keep notifications and autocompletes accurate.
-        """
-        old_task_ids = [booking.reminder_task_id, booking.warning_task_id, booking.payout_task_id]
-        for task_id in old_task_ids:
-            if task_id:
-                try:
-                    current_app.control.revoke(task_id, terminate=True)
-                except Exception as e:
-                    print(f"[-] Non-breaking task eviction failure on Broker level: {e}")
+            """
+            PRODUCTION TASK ENGINE:
+            Evicts any dead or historical scheduled tasks from the Celery message broker
+            and maps out fresh execution timelines to keep notifications and autocompletes accurate.
+            """
+            old_task_ids = [booking.reminder_task_id, booking.warning_task_id, booking.payout_task_id]
+            for task_id in old_task_ids:
+                if task_id:
+                    try:
+                        current_app.control.revoke(task_id, terminate=True)
+                    except Exception as e:
+                        print(f"[-] Non-breaking task eviction failure on Broker level: {e}")
 
-        appt_time = booking.appointment_datetime  
-        if not appt_time:
-            print("[-] Automation Error: appointment_datetime could not be parsed.")
-            return
+            # 1. Capture the raw datetime object from the property
+            raw_appt_time = booking.appointment_datetime  
+            if not raw_appt_time:
+                print("[-] Automation Error: appointment_datetime could not be parsed.")
+                return
 
-        reminder_eta = appt_time - timedelta(hours=1) 
-        payout_eta = appt_time + timedelta(hours=24)
-        warning_eta = payout_eta - timedelta(hours=2)
+            # 2. FIX: Force the naive property object to become timezone-aware
+            if timezone.is_naive(raw_appt_time):
+                appt_time = timezone.make_aware(raw_appt_time, timezone.get_current_timezone())
+            else:
+                appt_time = raw_appt_time
 
-        now = timezone.now()
+            # 3. Establish production timeline limits safely using aware datetimes
+            reminder_eta = appt_time - timedelta(hours=1) 
+            payout_eta = appt_time + timedelta(hours=24)
+            warning_eta = payout_eta - timedelta(hours=2)
 
-        vendor_email = (
-            booking.vendor_service.vendor.worker.email 
-            if booking.vendor_service 
-            else booking.salon_service.salon.owner.email
-        )
+            now = timezone.now()
 
-        if reminder_eta > now:
-            reminder_res = send_reminder_task.apply_async(
-                args=[booking.customer.email, vendor_email, booking.customer.username, booking.date, booking.start_time],
-                eta=reminder_eta
+            vendor_email = (
+                booking.vendor_service.vendor.worker.email 
+                if booking.vendor_service 
+                else booking.salon_service.salon.owner.email
             )
-            booking.reminder_task_id = reminder_res.id
-        else:
-            booking.reminder_task_id = None
 
-        if warning_eta > now:
-            warning_res = warn_customer_of_autocomplete.apply_async(
-                args=[booking.id], 
-                eta=warning_eta
-            )
-            booking.warning_task_id = warning_res.id
-        else:
-            booking.warning_task_id = None
-        
-        if payout_eta > now:
-            payout_res = auto_complete_booking.apply_async(
-                args=[booking.id], 
-                eta=payout_eta
-            )
-            booking.payout_task_id = payout_res.id
-        else:
-            booking.payout_task_id = None
+            # 4. Offload fresh tasks to Celery with strict future-only ETA validation guards
+            if reminder_eta > now:
+                reminder_res = send_reminder_task.apply_async(
+                    args=[booking.customer.email, vendor_email, booking.customer.username, booking.date, booking.start_time],
+                    eta=reminder_eta
+                )
+                booking.reminder_task_id = reminder_res.id
+            else:
+                booking.reminder_task_id = None
 
-        booking.save(update_fields=['reminder_task_id', 'warning_task_id', 'payout_task_id'])
+            if warning_eta > now:
+                warning_res = warn_customer_of_autocomplete.apply_async(
+                    args=[booking.id], 
+                    eta=warning_eta
+                )
+                booking.warning_task_id = warning_res.id
+            else:
+                booking.warning_task_id = None
+            
+            if payout_eta > now:
+                payout_res = auto_complete_booking.apply_async(
+                    args=[booking.id], 
+                    eta=payout_eta
+                )
+                booking.payout_task_id = payout_res.id
+            else:
+                booking.payout_task_id = None
+
+            booking.save(update_fields=['reminder_task_id', 'warning_task_id', 'payout_task_id'])
 
     def perform_create(self, serializer):
         with transaction.atomic():
