@@ -145,6 +145,54 @@ class BookingSerializer(serializers.ModelSerializer):
 #     class Meta:
 #         model = Booking
 #         fields = ["customer_name", "customer_address", "customer_image", "salon_name", "salon_address", "service_name", "vendor_id", "vendor_name", "vendor_service_name"]
+class BookingRescheduleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Booking
+        fields = ['date', 'start_time']
+
+    def validate(self, data):
+        date = data.get('date', self.instance.date)
+        start_time = data.get('start_time', self.instance.start_time)
+
+        # 1. Past validation guard
+        if date < timezone.now().date():
+            raise serializers.ValidationError("You cannot reschedule an appointment to a past date.")
+
+        # 2. Recalculate end_time dynamically using the existing service relation
+        service = self.instance.salon_service or self.instance.vendor_service
+        if service:
+            start_datetime = datetime.combine(date, start_time)
+            end_datetime = start_datetime + timedelta(minutes=service.duration_minutes)
+            self.calculated_end_time = end_datetime.time()
+        else:
+            self.calculated_end_time = self.instance.end_time
+
+        # 3. Calendar conflict check
+        provider = self.instance.salon_service.salon if self.instance.salon_service else self.instance.vendor_service.vendor
+        
+        overlapping_bookings = Booking.objects.filter(
+            date=date,
+            status__in=['pending', 'confirmed'],
+            start_time__lt=self.calculated_end_time,
+            end_time__gt=start_time
+        ).exclude(id=self.instance.id)
+
+        if self.instance.salon_service:
+            overlapping_bookings = overlapping_bookings.filter(salon_service__salon=provider)
+        else:
+            overlapping_bookings = overlapping_bookings.filter(vendor_service__vendor=provider)
+
+        if overlapping_bookings.exists():
+            raise serializers.ValidationError("This new time slot is already booked.")
+
+        return data
+
+    def update(self, instance, validated_data):
+        instance.date = validated_data.get('date', instance.date)
+        instance.start_time = validated_data.get('start_time', instance.start_time)
+        instance.end_time = getattr(self, 'calculated_end_time', instance.end_time)
+        instance.save()
+        return instance
 
 class VerifyNinSerializer(serializers.Serializer):
     """

@@ -231,20 +231,22 @@ class BookingViewSet(ModelViewSet):
         if not is_vendor:
             current_now = timezone.now()
             naive_booking_dt = datetime.combine(booking.date, booking.start_time)
-            booking_datetime = timezone.make_aware(naive_booking_dt, current_now.tzinfo)
+            
+            # Use active timezone to evaluate lockout safely
+            booking_datetime = timezone.make_aware(naive_booking_dt, timezone.get_current_timezone())
             
             lockout_threshold = current_now + timedelta(hours=24)
             if booking_datetime < lockout_threshold:
                 return Response(
-                    {"detail": "This appointment is less than 24 hours away and can no longer be rescheduled online. Please reach out to your provider directly."},
+                    {"detail": "This appointment is less than 24 hours away and can no longer be rescheduled online."},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-        serializer = BookingRescheduleSerializer(booking, data=request.data, partial=True, context={'request': request})
+        serializer = BookingRescheduleSerializer(booking, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         
         with transaction.atomic():
-            # Mutation happens safely inside the serializer (updates date and start_time columns)
+            # Commit mutations directly to DB
             updated_booking = serializer.save()
             
             recipient_id = str(booking.customer.id) if is_vendor else str(vendor_user.id)
@@ -254,10 +256,11 @@ class BookingViewSet(ModelViewSet):
                 verb="rescheduled", target_model_name="Booking", target_id=updated_booking.id
             ))
             
-            # Recalculate or evict timers based on the fresh instance state
+            # Immediately schedule fresh tasks with the newly saved datetimes
             if updated_booking.status == "confirmed":
                 transaction.on_commit(lambda: self.schedule_booking_automation_tasks(updated_booking))
             else:
+                # If pending, just revoke the old scheduled tasks completely
                 old_task_ids = [updated_booking.reminder_task_id, updated_booking.warning_task_id, updated_booking.payout_task_id]
                 for task_id in old_task_ids:
                     if task_id:
