@@ -10,7 +10,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     
     # 1. KILL PAGINATION FOR THIS VIEWSET ONLY
-    pagination_class = None
+    # pagination_class = None
 
     def get_queryset(self):
         # Users can ONLY see notifications where they are the recipient.

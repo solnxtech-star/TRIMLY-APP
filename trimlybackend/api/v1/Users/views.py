@@ -24,7 +24,7 @@ class UserProfileListView(RetrieveAPIView):
 
 class GoogleLogin(SocialLoginView):
     adapter_class = GoogleOAuth2Adapter
-    callback_url = "http://localhost:8000/accounts/google/login/callback/" # Must match Google Console
+    callback_url = "https://trimly.africa" # Must match Google Console
     client_class = OAuth2Client
 
 
