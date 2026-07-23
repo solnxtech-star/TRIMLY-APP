@@ -83,7 +83,7 @@ class VendorViewset(viewsets.ModelViewSet):
         queryset = IndividualVendorProfile.objects.select_related(
             'worker'
         ).prefetch_related(
-            'category', 
+            'categories',   # fixed: was 'category'
             Prefetch(
                 'vendor_services',
                 queryset=VendorServices.objects.prefetch_related('categories')

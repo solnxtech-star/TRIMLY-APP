@@ -7,6 +7,8 @@ from django.db import connections, transaction
 from api.v1.Notifications.tasks import create_and_send_notification
 from api.v1.Payments.models import Transaction
 from .models import Booking
+from django.utils import timezone
+from datetime import timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -139,6 +141,20 @@ def auto_complete_booking(self, booking_id):
         
         # Guard Clause: Only clear payment if booking hasn't been altered/cancelled
         if booking.status == "confirmed":
+
+            # --- SAFETY GUARD ---
+            # Protects against early completion if this task is ever triggered
+            # before its real ETA (e.g. eager mode, broker replay, manual call,
+            # clock drift). Only completes if 24hrs have genuinely passed since
+            # the appointment.
+            appt_dt = booking.appointment_datetime
+            if appt_dt:
+                if timezone.is_naive(appt_dt):
+                    appt_dt = timezone.make_aware(appt_dt, timezone.get_current_timezone())
+                if timezone.now() < appt_dt + timedelta(hours=24):
+                    logger.info(f"[!] auto_complete_booking called early for {booking_id} — skipping.")
+                    return
+
             with transaction.atomic():
                 booking.status = "completed"
                 booking.save(update_fields=["status"])
