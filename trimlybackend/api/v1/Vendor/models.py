@@ -7,7 +7,7 @@ import uuid
 class IndividualVendorProfile(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     worker = models.OneToOneField(User, on_delete=models.CASCADE, related_name="individual_vendor_profile")
-    category = models.ForeignKey(ServiceCategory, on_delete=models.SET_NULL, null=True)
+    categories = models.ManyToManyField(ServiceCategory, related_name="vendors", blank=True)    
     date_of_birth = models.DateTimeField(auto_now_add=True)
     bio = models.TextField(null=True, blank=True)
     phone_number = models.CharField(max_length=20, null=True, blank=True)

@@ -1,0 +1,5714 @@
+openapi: 3.0.3
+info:
+  title: Trimly Backend API
+  version: 1.0.0
+  description: API documentation for the Trimly backend services, including authentication
+    and user management.
+paths:
+  /:
+    get:
+      operationId: root_retrieve
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/auth/delete-account/:
+    delete:
+      operationId: auth_delete_account_destroy
+      description: Permanently delete the currently authenticated user's account and
+        associated data.
+      tags:
+      - auth
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: Account deleted successfully
+        '401':
+          description: Unauthorized
+  /api/v1/auth/google/:
+    post:
+      operationId: auth_google_create
+      description: |-
+        class used for social authentications
+        example usage for facebook with access_token
+        -------------
+        from allauth.socialaccount.providers.facebook.views import FacebookOAuth2Adapter
+
+        class FacebookLogin(SocialLoginView):
+            adapter_class = FacebookOAuth2Adapter
+        -------------
+
+        example usage for facebook with code
+
+        -------------
+        from allauth.socialaccount.providers.facebook.views import FacebookOAuth2Adapter
+        from allauth.socialaccount.providers.oauth2.client import OAuth2Client
+
+        class FacebookLogin(SocialLoginView):
+            adapter_class = FacebookOAuth2Adapter
+            client_class = OAuth2Client
+            callback_url = 'localhost:8000'
+        -------------
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SocialLogin'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SocialLogin'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SocialLogin'
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SocialLogin'
+          description: ''
+  /api/v1/auth/login/:
+    post:
+      operationId: auth_login_create
+      description: |-
+        Check the credentials and return the REST Token
+        if the credentials are valid and authenticated.
+        Calls Django Auth login method to register User ID
+        in Django session framework
+
+        Accept the following POST parameters: username, password
+        Return the REST Framework Token Object's key.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailLogin'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EmailLogin'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EmailLogin'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JWT'
+          description: ''
+  /api/v1/auth/logout/:
+    post:
+      operationId: auth_logout_create
+      description: |-
+        Calls Django logout method and delete the Token object
+        assigned to the current User object.
+
+        Accepts/Returns nothing.
+      tags:
+      - auth
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestAuthDetail'
+          description: ''
+  /api/v1/auth/password/change/:
+    post:
+      operationId: auth_password_change_create
+      description: |-
+        Calls Django Auth SetPasswordForm save method.
+
+        Accepts the following POST parameters: new_password1, new_password2
+        Returns the success/fail message.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordChange'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordChange'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordChange'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestAuthDetail'
+          description: ''
+  /api/v1/auth/password/otp-password-change/:
+    post:
+      operationId: auth_password_otp_password_change_create
+      description: Reset password, input the generated token from /api/v1/auth/password/verify-otp/
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPassword'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ResetPassword'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ResetPassword'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: Password reset successfully
+        '400':
+          description: Validation error
+  /api/v1/auth/password/reset/:
+    post:
+      operationId: auth_password_reset_create
+      description: |-
+        Calls Django Auth PasswordResetForm save method.
+
+        Accepts the following POST parameters: email
+        Returns the success/fail message.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordReset'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordReset'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordReset'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestAuthDetail'
+          description: ''
+  /api/v1/auth/password/reset-otp/:
+    post:
+      operationId: auth_password_reset_otp_create
+      description: Request a password reset OTP. A 6-digit code will be sent to the
+        provided email address if it exists.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestPasswordResetOTP'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RequestPasswordResetOTP'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RequestPasswordResetOTP'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: Password reset OTP sent to email
+        '400':
+          description: Validation error
+  /api/v1/auth/password/reset/confirm/:
+    post:
+      operationId: auth_password_reset_confirm_create
+      description: |-
+        Password reset e-mail link is confirmed, therefore
+        this resets the user's password.
+
+        Accepts the following POST parameters: token, uid,
+            new_password1, new_password2
+        Returns the success/fail message.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirm'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirm'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirm'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestAuthDetail'
+          description: ''
+  /api/v1/auth/password/reset/confirm/{uid}/{token}/:
+    post:
+      operationId: auth_password_reset_confirm_create_2
+      description: |-
+        Password reset e-mail link is confirmed, therefore
+        this resets the user's password.
+
+        Accepts the following POST parameters: token, uid,
+            new_password1, new_password2
+        Returns the success/fail message.
+      parameters:
+      - in: path
+        name: token
+        schema:
+          type: string
+          pattern: ^[-:\w]+$
+        required: true
+      - in: path
+        name: uid
+        schema:
+          type: string
+          pattern: ^[-:\w]+$
+        required: true
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirm'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirm'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirm'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestAuthDetail'
+          description: ''
+  /api/v1/auth/password/verify-otp/:
+    post:
+      operationId: auth_password_verify_otp_create
+      description: Verify the OTP code and return a unique token
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyPasswordResetOTP'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VerifyPasswordResetOTP'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VerifyPasswordResetOTP'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: Password reset successfully
+        '400':
+          description: Invalid OTP or validation error
+  /api/v1/auth/registration/:
+    post:
+      operationId: auth_registration_create
+      description: |-
+        Registers a new user.
+
+        Accepts the following POST parameters: username, email, password1, password2.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomRegister'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CustomRegister'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CustomRegister'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestAuthDetail'
+          description: ''
+  /api/v1/auth/registration/account-confirm-email/{key}/:
+    post:
+      operationId: auth_registration_account_confirm_email_create
+      description: |-
+        Verifies the email associated with the provided key.
+
+        Accepts the following POST parameter: key.
+      parameters:
+      - in: path
+        name: key
+        schema:
+          type: string
+          pattern: ^[-:\w]+$
+        required: true
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyEmail'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VerifyEmail'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VerifyEmail'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestAuthDetail'
+          description: ''
+  /api/v1/auth/registration/confirm-otp/:
+    post:
+      operationId: auth_registration_confirm_otp_create
+      description: Verify email address using the 6-digit OTP code sent to the user's
+        email
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyEmailOTP'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VerifyEmailOTP'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VerifyEmailOTP'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: Email verified successfully
+        '400':
+          description: Invalid OTP or validation error
+  /api/v1/auth/registration/resend-email/:
+    post:
+      operationId: auth_registration_resend_email_create
+      description: |-
+        Resends another email to an unverified email.
+
+        Accepts the following POST parameter: email.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResendEmailVerification'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ResendEmailVerification'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ResendEmailVerification'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestAuthDetail'
+          description: ''
+  /api/v1/auth/registration/verify-email/:
+    post:
+      operationId: auth_registration_verify_email_create
+      description: |-
+        Verifies the email associated with the provided key.
+
+        Accepts the following POST parameter: key.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyEmail'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VerifyEmail'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VerifyEmail'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestAuthDetail'
+          description: ''
+  /api/v1/auth/resend-otp/:
+    post:
+      operationId: auth_resend_otp_create
+      description: Resend OTP code for either email verification or password reset
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResendOTP'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ResendOTP'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ResendOTP'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: OTP resent successfully
+        '400':
+          description: Validation error
+  /api/v1/auth/token/refresh/:
+    post:
+      operationId: auth_token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/v1/auth/token/verify/:
+    post:
+      operationId: auth_token_verify_create
+      description: |-
+        Takes a token and indicates if it is valid.  This view provides no
+        information about a token's fitness for a particular use.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenVerify'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenVerify'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenVerify'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenVerify'
+          description: ''
+  /api/v1/auth/user/:
+    get:
+      operationId: auth_user_retrieve
+      description: |-
+        Reads and updates UserModel fields
+        Accepts GET, PUT, PATCH methods.
+
+        Default accepted fields: username, first_name, last_name
+        Default display fields: pk, username, email, first_name, last_name
+        Read-only fields: pk, email
+
+        Returns UserModel fields.
+      tags:
+      - auth
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetail'
+          description: ''
+    put:
+      operationId: auth_user_update
+      description: |-
+        Reads and updates UserModel fields
+        Accepts GET, PUT, PATCH methods.
+
+        Default accepted fields: username, first_name, last_name
+        Default display fields: pk, username, email, first_name, last_name
+        Read-only fields: pk, email
+
+        Returns UserModel fields.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserDetail'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserDetail'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserDetail'
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetail'
+          description: ''
+    patch:
+      operationId: auth_user_partial_update
+      description: |-
+        Reads and updates UserModel fields
+        Accepts GET, PUT, PATCH methods.
+
+        Default accepted fields: username, first_name, last_name
+        Default display fields: pk, username, email, first_name, last_name
+        Read-only fields: pk, email
+
+        Returns UserModel fields.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserDetail'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserDetail'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserDetail'
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetail'
+          description: ''
+  /api/v1/auth/users/{id}/:
+    get:
+      operationId: auth_users_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - auth
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetail'
+          description: ''
+  /api/v1/bookings/:
+    get:
+      operationId: bookings_list
+      description: |-
+        Production Engine handling Bookings for Admins, Salon Owners, Independent Vendors, and Clients.
+        Manages state machine transitions, automated escrow/wallet entries, and real-time Celery task synchronization.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - bookings
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBookingList'
+          description: ''
+    post:
+      operationId: bookings_create
+      description: |-
+        Production Engine handling Bookings for Admins, Salon Owners, Independent Vendors, and Clients.
+        Manages state machine transitions, automated escrow/wallet entries, and real-time Celery task synchronization.
+      tags:
+      - bookings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Booking'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Booking'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Booking'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+          description: ''
+  /api/v1/bookings/{id}/:
+    get:
+      operationId: bookings_retrieve
+      description: |-
+        Production Engine handling Bookings for Admins, Salon Owners, Independent Vendors, and Clients.
+        Manages state machine transitions, automated escrow/wallet entries, and real-time Celery task synchronization.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - bookings
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+          description: ''
+    put:
+      operationId: bookings_update
+      description: |-
+        Production Engine handling Bookings for Admins, Salon Owners, Independent Vendors, and Clients.
+        Manages state machine transitions, automated escrow/wallet entries, and real-time Celery task synchronization.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - bookings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Booking'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Booking'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Booking'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+          description: ''
+    patch:
+      operationId: bookings_partial_update
+      description: |-
+        Production Engine handling Bookings for Admins, Salon Owners, Independent Vendors, and Clients.
+        Manages state machine transitions, automated escrow/wallet entries, and real-time Celery task synchronization.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - bookings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBooking'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBooking'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBooking'
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+          description: ''
+    delete:
+      operationId: bookings_destroy
+      description: |-
+        Production Engine handling Bookings for Admins, Salon Owners, Independent Vendors, and Clients.
+        Manages state machine transitions, automated escrow/wallet entries, and real-time Celery task synchronization.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - bookings
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/bookings/{id}/cancel/:
+    post:
+      operationId: bookings_cancel_create
+      description: |-
+        Production Engine handling Bookings for Admins, Salon Owners, Independent Vendors, and Clients.
+        Manages state machine transitions, automated escrow/wallet entries, and real-time Celery task synchronization.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - bookings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Booking'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Booking'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Booking'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+          description: ''
+  /api/v1/bookings/{id}/complete/:
+    post:
+      operationId: bookings_complete_create
+      description: |-
+        Production Engine handling Bookings for Admins, Salon Owners, Independent Vendors, and Clients.
+        Manages state machine transitions, automated escrow/wallet entries, and real-time Celery task synchronization.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - bookings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Booking'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Booking'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Booking'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+          description: ''
+  /api/v1/bookings/{id}/reschedule/:
+    post:
+      operationId: bookings_reschedule_create
+      description: Updates appointment timeline parameters and recalculates active
+        Celery task distributions.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - bookings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingReschedule'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BookingReschedule'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BookingReschedule'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingReschedule'
+          description: ''
+  /api/v1/bookings/{id}/status/:
+    get:
+      operationId: bookings_status_retrieve
+      description: |-
+        Production Engine handling Bookings for Admins, Salon Owners, Independent Vendors, and Clients.
+        Manages state machine transitions, automated escrow/wallet entries, and real-time Celery task synchronization.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - bookings
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+          description: ''
+  /api/v1/category/:
+    get:
+      operationId: category_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - category
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCategoryList'
+          description: ''
+    post:
+      operationId: category_create
+      tags:
+      - category
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Category'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Category'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Category'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+  /api/v1/category/{id}/:
+    get:
+      operationId: category_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this service category.
+        required: true
+      tags:
+      - category
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+    put:
+      operationId: category_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this service category.
+        required: true
+      tags:
+      - category
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Category'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Category'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Category'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+    patch:
+      operationId: category_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this service category.
+        required: true
+      tags:
+      - category
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCategory'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCategory'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCategory'
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+    delete:
+      operationId: category_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this service category.
+        required: true
+      tags:
+      - category
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/chat/conversations/:
+    get:
+      operationId: chat_conversations_list
+      description: For chat List
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - chat
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedConversationListList'
+          description: ''
+  /api/v1/chat/conversations/{id}/:
+    get:
+      operationId: chat_conversations_retrieve
+      description: For chat List
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - chat
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationList'
+          description: ''
+  /api/v1/chat/conversations/{id}/mark-read/:
+    post:
+      operationId: chat_conversations_mark_read_create
+      description: 'Endpoint: POST /api/v1/conversations/{uuid}/mark-read/'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - chat
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConversationList'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ConversationList'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ConversationList'
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationList'
+          description: ''
+  /api/v1/chat/conversations/initiate/{target_id}/:
+    post:
+      operationId: chat_conversations_initiate_create
+      parameters:
+      - in: path
+        name: target_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - chat
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/chat/conversations/messages/{conversation_id}/:
+    get:
+      operationId: chat_conversations_messages_retrieve
+      parameters:
+      - in: path
+        name: conversation_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - chat
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/conversations/:
+    get:
+      operationId: conversations_list
+      description: For chat List
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - conversations
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedConversationListList'
+          description: ''
+  /api/v1/conversations/{id}/:
+    get:
+      operationId: conversations_retrieve
+      description: For chat List
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - conversations
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationList'
+          description: ''
+  /api/v1/conversations/{id}/mark-read/:
+    post:
+      operationId: conversations_mark_read_create
+      description: 'Endpoint: POST /api/v1/conversations/{uuid}/mark-read/'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - conversations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConversationList'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ConversationList'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ConversationList'
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationList'
+          description: ''
+  /api/v1/conversations/initiate/{target_id}/:
+    post:
+      operationId: conversations_initiate_create
+      parameters:
+      - in: path
+        name: target_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - conversations
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/conversations/messages/{conversation_id}/:
+    get:
+      operationId: conversations_messages_retrieve
+      parameters:
+      - in: path
+        name: conversation_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - conversations
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/gallery/images/{id}/:
+    delete:
+      operationId: gallery_images_destroy
+      description: Deletes a specific gallery image asset by its unique UUID ID.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - gallery
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/gallery/posts/{id}/:
+    delete:
+      operationId: gallery_posts_destroy
+      description: Deletes an entire gallery post and all associated images inside
+        it.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - gallery
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/notifications/:
+    get:
+      operationId: notifications_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - notifications
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedNotificationList'
+          description: ''
+    post:
+      operationId: notifications_create
+      tags:
+      - notifications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Notification'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+  /api/v1/notifications/{id}/:
+    get:
+      operationId: notifications_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - notifications
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+    put:
+      operationId: notifications_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - notifications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Notification'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+    patch:
+      operationId: notifications_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - notifications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedNotification'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedNotification'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedNotification'
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+    delete:
+      operationId: notifications_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - notifications
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/notifications/{id}/mark-read/:
+    post:
+      operationId: notifications_mark_read_create
+      description: 'Endpoint: POST /api/v1/notifications/{id}/mark-read/'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - notifications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Notification'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+  /api/v1/notifications/mark-all-read/:
+    post:
+      operationId: notifications_mark_all_read_create
+      description: 'Endpoint: POST /api/v1/notifications/mark-all-read/'
+      tags:
+      - notifications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Notification'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+  /api/v1/payments/banks-list/:
+    get:
+      operationId: payments_banks_list_retrieve
+      description: |-
+        Returns a clean array of banks and codes directly from Flutterwave
+        so the frontend mobile app can display them in a dropdown.
+      tags:
+      - payments
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/payments/initialize/:
+    post:
+      operationId: payments_initialize_create
+      tags:
+      - payments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentInit'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PaymentInit'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PaymentInit'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentInit'
+          description: ''
+  /api/v1/payments/my-wallet/:
+    get:
+      operationId: payments_my_wallet_retrieve
+      description: Shows Balance and History for logged-in user
+      tags:
+      - payments
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Wallet'
+          description: ''
+  /api/v1/payments/my-wallet-transactions/:
+    get:
+      operationId: payments_my_wallet_transactions_list
+      description: Simple Transaction History for the users wallet
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - payments
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTransactionList'
+          description: ''
+  /api/v1/payments/my-wallet-transactions/{id}/:
+    get:
+      operationId: payments_my_wallet_transactions_retrieve
+      description: Simple Transaction History for the users wallet
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - payments
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+          description: ''
+  /api/v1/payments/payment_verification/:
+    post:
+      operationId: payments_payment_verification_create
+      description: |-
+        sends a status to frontend if transaction is succesful from flutterwave
+        takes transaction id from user as path parameter
+        returns transaction status
+      tags:
+      - payments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyPayment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VerifyPayment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VerifyPayment'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifyPayment'
+          description: ''
+  /api/v1/payments/save-bank-details/:
+    post:
+      operationId: payments_save_bank_details_create
+      description: |-
+        STEP 2: Saves bank details, dynamically resolving the bank code
+        to a human-readable bank name for frontend display layout tracking.
+      tags:
+      - payments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyBankAccount'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VerifyBankAccount'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VerifyBankAccount'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifyBankAccount'
+          description: ''
+  /api/v1/payments/transfer-webhook/:
+    post:
+      operationId: payments_transfer_webhook_create
+      tags:
+      - payments
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/payments/verify-bank/:
+    post:
+      operationId: payments_verify_bank_create
+      description: |-
+        STEP 1: Check Flutterwave to see who owns the account.
+
+        This does NOT save anything to the database. It allows the user to verify
+        the account name and correct any typos before locking it in.
+      tags:
+      - payments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyBankAccount'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VerifyBankAccount'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VerifyBankAccount'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifyBankAccount'
+          description: ''
+  /api/v1/payments/webhook/:
+    post:
+      operationId: payments_webhook_create
+      tags:
+      - payments
+      responses:
+        '200':
+          description: No response body
+  /api/v1/payments/withdraw/:
+    post:
+      operationId: payments_withdraw_create
+      description: Verifies state prerequisites, pulls locked bank metrics, and initiates
+        payout.
+      tags:
+      - payments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WithdrawalRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WithdrawalRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WithdrawalRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WithdrawalRequest'
+          description: ''
+  /api/v1/reviews/:
+    get:
+      operationId: reviews_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: salon
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: vendor
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - reviews
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedReviewList'
+          description: ''
+    post:
+      operationId: reviews_create
+      tags:
+      - reviews
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Review'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Review'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Review'
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+          description: ''
+  /api/v1/reviews/{id}/:
+    get:
+      operationId: reviews_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this review.
+        required: true
+      tags:
+      - reviews
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+          description: ''
+    put:
+      operationId: reviews_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this review.
+        required: true
+      tags:
+      - reviews
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Review'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Review'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Review'
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+          description: ''
+    patch:
+      operationId: reviews_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this review.
+        required: true
+      tags:
+      - reviews
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedReview'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedReview'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedReview'
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+          description: ''
+    delete:
+      operationId: reviews_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this review.
+        required: true
+      tags:
+      - reviews
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/salons/:
+    get:
+      operationId: salons_list
+      description: |-
+        "
+        A viewset for viewing and editing salon instances.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - salons
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSalonProfileList'
+          description: ''
+    post:
+      operationId: salons_create
+      description: |-
+        "
+        A viewset for viewing and editing salon instances.
+      tags:
+      - salons
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalonProfile'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SalonProfile'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SalonProfile'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalonProfile'
+          description: ''
+  /api/v1/salons/{id}/availability/:
+    get:
+      operationId: salons_availability_list
+      description: Instantiates and Returns Salon Avalaibility
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - salons
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedIndividualAvailabilityDayList'
+          description: ''
+    post:
+      operationId: salons_availability_create
+      description: Instantiates and Returns Salon Avalaibility
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - salons
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IndividualAvailabilityDay'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/IndividualAvailabilityDay'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/IndividualAvailabilityDay'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IndividualAvailabilityDay'
+          description: ''
+  /api/v1/salons/{id}/services:
+    get:
+      operationId: salons_services_list
+      description: Instantiates and Return Salon Services
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - salons
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSalonServicesList'
+          description: ''
+    post:
+      operationId: salons_services_create
+      description: Instantiates and Return Salon Services
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - salons
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalonServices'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SalonServices'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SalonServices'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalonServices'
+          description: ''
+  /api/v1/salons/{id}/:
+    get:
+      operationId: salons_retrieve
+      description: |-
+        "
+        A viewset for viewing and editing salon instances.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this salon profile.
+        required: true
+      tags:
+      - salons
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalonDetail'
+          description: ''
+    put:
+      operationId: salons_update
+      description: |-
+        "
+        A viewset for viewing and editing salon instances.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this salon profile.
+        required: true
+      tags:
+      - salons
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalonProfile'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SalonProfile'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SalonProfile'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalonProfile'
+          description: ''
+    patch:
+      operationId: salons_partial_update
+      description: |-
+        "
+        A viewset for viewing and editing salon instances.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this salon profile.
+        required: true
+      tags:
+      - salons
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSalonProfile'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSalonProfile'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSalonProfile'
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalonProfile'
+          description: ''
+    delete:
+      operationId: salons_destroy
+      description: |-
+        "
+        A viewset for viewing and editing salon instances.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this salon profile.
+        required: true
+      tags:
+      - salons
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/salons/{salon_id}/availability-exceptions/:
+    get:
+      operationId: salons_availability_exceptions_list
+      description: Instantiates and Returns Salon Avalaibility Exception
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: path
+        name: salon_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - salons
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAvailabilityExceptionList'
+          description: ''
+    post:
+      operationId: salons_availability_exceptions_create
+      description: Instantiates and Returns Salon Avalaibility Exception
+      parameters:
+      - in: path
+        name: salon_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - salons
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AvailabilityException'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AvailabilityException'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AvailabilityException'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailabilityException'
+          description: ''
+  /api/v1/salons/{salon_id}/gallery/:
+    get:
+      operationId: salons_gallery_list
+      description: Handle Salon Gallery and Portfolio
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: path
+        name: salon_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - salons
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedGalleryPostList'
+          description: ''
+    post:
+      operationId: salons_gallery_create
+      description: Handle Salon Gallery and Portfolio
+      parameters:
+      - in: path
+        name: salon_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - salons
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GalleryPost'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GalleryPost'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GalleryPost'
+          description: ''
+  /api/v1/salons/{salon_id}/services/{id}/:
+    get:
+      operationId: salons_services_retrieve
+      description: Retrieves Salon Services objects(Id)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: salon_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - salons
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalonServices'
+          description: ''
+    put:
+      operationId: salons_services_update
+      description: Retrieves Salon Services objects(Id)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: salon_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - salons
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalonServices'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SalonServices'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SalonServices'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalonServices'
+          description: ''
+    patch:
+      operationId: salons_services_partial_update
+      description: Retrieves Salon Services objects(Id)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: salon_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - salons
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSalonServices'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSalonServices'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSalonServices'
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalonServices'
+          description: ''
+    delete:
+      operationId: salons_services_destroy
+      description: Retrieves Salon Services objects(Id)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: salon_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - salons
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/salons/{salon_id}/slots/:
+    get:
+      operationId: salons_slots_list
+      description: Handles returning Available slots to the user
+      parameters:
+      - in: query
+        name: date
+        schema:
+          type: string
+          format: date
+        description: Date to check availability (YYYY-MM-DD)
+        required: true
+      - in: query
+        name: duration
+        schema:
+          type: integer
+        description: enter duration for slot
+      - in: path
+        name: salon_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - salons
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SlotResponse'
+          description: ''
+  /api/v1/search/:
+    get:
+      operationId: search_retrieve
+      parameters:
+      - in: query
+        name: lat
+        schema:
+          type: number
+          format: float
+        description: Latitude
+      - in: query
+        name: lon
+        schema:
+          type: number
+          format: float
+        description: Longitude
+      - in: query
+        name: q
+        schema:
+          type: string
+        description: Search text
+      - in: query
+        name: rating
+        schema:
+          type: number
+          format: float
+        description: Minimum rating
+      - in: query
+        name: service
+        schema:
+          type: integer
+        description: Category ID
+      tags:
+      - search
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketplaceSearch'
+          description: ''
+  /api/v1/toggle-status/:
+    patch:
+      operationId: toggle_status_partial_update
+      tags:
+      - toggle-status
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/vendors/:
+    get:
+      operationId: vendors_list
+      description: Fetch all vendors. You can pass a comma-separated list of category
+        UUIDs to filter results.
+      summary: List all vendors with multi-category filtering
+      parameters:
+      - in: query
+        name: categories
+        schema:
+          type: string
+        description: 'Comma-separated category IDs. Example: `8b4c2e6d-...,1a2b3c4d-...`'
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - vendors
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedVendorList'
+          description: ''
+    post:
+      operationId: vendors_create
+      description: |-
+        "
+        A viewset for viewing and editing vendor instances with multi-category filters.
+      tags:
+      - vendors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Vendor'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Vendor'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Vendor'
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vendor'
+          description: ''
+  /api/v1/vendors/{id}/gallery:
+    get:
+      operationId: vendors_gallery_list
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - vendors
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedGalleryPostList'
+          description: ''
+    post:
+      operationId: vendors_gallery_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - vendors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GalleryPost'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GalleryPost'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GalleryPost'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GalleryPost'
+          description: ''
+  /api/v1/vendors/{id}/services:
+    get:
+      operationId: vendors_services_list
+      description: Instantiates and Return vendor Services
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - vendors
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedVendorServicesList'
+          description: ''
+    post:
+      operationId: vendors_services_create
+      description: Instantiates and Return vendor Services
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - vendors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VendorServices'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VendorServices'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VendorServices'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VendorServices'
+          description: ''
+  /api/v1/vendors/{id}/:
+    get:
+      operationId: vendors_retrieve
+      description: |-
+        "
+        A viewset for viewing and editing vendor instances with multi-category filters.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this individual vendor profile.
+        required: true
+      tags:
+      - vendors
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VendorDetail'
+          description: ''
+    put:
+      operationId: vendors_update
+      description: |-
+        "
+        A viewset for viewing and editing vendor instances with multi-category filters.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this individual vendor profile.
+        required: true
+      tags:
+      - vendors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Vendor'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Vendor'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Vendor'
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vendor'
+          description: ''
+    patch:
+      operationId: vendors_partial_update
+      description: |-
+        "
+        A viewset for viewing and editing vendor instances with multi-category filters.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this individual vendor profile.
+        required: true
+      tags:
+      - vendors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedVendor'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedVendor'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedVendor'
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vendor'
+          description: ''
+    delete:
+      operationId: vendors_destroy
+      description: |-
+        "
+        A viewset for viewing and editing vendor instances with multi-category filters.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this individual vendor profile.
+        required: true
+      tags:
+      - vendors
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/vendors/{vendor_id}/availabilities/sync/:
+    get:
+      operationId: vendors_availabilities_sync_retrieve
+      description: |-
+        GET: Fetches the entire weekly calendar list for this vendor.
+        PUT/PATCH: Replaces/Syncs the entire calendar matrix safely for the vendor.
+        DELETE: Wipes out the recurring weekly schedule entirely.
+      parameters:
+      - in: path
+        name: vendor_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - vendors
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkAvailability'
+          description: ''
+    put:
+      operationId: vendors_availabilities_sync_update
+      description: |-
+        GET: Fetches the entire weekly calendar list for this vendor.
+        PUT/PATCH: Replaces/Syncs the entire calendar matrix safely for the vendor.
+        DELETE: Wipes out the recurring weekly schedule entirely.
+      parameters:
+      - in: path
+        name: vendor_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - vendors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkAvailability'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BulkAvailability'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BulkAvailability'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkAvailability'
+          description: ''
+    patch:
+      operationId: vendors_availabilities_sync_partial_update
+      description: |-
+        GET: Fetches the entire weekly calendar list for this vendor.
+        PUT/PATCH: Replaces/Syncs the entire calendar matrix safely for the vendor.
+        DELETE: Wipes out the recurring weekly schedule entirely.
+      parameters:
+      - in: path
+        name: vendor_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - vendors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBulkAvailability'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBulkAvailability'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBulkAvailability'
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkAvailability'
+          description: ''
+    delete:
+      operationId: vendors_availabilities_sync_destroy
+      description: |-
+        GET: Fetches the entire weekly calendar list for this vendor.
+        PUT/PATCH: Replaces/Syncs the entire calendar matrix safely for the vendor.
+        DELETE: Wipes out the recurring weekly schedule entirely.
+      parameters:
+      - in: path
+        name: vendor_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - vendors
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/vendors/{vendor_id}/availability/:
+    get:
+      operationId: vendors_availability_list
+      description: Returns or updates/instantiates the complete weekly recurring availability
+        matrix for a vendor.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: path
+        name: vendor_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - vendors
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedIndividualAvailabilityDayList'
+          description: ''
+    post:
+      operationId: vendors_availability_create
+      description: Returns or updates/instantiates the complete weekly recurring availability
+        matrix for a vendor.
+      parameters:
+      - in: path
+        name: vendor_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - vendors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkAvailability'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BulkAvailability'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BulkAvailability'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkAvailability'
+          description: ''
+  /api/v1/vendors/{vendor_id}/availability-exceptions/:
+    get:
+      operationId: vendors_availability_exceptions_list
+      description: Instantiates and Returns vendor Avalaibility Exception
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: path
+        name: vendor_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - vendors
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAvailabilityExceptionList'
+          description: ''
+    post:
+      operationId: vendors_availability_exceptions_create
+      description: Instantiates and Returns vendor Avalaibility Exception
+      parameters:
+      - in: path
+        name: vendor_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - vendors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AvailabilityException'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AvailabilityException'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AvailabilityException'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailabilityException'
+          description: ''
+  /api/v1/vendors/{vendor_id}/availability-exceptions/{id}/:
+    get:
+      operationId: vendors_availability_exceptions_retrieve
+      description: Instantiates and Returns Vendor Avalaibility Exception object (id)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: vendor_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - vendors
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailabilityException'
+          description: ''
+    put:
+      operationId: vendors_availability_exceptions_update
+      description: Instantiates and Returns Vendor Avalaibility Exception object (id)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: vendor_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - vendors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AvailabilityException'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AvailabilityException'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AvailabilityException'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailabilityException'
+          description: ''
+    patch:
+      operationId: vendors_availability_exceptions_partial_update
+      description: Instantiates and Returns Vendor Avalaibility Exception object (id)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: vendor_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - vendors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAvailabilityException'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAvailabilityException'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAvailabilityException'
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailabilityException'
+          description: ''
+    delete:
+      operationId: vendors_availability_exceptions_destroy
+      description: Instantiates and Returns Vendor Avalaibility Exception object (id)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: vendor_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - vendors
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/vendors/{vendor_id}/available-slots/:
+    get:
+      operationId: vendors_available_slots_list
+      description: Handles returning Available slots to the user
+      parameters:
+      - in: query
+        name: date
+        schema:
+          type: string
+          format: date
+        description: Date to check availability (YYYY-MM-DD)
+        required: true
+      - in: query
+        name: duration
+        schema:
+          type: integer
+        description: enter duration for slot
+      - in: path
+        name: vendor_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - vendors
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SlotResponse'
+          description: ''
+  /api/v1/vendors/{vendor_id}/services/{id}/:
+    get:
+      operationId: vendors_services_retrieve
+      description: Retrieves vendor Services objects(Id)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: vendor_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - vendors
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VendorServices'
+          description: ''
+    put:
+      operationId: vendors_services_update
+      description: Retrieves vendor Services objects(Id)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: vendor_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - vendors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VendorServices'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VendorServices'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VendorServices'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VendorServices'
+          description: ''
+    patch:
+      operationId: vendors_services_partial_update
+      description: Retrieves vendor Services objects(Id)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: vendor_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - vendors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedVendorServices'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedVendorServices'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedVendorServices'
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VendorServices'
+          description: ''
+    delete:
+      operationId: vendors_services_destroy
+      description: Retrieves vendor Services objects(Id)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: vendor_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - vendors
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/verify-nin/:
+    post:
+      operationId: verify_nin_create
+      tags:
+      - verify-nin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyNin'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VerifyNin'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VerifyNin'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+components:
+  schemas:
+    AvailabilityException:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        date:
+          type: string
+          format: date
+        is_available:
+          type: boolean
+        start_time:
+          type: string
+          format: time
+          nullable: true
+        end_time:
+          type: string
+          format: time
+          nullable: true
+        salon:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        vendor:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+      required:
+      - date
+      - id
+      - salon
+      - vendor
+    Booking:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        customer_id:
+          type: string
+          format: uuid
+          readOnly: true
+        customer_name:
+          type: string
+          readOnly: true
+        customer_address:
+          type: string
+          nullable: true
+          readOnly: true
+        vendor_id:
+          type: string
+          format: uuid
+          readOnly: true
+        salon_id:
+          type: string
+          format: uuid
+          readOnly: true
+        customer_image:
+          type: string
+          readOnly: true
+        salon_service:
+          type: string
+          format: uuid
+          nullable: true
+        vendor_service:
+          type: string
+          format: uuid
+          nullable: true
+        amount:
+          type: string
+          readOnly: true
+        duration:
+          type: string
+          readOnly: true
+        provider_name:
+          type: string
+          readOnly: true
+        provider_image:
+          type: string
+          readOnly: true
+        provider_location:
+          type: string
+          readOnly: true
+        vendor_service_name:
+          type: string
+          readOnly: true
+        date:
+          type: string
+          format: date
+        start_time:
+          type: string
+          format: time
+        end_time:
+          type: string
+          format: time
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/BookingStatusEnum'
+          readOnly: true
+        payment_reference:
+          type: string
+          nullable: true
+          maxLength: 20
+        is_rated:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - amount
+      - created_at
+      - customer_address
+      - customer_id
+      - customer_image
+      - customer_name
+      - date
+      - duration
+      - end_time
+      - id
+      - is_rated
+      - provider_image
+      - provider_location
+      - provider_name
+      - salon_id
+      - start_time
+      - status
+      - vendor_id
+      - vendor_service_name
+    BookingReschedule:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        start_time:
+          type: string
+        end_time:
+          type: string
+      required:
+      - date
+      - end_time
+      - start_time
+    BookingStatusEnum:
+      enum:
+      - pending
+      - confirmed
+      - completed
+      - cancelled
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `confirmed` - Confirmed
+        * `completed` - Completed
+        * `cancelled` - Cancelled
+    BulkAvailability:
+      type: object
+      description: |-
+        Accepts an array of schedules, replaces any existing schedule configuration
+        for the provider, and saves them efficiently in a single atomic bulk operation.
+      properties:
+        schedules:
+          type: array
+          items:
+            $ref: '#/components/schemas/IndividualAvailabilityDay'
+      required:
+      - schedules
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        category_image:
+          type: string
+          nullable: true
+          title: Image
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - name
+    ConversationList:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        other_user:
+          type: string
+          readOnly: true
+        last_message:
+          type: string
+          readOnly: true
+        last_message_at:
+          type: string
+          format: date-time
+          readOnly: true
+        is_last_message_unread:
+          type: string
+          readOnly: true
+      required:
+      - is_last_message_unread
+      - last_message
+      - last_message_at
+      - other_user
+    CustomRegister:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password1:
+          type: string
+          writeOnly: true
+        password2:
+          type: string
+          writeOnly: true
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        phone_number:
+          type: string
+      required:
+      - email
+      - password1
+      - password2
+      - role
+    CustomerProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        profile_pic:
+          type: string
+          format: uri
+          nullable: true
+        phone_number:
+          type: string
+          nullable: true
+          maxLength: 15
+        customer_address:
+          type: string
+          nullable: true
+          maxLength: 200
+      required:
+      - id
+    DayOfWeekEnum:
+      enum:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      type: integer
+      description: |-
+        * `0` - Monday
+        * `1` - Tuesday
+        * `2` - Wednesday
+        * `3` - Thursday
+        * `4` - Friday
+        * `5` - Saturday
+        * `6` - Sunday
+    EmailLogin:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+      required:
+      - email
+      - password
+    GalleryImage:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        image:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - image
+    GalleryPost:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        salon:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        vendor:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        caption:
+          type: string
+          nullable: true
+          maxLength: 255
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/GalleryImage'
+          readOnly: true
+        uploaded_images:
+          type: array
+          items:
+            type: string
+            format: uri
+          writeOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - images
+      - salon
+      - uploaded_images
+      - vendor
+    GenderEnum:
+      enum:
+      - male
+      - female
+      type: string
+      description: |-
+        * `male` - male
+        * `female` - female
+    IndividualAvailabilityDay:
+      type: object
+      description: Handles validation for an individual day object inside the bulk
+        payload.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        day_of_week:
+          allOf:
+          - $ref: '#/components/schemas/DayOfWeekEnum'
+          minimum: -2147483648
+          maximum: 2147483647
+        start_time:
+          type: string
+          format: time
+        end_time:
+          type: string
+          format: time
+      required:
+      - end_time
+      - id
+      - start_time
+    IndividualVendor:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        profile_pic:
+          type: string
+          format: uri
+          nullable: true
+        date_of_birth:
+          type: string
+          format: date-time
+          readOnly: true
+        bio:
+          type: string
+          nullable: true
+        phone_number:
+          type: string
+          nullable: true
+          maxLength: 20
+        years_of_experience:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        Gender:
+          $ref: '#/components/schemas/GenderEnum'
+        location:
+          type: string
+          nullable: true
+        address:
+          type: string
+          nullable: true
+          maxLength: 255
+        bank_code:
+          type: string
+          nullable: true
+          maxLength: 15
+        account_number:
+          type: string
+          nullable: true
+          maxLength: 15
+        account_name:
+          type: string
+          nullable: true
+          maxLength: 100
+        bank_name:
+          type: string
+          nullable: true
+          maxLength: 100
+        total_earnings:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+        is_active:
+          type: boolean
+        is_available:
+          type: boolean
+        is_nin_verified:
+          type: boolean
+        nin_verified_at:
+          type: string
+          format: date-time
+          nullable: true
+        tags:
+          type: string
+          nullable: true
+          maxLength: 20
+        category:
+          type: integer
+          nullable: true
+      required:
+      - date_of_birth
+    JWT:
+      type: object
+      description: Serializer for JWT authentication.
+      properties:
+        access:
+          type: string
+        refresh:
+          type: string
+        user:
+          $ref: '#/components/schemas/UserDetail'
+      required:
+      - access
+      - refresh
+      - user
+    MarketplaceSearch:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        display_name:
+          type: string
+          maxLength: 255
+        type:
+          type: string
+        location:
+          type: string
+        avg_rating:
+          type: number
+          format: double
+        distance:
+          type: number
+          format: double
+          readOnly: true
+      required:
+      - avg_rating
+      - display_name
+      - distance
+      - id
+      - location
+      - type
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        actor_name:
+          type: string
+          readOnly: true
+        actor_image:
+          type: string
+          readOnly: true
+        verb:
+          type: string
+          maxLength: 255
+        message:
+          type: string
+          nullable: true
+          maxLength: 255
+        target_type:
+          type: string
+          title: Python model class name
+          readOnly: true
+        object_id:
+          type: string
+          format: uuid
+          nullable: true
+        is_read:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - actor_image
+      - actor_name
+      - created_at
+      - id
+      - target_type
+      - verb
+    OtpTypeEnum:
+      enum:
+      - email_verification
+      - password_reset
+      type: string
+      description: |-
+        * `email_verification` - email_verification
+        * `password_reset` - password_reset
+    PaginatedAvailabilityExceptionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AvailabilityException'
+    PaginatedBookingList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Booking'
+    PaginatedCategoryList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+    PaginatedConversationListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConversationList'
+    PaginatedGalleryPostList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/GalleryPost'
+    PaginatedIndividualAvailabilityDayList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/IndividualAvailabilityDay'
+    PaginatedNotificationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+    PaginatedReviewList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Review'
+    PaginatedSalonProfileList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SalonProfile'
+    PaginatedSalonServicesList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SalonServices'
+    PaginatedTransactionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transaction'
+    PaginatedVendorList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Vendor'
+    PaginatedVendorServicesList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/VendorServices'
+    PasswordChange:
+      type: object
+      properties:
+        new_password1:
+          type: string
+          maxLength: 128
+        new_password2:
+          type: string
+          maxLength: 128
+      required:
+      - new_password1
+      - new_password2
+    PasswordReset:
+      type: object
+      description: Serializer for requesting a password reset e-mail.
+      properties:
+        email:
+          type: string
+          format: email
+      required:
+      - email
+    PasswordResetConfirm:
+      type: object
+      description: Serializer for confirming a password reset attempt.
+      properties:
+        new_password1:
+          type: string
+          maxLength: 128
+        new_password2:
+          type: string
+          maxLength: 128
+        uid:
+          type: string
+        token:
+          type: string
+      required:
+      - new_password1
+      - new_password2
+      - token
+      - uid
+    PatchedAvailabilityException:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        date:
+          type: string
+          format: date
+        is_available:
+          type: boolean
+        start_time:
+          type: string
+          format: time
+          nullable: true
+        end_time:
+          type: string
+          format: time
+          nullable: true
+        salon:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        vendor:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+    PatchedBooking:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        customer_id:
+          type: string
+          format: uuid
+          readOnly: true
+        customer_name:
+          type: string
+          readOnly: true
+        customer_address:
+          type: string
+          nullable: true
+          readOnly: true
+        vendor_id:
+          type: string
+          format: uuid
+          readOnly: true
+        salon_id:
+          type: string
+          format: uuid
+          readOnly: true
+        customer_image:
+          type: string
+          readOnly: true
+        salon_service:
+          type: string
+          format: uuid
+          nullable: true
+        vendor_service:
+          type: string
+          format: uuid
+          nullable: true
+        amount:
+          type: string
+          readOnly: true
+        duration:
+          type: string
+          readOnly: true
+        provider_name:
+          type: string
+          readOnly: true
+        provider_image:
+          type: string
+          readOnly: true
+        provider_location:
+          type: string
+          readOnly: true
+        vendor_service_name:
+          type: string
+          readOnly: true
+        date:
+          type: string
+          format: date
+        start_time:
+          type: string
+          format: time
+        end_time:
+          type: string
+          format: time
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/BookingStatusEnum'
+          readOnly: true
+        payment_reference:
+          type: string
+          nullable: true
+          maxLength: 20
+        is_rated:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedBulkAvailability:
+      type: object
+      description: |-
+        Accepts an array of schedules, replaces any existing schedule configuration
+        for the provider, and saves them efficiently in a single atomic bulk operation.
+      properties:
+        schedules:
+          type: array
+          items:
+            $ref: '#/components/schemas/IndividualAvailabilityDay'
+    PatchedCategory:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        category_image:
+          type: string
+          nullable: true
+          title: Image
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedNotification:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        actor_name:
+          type: string
+          readOnly: true
+        actor_image:
+          type: string
+          readOnly: true
+        verb:
+          type: string
+          maxLength: 255
+        message:
+          type: string
+          nullable: true
+          maxLength: 255
+        target_type:
+          type: string
+          title: Python model class name
+          readOnly: true
+        object_id:
+          type: string
+          format: uuid
+          nullable: true
+        is_read:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedReview:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        customer:
+          type: string
+          format: uuid
+          readOnly: true
+        customer_name:
+          type: string
+          nullable: true
+          readOnly: true
+        vendor:
+          type: string
+          format: uuid
+          nullable: true
+        salon:
+          type: string
+          format: uuid
+          nullable: true
+        rating:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        review:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedSalonProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        owner:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        category:
+          type: integer
+          nullable: true
+        about:
+          type: string
+          nullable: true
+        address:
+          type: string
+          nullable: true
+          maxLength: 255
+        location:
+          type: string
+          nullable: true
+        profile_pic:
+          type: string
+          nullable: true
+          title: Image
+        average_rating:
+          type: number
+          format: double
+          readOnly: true
+        review_count:
+          type: integer
+          readOnly: true
+        links:
+          type: string
+          maxLength: 255
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        is_open:
+          type: boolean
+    PatchedSalonServices:
+      type: object
+      properties:
+        salon:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        duration_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+          readOnly: true
+    PatchedUserDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        first_name:
+          type: string
+          nullable: true
+          maxLength: 15
+        last_name:
+          type: string
+          nullable: true
+          maxLength: 15
+        email:
+          type: string
+          format: email
+          readOnly: true
+        username:
+          type: string
+          nullable: true
+          maxLength: 150
+        phone_number:
+          type: string
+          nullable: true
+          maxLength: 20
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          readOnly: true
+        salon_profile:
+          $ref: '#/components/schemas/SalonOwner'
+        vendor_profile:
+          $ref: '#/components/schemas/IndividualVendor'
+        customer_profile:
+          $ref: '#/components/schemas/CustomerProfile'
+    PatchedVendor:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        vendor_name:
+          type: string
+          readOnly: true
+        category:
+          type: integer
+          nullable: true
+        bio:
+          type: string
+          nullable: true
+        profile_pic:
+          type: string
+          nullable: true
+          title: Image
+        phone_number:
+          type: string
+          nullable: true
+          maxLength: 20
+        years_of_experience:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        address:
+          type: string
+          nullable: true
+          maxLength: 255
+        review_count:
+          type: integer
+          readOnly: true
+        total_earnings:
+          type: integer
+          readOnly: true
+        average_rating:
+          type: number
+          format: double
+          readOnly: true
+        is_active:
+          type: boolean
+          readOnly: true
+        is_available:
+          type: boolean
+          readOnly: true
+        is_nin_verified:
+          type: boolean
+          readOnly: true
+        nin_verified_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        tags:
+          type: string
+          nullable: true
+          maxLength: 20
+        bank_name:
+          type: string
+          readOnly: true
+          nullable: true
+        account_number:
+          type: string
+          readOnly: true
+          nullable: true
+        account_name:
+          type: string
+          readOnly: true
+          nullable: true
+    PatchedVendorServices:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        vendor:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        duration_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+          readOnly: true
+        category_ids:
+          type: array
+          items:
+            type: integer
+            writeOnly: true
+          writeOnly: true
+          description: An array of category IDs to link to this vendor service.
+    PaymentInit:
+      type: object
+      properties:
+        booking_id:
+          type: string
+          format: uuid
+          description: The ID of the booking to pay for.
+      required:
+      - booking_id
+    RequestPasswordResetOTP:
+      type: object
+      description: Request OTP for password reset
+      properties:
+        email:
+          type: string
+          format: email
+      required:
+      - email
+    ResendEmailVerification:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+      required:
+      - email
+    ResendOTP:
+      type: object
+      description: Resend OTP for email verification or password reset
+      properties:
+        email:
+          type: string
+          format: email
+        otp_type:
+          $ref: '#/components/schemas/OtpTypeEnum'
+      required:
+      - email
+      - otp_type
+    ResetPassword:
+      type: object
+      properties:
+        token_str:
+          type: string
+          format: uuid
+        new_password:
+          type: string
+          writeOnly: true
+          minLength: 8
+        confirm_new_password:
+          type: string
+          writeOnly: true
+          minLength: 8
+      required:
+      - confirm_new_password
+      - new_password
+      - token_str
+    RestAuthDetail:
+      type: object
+      properties:
+        detail:
+          type: string
+          readOnly: true
+      required:
+      - detail
+    Review:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        customer:
+          type: string
+          format: uuid
+          readOnly: true
+        customer_name:
+          type: string
+          nullable: true
+          readOnly: true
+        vendor:
+          type: string
+          format: uuid
+          nullable: true
+        salon:
+          type: string
+          format: uuid
+          nullable: true
+        rating:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        review:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - customer
+      - customer_name
+      - id
+    RoleEnum:
+      enum:
+      - customer
+      - individual_vendor
+      - salon_owner
+      - admin
+      type: string
+      description: |-
+        * `customer` - Customer
+        * `individual_vendor` - Individual Vendor
+        * `salon_owner` - Salon Owner
+        * `admin` - admin
+    SalonDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        owner:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+          readOnly: true
+        about:
+          type: string
+          nullable: true
+        address:
+          type: string
+          nullable: true
+          maxLength: 255
+        location:
+          type: string
+          nullable: true
+        profile_pic:
+          type: string
+          nullable: true
+          title: Image
+        salon_portfolio:
+          type: array
+          items:
+            $ref: '#/components/schemas/GalleryPost'
+          readOnly: true
+        links:
+          type: string
+          maxLength: 255
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        is_open:
+          type: boolean
+        salon_services:
+          type: array
+          items:
+            $ref: '#/components/schemas/SalonServices'
+          readOnly: true
+        salon_reviews:
+          type: array
+          items:
+            $ref: '#/components/schemas/Review'
+          readOnly: true
+        review_count:
+          type: integer
+          readOnly: true
+        average_rating:
+          type: number
+          format: double
+          readOnly: true
+      required:
+      - average_rating
+      - categories
+      - created_at
+      - id
+      - name
+      - owner
+      - review_count
+      - salon_portfolio
+      - salon_reviews
+      - salon_services
+    SalonOwner:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        profile_pic:
+          type: string
+          format: uri
+          nullable: true
+        bio:
+          type: string
+        flw_subaccount_id:
+          type: string
+          nullable: true
+          maxLength: 50
+        bank_code:
+          type: string
+          nullable: true
+          maxLength: 15
+        account_number:
+          type: string
+          nullable: true
+          maxLength: 15
+        address:
+          type: string
+          maxLength: 255
+        date_of_birth:
+          type: string
+          format: date-time
+          readOnly: true
+        Gender:
+          $ref: '#/components/schemas/GenderEnum'
+        is_nin_verified:
+          type: boolean
+        nin_verified_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - Gender
+      - address
+      - date_of_birth
+    SalonProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        owner:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        category:
+          type: integer
+          nullable: true
+        about:
+          type: string
+          nullable: true
+        address:
+          type: string
+          nullable: true
+          maxLength: 255
+        location:
+          type: string
+          nullable: true
+        profile_pic:
+          type: string
+          nullable: true
+          title: Image
+        average_rating:
+          type: number
+          format: double
+          readOnly: true
+        review_count:
+          type: integer
+          readOnly: true
+        links:
+          type: string
+          maxLength: 255
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        is_open:
+          type: boolean
+      required:
+      - average_rating
+      - created_at
+      - id
+      - name
+      - owner
+      - review_count
+    SalonServices:
+      type: object
+      properties:
+        salon:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        duration_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+          readOnly: true
+      required:
+      - categories
+      - name
+      - salon
+    SlotResponse:
+      type: object
+      properties:
+        salon_id:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date-time
+        slots:
+          type: string
+      required:
+      - date
+      - salon_id
+      - slots
+    SocialLogin:
+      type: object
+      properties:
+        access_token:
+          type: string
+        code:
+          type: string
+        id_token:
+          type: string
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    TokenVerify:
+      type: object
+      properties:
+        token:
+          type: string
+          writeOnly: true
+      required:
+      - token
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        tx_type:
+          $ref: '#/components/schemas/TxTypeEnum'
+        status:
+          $ref: '#/components/schemas/TransactionStatusEnum'
+        tx_ref:
+          type: string
+          maxLength: 200
+        flw_ref:
+          type: string
+          nullable: true
+          maxLength: 100
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        booking_id:
+          type: string
+          nullable: true
+          maxLength: 100
+      required:
+      - amount
+      - created_at
+      - id
+      - tx_ref
+      - tx_type
+    TransactionStatusEnum:
+      enum:
+      - pending
+      - completed
+      - failed
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `completed` - Completed
+        * `failed` - failed
+    TxTypeEnum:
+      enum:
+      - deposit
+      - payout
+      - refund
+      type: string
+      description: |-
+        * `deposit` - Deposit
+        * `payout` - Payout
+        * `refund` - Refund
+    UserDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        first_name:
+          type: string
+          nullable: true
+          maxLength: 15
+        last_name:
+          type: string
+          nullable: true
+          maxLength: 15
+        email:
+          type: string
+          format: email
+          readOnly: true
+        username:
+          type: string
+          nullable: true
+          maxLength: 150
+        phone_number:
+          type: string
+          nullable: true
+          maxLength: 20
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          readOnly: true
+        salon_profile:
+          $ref: '#/components/schemas/SalonOwner'
+        vendor_profile:
+          $ref: '#/components/schemas/IndividualVendor'
+        customer_profile:
+          $ref: '#/components/schemas/CustomerProfile'
+      required:
+      - email
+      - id
+      - role
+    Vendor:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        vendor_name:
+          type: string
+          readOnly: true
+        category:
+          type: integer
+          nullable: true
+        bio:
+          type: string
+          nullable: true
+        profile_pic:
+          type: string
+          nullable: true
+          title: Image
+        phone_number:
+          type: string
+          nullable: true
+          maxLength: 20
+        years_of_experience:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        address:
+          type: string
+          nullable: true
+          maxLength: 255
+        review_count:
+          type: integer
+          readOnly: true
+        total_earnings:
+          type: integer
+          readOnly: true
+        average_rating:
+          type: number
+          format: double
+          readOnly: true
+        is_active:
+          type: boolean
+          readOnly: true
+        is_available:
+          type: boolean
+          readOnly: true
+        is_nin_verified:
+          type: boolean
+          readOnly: true
+        nin_verified_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        tags:
+          type: string
+          nullable: true
+          maxLength: 20
+        bank_name:
+          type: string
+          readOnly: true
+          nullable: true
+        account_number:
+          type: string
+          readOnly: true
+          nullable: true
+        account_name:
+          type: string
+          readOnly: true
+          nullable: true
+      required:
+      - account_name
+      - account_number
+      - average_rating
+      - bank_name
+      - id
+      - is_active
+      - is_available
+      - is_nin_verified
+      - nin_verified_at
+      - review_count
+      - total_earnings
+      - vendor_name
+    VendorDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        worker:
+          type: string
+          format: uuid
+          readOnly: true
+        vendor_name:
+          type: string
+          readOnly: true
+        category:
+          type: integer
+          nullable: true
+        bio:
+          type: string
+          nullable: true
+        profile_pic:
+          type: string
+          nullable: true
+          title: Image
+        phone_number:
+          type: string
+          nullable: true
+          maxLength: 20
+        years_of_experience:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        total_earnings:
+          type: integer
+          readOnly: true
+        tags:
+          type: string
+          nullable: true
+          maxLength: 20
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        address:
+          type: string
+          nullable: true
+          maxLength: 255
+        is_active:
+          type: boolean
+          readOnly: true
+        is_available:
+          type: boolean
+          readOnly: true
+        is_nin_verified:
+          type: boolean
+          readOnly: true
+        nin_verified_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        vendor_services:
+          type: array
+          items:
+            $ref: '#/components/schemas/VendorServices'
+          readOnly: true
+        vendor_portfolio:
+          type: array
+          items:
+            $ref: '#/components/schemas/GalleryPost'
+          readOnly: true
+        vendor_reviews:
+          type: array
+          items:
+            $ref: '#/components/schemas/Review'
+          readOnly: true
+        review_count:
+          type: integer
+          readOnly: true
+        average_rating:
+          type: number
+          format: double
+          readOnly: true
+        bank_name:
+          type: string
+          readOnly: true
+          nullable: true
+        account_number:
+          type: string
+          readOnly: true
+          nullable: true
+        account_name:
+          type: string
+          readOnly: true
+          nullable: true
+      required:
+      - account_name
+      - account_number
+      - average_rating
+      - bank_name
+      - id
+      - is_active
+      - is_available
+      - is_nin_verified
+      - nin_verified_at
+      - review_count
+      - total_earnings
+      - vendor_name
+      - vendor_portfolio
+      - vendor_reviews
+      - vendor_services
+      - worker
+    VendorServices:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        vendor:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        duration_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+          readOnly: true
+        category_ids:
+          type: array
+          items:
+            type: integer
+            writeOnly: true
+          writeOnly: true
+          description: An array of category IDs to link to this vendor service.
+      required:
+      - categories
+      - category_ids
+      - id
+      - name
+      - vendor
+    VerifyBankAccount:
+      type: object
+      properties:
+        bank_code:
+          type: string
+          maxLength: 15
+        account_number:
+          type: string
+          maxLength: 15
+      required:
+      - account_number
+      - bank_code
+    VerifyEmail:
+      type: object
+      properties:
+        key:
+          type: string
+          writeOnly: true
+      required:
+      - key
+    VerifyEmailOTP:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        otp:
+          type: string
+          maxLength: 6
+      required:
+      - email
+      - otp
+    VerifyNin:
+      type: object
+      description: Validate Vendors VNIN
+      properties:
+        vnin:
+          type: string
+          writeOnly: true
+          description: 'Enter virtual nin; to generate input : *346*3*Your_NIN*715461#
+            or visit nimc mobile app and generate vnin using this enterprise code
+            {715461}'
+      required:
+      - vnin
+    VerifyPasswordResetOTP:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        otp:
+          type: string
+          maxLength: 6
+      required:
+      - email
+      - otp
+    VerifyPayment:
+      type: object
+      properties:
+        transaction_id:
+          type: string
+          description: payment transaction id gotten from the payment initialization
+          maxLength: 255
+      required:
+      - transaction_id
+    Wallet:
+      type: object
+      properties:
+        available_balance:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        pending_balance:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        total_earned:
+          type: string
+          readOnly: true
+        recent_transactions:
+          allOf:
+          - $ref: '#/components/schemas/Transaction'
+          readOnly: true
+      required:
+      - recent_transactions
+      - total_earned
+    WithdrawalRequest:
+      type: object
+      properties:
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        request_id:
+          type: string
+          description: This is a unique string generated by the mobile app for this
+            specific click
+          maxLength: 100
+      required:
+      - amount
+      - request_id
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

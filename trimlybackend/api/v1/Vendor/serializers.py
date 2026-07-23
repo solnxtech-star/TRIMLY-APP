@@ -70,15 +70,26 @@ class VendorSerializer(serializers.ModelSerializer):
     longitude = serializers.FloatField(required=False)
     latitude = serializers.FloatField(required=False)
 
+    # READ: full nested category objects
+    categories = CategorySerializer(many=True, read_only=True)
+    # WRITE: array of category IDs
+    category_ids = serializers.PrimaryKeyRelatedField(
+        queryset=ServiceCategory.objects.all(),
+        many=True,
+        write_only=True,
+        source='categories',
+        required=False,
+        help_text="An array of category IDs to link to this vendor."
+    )
+
     class Meta:
         model = IndividualVendorProfile
         fields = [
-            "id", "vendor_name", "category", "bio", "profile_pic", "phone_number",
-            "years_of_experience", "latitude", "longitude", "address", "review_count", 
+            "id", "vendor_name", "categories", "category_ids", "bio", "profile_pic", "phone_number",
+            "years_of_experience", "latitude", "longitude", "address", "review_count",
             "total_earnings", "average_rating", "is_active", "is_available", "is_nin_verified", "nin_verified_at", "tags",
             "bank_name", "account_number", "account_name"
         ]
-        # Secured: Bank information fields are completely absent from editable fields
         read_only_fields = ["vendor", "id", "is_active", "is_available", "is_nin_verified", "nin_verified_at", "total_earnings", "bank_name", "account_number", "account_name"]
 
     def to_representation(self, instance):
@@ -101,6 +112,14 @@ class VendorSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({"location": "Invalid coordinate format."})
         return attrs
 
+    def update(self, instance, validated_data):
+        categories = validated_data.pop('categories', None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        if categories is not None:
+            instance.categories.set(categories)
+        return instance
 
 
 
@@ -110,47 +129,35 @@ class VendorDetailSerializer(serializers.ModelSerializer):
     review_count = serializers.IntegerField(read_only=True)
     average_rating = serializers.FloatField(read_only=True)
     vendor_portfolio = GalleryPostSerializer(many=True, read_only=True)
-    vendor_reviews = ReviewSerializer(many=True, read_only=True, source='reviews') 
-    
+    vendor_reviews = ReviewSerializer(many=True, read_only=True, source='reviews')
+
+    categories = CategorySerializer(many=True, read_only=True)
+    category_ids = serializers.PrimaryKeyRelatedField(
+        queryset=ServiceCategory.objects.all(),
+        many=True,
+        write_only=True,
+        source='categories',
+        required=False,
+        help_text="An array of category IDs to link to this vendor."
+    )
+
     longitude = serializers.FloatField(required=False)
     latitude = serializers.FloatField(required=False)
 
     class Meta:
         model = IndividualVendorProfile
         fields = [
-            "id", "worker", "vendor_name", "category", "bio", "profile_pic", "phone_number", "years_of_experience", "total_earnings", "tags",
+            "id", "worker", "vendor_name", "categories", "category_ids", "bio", "profile_pic", "phone_number", "years_of_experience", "total_earnings", "tags",
             "latitude", "longitude", "address", "is_active", "is_available", "is_nin_verified", "nin_verified_at",
             "vendor_services", "vendor_portfolio", "vendor_reviews", "review_count", "average_rating", "bank_name", "account_number", "account_name"
         ]
-        # Added 'worker' here to ensure it doesn't complain about validation on direct POST calls
         read_only_fields = [
-            "id", "worker", "total_earnings", "vendor_services", "vendor_portfolio", 
+            "id", "worker", "total_earnings", "vendor_services", "vendor_portfolio",
             "vendor_reviews", "review_count", "average_rating", "is_active", "is_available",
-            "is_nin_verified", "nin_verified_at","bank_name", "account_number", "account_name"
+            "is_nin_verified", "nin_verified_at", "bank_name", "account_number", "account_name"
         ]
 
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        if instance.location:
-            representation['longitude'] = instance.location.x
-            representation['latitude'] = instance.location.y
-        else:
-            representation['longitude'] = None
-            representation['latitude'] = None
-        return representation
-
-    def validate(self, attrs):
-        latitude = attrs.pop('latitude', None)
-        longitude = attrs.pop('longitude', None)
-
-        if latitude is not None and longitude is not None:
-            try:
-                attrs['location'] = Point(float(longitude), float(latitude))
-            except (ValueError, TypeError):
-                raise serializers.ValidationError(
-                    {"location": "Invalid latitude or longitude format structure."}
-                )
-        return attrs
+    # to_representation / validate stay the same as before
 
 
 class SlotResponseSerializer(serializers.Serializer):

@@ -209,3 +209,27 @@ class HealthStatusView(APIView):
         return Response({
             "success" : "welcome to Trimly backend api"
         })
+
+from rest_framework.permissions import IsAuthenticated
+class DeleteUserView(APIView):
+    """Permanently delete the authenticated user's account."""
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        request=None,
+        responses={
+            200: OpenApiResponse(description='Account deleted successfully'),
+            401: OpenApiResponse(description='Unauthorized'),
+        },
+        description="Permanently delete the currently authenticated user's account and associated data.",
+        tags=['auth']
+    )
+    def delete(self, request):
+        user = request.user
+        EmailAddress.objects.filter(user=user).delete()
+        user.delete()
+
+        return Response(
+            {"message": "Account deleted successfully."},
+            status=status.HTTP_200_OK
+        )

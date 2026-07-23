@@ -4,7 +4,7 @@ from django.urls import path, include, re_path
 from dj_rest_auth.views import PasswordResetConfirmView
 from dj_rest_auth.registration.views import VerifyEmailView, RegisterView 
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
-from api.v1.Users.views import GoogleLogin, VerifyEmailOTPView, VerifyPasswordResetOTPView, RequestPasswordResetOTPView, ResendOTPView, ResetPasswordView, HealthStatusView
+from api.v1.Users.views import DeleteUserView, GoogleLogin, VerifyEmailOTPView, VerifyPasswordResetOTPView, RequestPasswordResetOTPView, ResendOTPView, ResetPasswordView, HealthStatusView
 from api.v1.Search.views import toggle_availability
 
 
@@ -24,7 +24,7 @@ urlpatterns = [
     path('api/v1/auth/password/reset-otp/', RequestPasswordResetOTPView.as_view(), name='password-request-view'),
     path('api/v1/auth/password/otp-password-change/', ResetPasswordView.as_view(), name='password-request-view'),
     path('api/v1/auth/resend-otp/', ResendOTPView.as_view(), name='resend-otp-view'),
-
+    path('api/v1/auth/delete-account/', DeleteUserView.as_view(), name='delete-account'),
     path('api/v1/', include('api.v1.Salons.urls')),
     path('api/v1/', include('api.v1.Vendor.urls')),
     path('api/v1/', include('api.v1.Category.urls')),
@@ -38,14 +38,13 @@ urlpatterns = [
     path('api/v1/notifications/', include('api.v1.Notifications.urls')),
     path('', HealthStatusView.as_view(), name="health_status"),
     #documentation
-    path('swagger/', SpectacularSwaggerView.as_view(), name="schema"),
-    path('redoc/', SpectacularRedocView.as_view(), name="redoc"),
-    path('swagger-schema/', SpectacularAPIView.as_view(), name="schema"),
-]
+   path('api/schema/', SpectacularAPIView.as_view(), name="schema"),
+    path('swagger/', SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
+    path('redoc/', SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
 # if settings.DEBUG:
 #     urlpatterns += [
 #         path('silk/', include('silk.urls', namespace='silk')),
 #     ]+ urlpatterns
 
 
-
+]
