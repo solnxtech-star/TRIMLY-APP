@@ -811,3 +811,14 @@ if not os.getenv("RESEND_API_KEY"):
 DOJAH_APP_ID = os.getenv("DOJAH_APP_ID")
 DOJAH_SECRET_KEY = os.getenv("DOJAH_SECRET_KEY")
 
+FLW_V4_CLIENT_ID = os.getenv("FLW_V4_CLIENT_ID")
+FLW_V4_CLIENT_SECRET = os.getenv("FLW_V4_CLIENT_SECRET")
+FLW_V4_LIVE_BASE_URL = os.getenv("FLW_V4_LIVE_BASE_URL", "https://api.flutterwave.com")  # confirm exact live v4 host from docs
+
+
+# --- Dojah API Settings ---
+# Set 'production' in your server env vars, or default to 'sandbox' for dev
+DOJAH_ENVIRONMENT = os.getenv("DOJAH_ENVIRONMENT", "sandbox")
+
+DOJAH_APP_ID = os.getenv("DOJAH_APP_ID", "")
+DOJAH_SECRET_KEY = os.getenv("DOJAH_SECRET_KEY", "")

@@ -63,7 +63,7 @@ class BookingViewSet(ModelViewSet):
                 'customer', 'salon_service__salon', 'vendor_service__vendor__worker'
             )
         return queryset
-
+    
     def get_permissions(self):
         """
         Dynamically adjusts permission boundaries based on the current execution target.
@@ -311,20 +311,39 @@ class BookingViewSet(ModelViewSet):
 
 
 
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from drf_spectacular.utils import extend_schema
+
+from .serializers import VerifyNinSerializer
+from .utils import verify_nin  # import your service helper
+
+
 class VerifyNINView(APIView):
     permission_classes = [IsAuthenticated]
+
     @extend_schema(
-    request=VerifyNinSerializer,
-    responses={200: None}
+        request=VerifyNinSerializer,
+        responses={200: None, 400: None}
     )
     def post(self, request):
         serializer = VerifyNinSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        nin = serializer.validated_data["vnin"]
-        is_verified, reason = verify_nin(nin, self.request.user)
+
+        nin = serializer.validated_data["nin"]
+
+        # Utility function checks role, existing verification, and Dojah API call
+        is_verified, reason = verify_nin(nin, request.user)
+
         if not is_verified:
-                return Response({"error": reason}, status=400)
-        return Response({"success" : "NIN verified succesfully"})
+            return Response(
+                {"error": reason}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-
-  
+        return Response(
+            {"success": reason}, 
+            status=status.HTTP_200_OK
+        )

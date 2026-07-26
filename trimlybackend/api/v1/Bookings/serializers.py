@@ -194,20 +194,14 @@ class BookingRescheduleSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+from rest_framework import serializers
+
 class VerifyNinSerializer(serializers.Serializer):
-    """
-    Validate Vendors VNIN
-    """
-    vnin = serializers.CharField(required=True, write_only=True, help_text="Enter virtual nin; to generate input : *346*3*Your_NIN*715461# or visit nimc mobile app and generate vnin using this enterprise code {715461}")
+    nin = serializers.CharField(max_length=11, min_length=11)
+
     def validate_nin(self, value):
-        value = value.strip()
-        
-        if not value:
-            raise serializers.ValidationError("please enter vNIN")
-
-        if len(value) != 16:
-            raise serializers.ValidationError("vNIN must be exactly 16 digits")
-
+        if not value.isdigit():
+            raise serializers.ValidationError("NIN must consist of 11 numeric digits.")
         return value
     
 from datetime import datetime
