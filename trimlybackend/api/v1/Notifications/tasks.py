@@ -12,41 +12,43 @@ from asgiref.sync import async_to_sync, sync_to_async
     max_retries=3
 )
 def create_and_send_notification(self, recipient_id, actor_id, verb, target_model_name, target_id):
-    # 1. Thread-safe DB execution block
     def save_notification_to_db():
         target_ct = ContentType.objects.get(model=target_model_name.lower())
-        
+
+        # Fetch actor name first so we can build the message before saving
+        from api.v1.Users.models import User  # adjust import to your actual User model path
+        actor = User.objects.get(id=actor_id)
+        name = actor.get_full_name() or actor.username
+
+        if verb == "messaged":
+            message = f"You have a new message from {name}"
+        elif verb == "booked":
+            message = f"{name} just booked an appointment with you"
+        elif verb == "cancelled":
+            message = f"Booking update: {name} has cancelled the appointment"
+        elif verb == "completed":
+            message = f"Your booking has been marked as completed by {name}"
+        elif verb == "payout_cleared":
+            message = "Your funds have been cleared and are available for withdrawal"
+        else:
+            message = f"New update from {name}"
+
         notif_obj = Notification.objects.create(
             recipient_id=recipient_id,
             actor_id=actor_id,
             verb=verb,
             content_type=target_ct,
             object_id=target_id,
-            is_read=False
+            is_read=False,
+            message=message,   # <-- now actually saved
         )
-        # Fetch name immediately while we have direct access to the record
-        name = notif_obj.actor.get_full_name() or notif_obj.actor.username
-        return notif_obj, name
+        return notif_obj, name, message
 
-    # 2. Run the DB function and unpack variables safely
-    notif, actor_name = save_notification_to_db()
-    
-    # 3. Formulate the text (Now actor_name is guaranteed to exist here)
-    if verb == "messaged":
-        display_message = f"You have a new message from {actor_name}"
-    elif verb == "booked":
-        display_message = f"{actor_name} just booked an appointment with you"
-    elif verb == "cancelled":
-        display_message = f"Booking update: {actor_name} has cancelled the appointment"
-    elif verb == "completed":
-        display_message = f"Your booking has been marked as completed by {actor_name}"
-    else:
-        display_message = f"New update from {actor_name}"
+    notif, actor_name, display_message = save_notification_to_db()
 
-    # 4. Push to Upstash Redis Channel Layer
     channel_layer = get_channel_layer()
     group_name = f"user_notifications_{str(recipient_id)}"
-    
+
     async_to_sync(channel_layer.group_send)(
         group_name,
         {
