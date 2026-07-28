@@ -6,6 +6,7 @@ from dj_rest_auth.registration.views import VerifyEmailView, RegisterView
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from api.v1.Users.views import DeleteUserView, GoogleLogin, VerifyEmailOTPView, VerifyPasswordResetOTPView, RequestPasswordResetOTPView, ResendOTPView, ResetPasswordView, HealthStatusView
 from api.v1.Search.views import toggle_availability
+from django.conf.urls.static import static
 
 
 
@@ -38,7 +39,7 @@ urlpatterns = [
     path('api/v1/notifications/', include('api.v1.Notifications.urls')),
     path('', HealthStatusView.as_view(), name="health_status"),
     #documentation
-   path('api/schema/', SpectacularAPIView.as_view(), name="schema"),
+    path('api/schema/', SpectacularAPIView.as_view(), name="schema"),
     path('swagger/', SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
     path('redoc/', SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
 # if settings.DEBUG:
@@ -48,3 +49,8 @@ urlpatterns = [
 
 
 ]
+
+
+
+if not settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
