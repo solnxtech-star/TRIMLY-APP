@@ -60,7 +60,7 @@ class WithdrawalRequest(models.Model):
     wallet = models.ForeignKey('Wallet', on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     reference = models.CharField(max_length=100, unique=True) # Our internal ID
-    flw_transfer_id = models.IntegerField(null=True, blank=True) # From Flutterwave
+    flw_transfer_id = models.CharField(max_length=100, null=True, blank=True)  # was IntegerField # From Flutterwave
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
 

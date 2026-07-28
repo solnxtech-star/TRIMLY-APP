@@ -6,6 +6,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.conf import settings
 from api.v1.Payments.serializers import SubAccountSerializer
 from api.v1.Payments.services.subaccounts import FlutterwaveService
+from api.v1.Payments.services.flutterwave_v4 import FlutterwaveV4Service as FlutterwaveServiceV4
 from .models import Wallet, Transaction, WithdrawalRequest
 from django.db import transaction
 from rest_framework.generics import GenericAPIView, RetrieveAPIView
@@ -313,12 +314,13 @@ class RequestWithdrawalView(GenericAPIView):
         if not profile or not profile.account_number or not profile.bank_code:
             return Response({"error": "Verified payout accounts structure missing."}, status=400)
 
-        my_reference = f"WD-{client_id}_PMCKDU_1"
+        clean_client_id = str(client_id).replace('-', '')
+        my_reference = f"WD{clean_client_id}PMCKDU1"
 
         try:
             with transaction.atomic():
                 # Direct parameters read strictly out of verified model fields
-                flw_resp = FlutterwaveService.initiate_transfer(
+                flw_resp = FlutterwaveServiceV4.initiate_transfer(
                     account_bank=profile.bank_code,
                     account_number=profile.account_number,
                     amount=amount,

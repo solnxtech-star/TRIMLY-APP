@@ -1,3 +1,4 @@
+import uuid
 import requests
 from django.conf import settings
 from django.core.cache import cache
@@ -7,15 +8,12 @@ TOKEN_CACHE_KEY = "flw_v4_access_token"
 
 class FlutterwaveV4Service:
     """
-    v4 uses OAuth2 client_credentials instead of a static secret key.
-    Token is cached (via Django's cache framework) so we're not re-authenticating
-    on every single request — v4 access tokens are short-lived.
+    v4 uses OAuth2 client_credentials (10-minute tokens) and a two-step
+    transfer: create a recipient, then reference its id in the transfer.
+    Confirmed working against sandbox as of your last test.
     """
 
-    # NOTE: confirm this against Flutterwave's v4 docs for your exact environment —
-    # sandbox vs production may use different token hosts.
     TOKEN_URL = "https://idp.flutterwave.com/realms/flutterwave/protocol/openid-connect/token"
-
     BASE_URL = "https://developersandbox-api.flutterwave.com" if settings.DEBUG else settings.FLW_V4_LIVE_BASE_URL
 
     CLIENT_ID = settings.FLW_V4_CLIENT_ID
@@ -40,48 +38,105 @@ class FlutterwaveV4Service:
         payload = resp.json()
 
         access_token = payload["access_token"]
-        expires_in = payload.get("expires_in", 300)
-        # refresh 30s before actual expiry to avoid edge-of-window failures
+        expires_in = payload.get("expires_in", 600)
         cache.set(TOKEN_CACHE_KEY, access_token, timeout=max(expires_in - 30, 30))
         return access_token
 
     @classmethod
-    def _headers(cls):
-        return {
+    def _headers(cls, extra=None):
+        headers = {
             "Authorization": f"Bearer {cls._get_access_token()}",
             "Content-Type": "application/json",
+            "X-Trace-Id": str(uuid.uuid4()),
         }
+        if extra:
+            headers.update(extra)
+        return headers
+
+    @classmethod
+    def _create_recipient(cls, account_bank, account_number):
+        url = f"{cls.BASE_URL}/transfers/recipients"
+        payload = {
+            "type": "bank_ngn",
+            "bank": {
+                "account_number": account_number,
+                "code": account_bank,
+            }
+        }
+        headers = cls._headers({"X-Idempotency-Key": str(uuid.uuid4())})
+        response = requests.post(url, json=payload, headers=headers, timeout=15)
+        data = response.json()
+
+        print(f"--- [FLW V4 RECIPIENT RAW RESPONSE] status={response.status_code} body={data} ---")
+
+        if response.status_code == 409:
+            # Recipient already exists — look it up instead of failing
+            return cls._find_existing_recipient(account_bank, account_number)
+
+        if response.status_code not in (200, 201) or data.get("status") != "success":
+            raise ValueError(data.get("message", "Failed to create transfer recipient"))
+        return data["data"]["id"]
+
+    @classmethod
+    def _find_existing_recipient(cls, account_bank, account_number):
+        url = f"{cls.BASE_URL}/transfers/recipients"
+        headers = cls._headers()
+        response = requests.get(url, headers=headers, timeout=15)
+        data = response.json()
+
+        print(f"--- [FLW V4 RECIPIENT LOOKUP] status={response.status_code} body={data} ---")
+
+        if response.status_code == 200 and data.get("status") == "success":
+            for r in data.get("data", {}).get("recipients", []):
+                bank = r.get("bank", {})
+                if bank.get("account_number") == account_number and bank.get("code") == account_bank:
+                    return r["id"]
+
+        raise ValueError("Recipient exists but could not be located via lookup.")
 
     @classmethod
     def initiate_transfer(cls, account_bank, account_number, amount, reference):
-        """
-        Returns a v3-shaped response so calling code (RequestWithdrawalView)
-        doesn't need to change: {"status": "success"/"error", "data": {...}, "message": ...}
-        """
-        url = f"{cls.BASE_URL}/direct-transfers"
-
-        # NOTE: confirm exact required field names for this payload via
-        # Flutterwave's v4 "Try It" panel on the direct-transfers doc page —
-        # v4 payloads don't always mirror v3's field names 1:1.
-        payload = {
-            "account_bank": account_bank,
-            "account_number": account_number,
-            "amount": float(amount),
-            "currency": "NGN",
-            "reference": reference,
-        }
-
         try:
-            response = requests.post(url, json=payload, headers=cls._headers(), timeout=20)
+            recipient_id = cls._create_recipient(account_bank, account_number)
+
+            url = f"{cls.BASE_URL}/transfers"
+            payload = {
+                "action": "instant",
+                "reference": reference,
+                "narration": "Trimly vendor withdrawal",
+                "payment_instruction": {
+                    "source_currency": "NGN",
+                    "destination_currency": "NGN",
+                    "amount": {
+                        "applies_to": "destination_currency",
+                        "value": float(amount),
+                    },
+                    "recipient_id": recipient_id,
+                }
+            }
+
+            extra_headers = {"X-Idempotency-Key": str(uuid.uuid4())}
+            if settings.DEBUG:
+                extra_headers["X-Scenario-Key"] = "scenario:successful"
+
+            response = requests.post(url, json=payload, headers=cls._headers(extra_headers), timeout=20)
             data = response.json()
+
+            # TEMP DEBUG — remove once resolved
+            print(f"--- [FLW V4 TRANSFER RESPONSE] status={response.status_code} body={data} ---")
+
         except requests.exceptions.RequestException as e:
             return {"status": "error", "message": f"Network error: {str(e)}", "data": None}
+        except ValueError as e:
+            # This catches _create_recipient failures too — log it
+            print(f"--- [FLW V4 RECIPIENT ERROR] {str(e)} ---")
+            return {"status": "error", "message": str(e), "data": None}
 
         return cls._normalize_response(response.status_code, data)
 
     @staticmethod
     def _normalize_response(status_code, data):
-        if status_code in (200, 201) and data.get("status") in ("success", "successful"):
+        if status_code in (200, 201) and data.get("status") == "success":
             return {
                 "status": "success",
                 "message": data.get("message", "Transfer initiated"),
@@ -89,6 +144,6 @@ class FlutterwaveV4Service:
             }
         return {
             "status": "error",
-            "message": data.get("message") or data.get("error", {}).get("message", "Transfer failed"),
+            "message": data.get("message", "Transfer failed"),
             "data": None,
         }
