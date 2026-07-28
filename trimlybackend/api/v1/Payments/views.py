@@ -294,7 +294,7 @@ class RequestWithdrawalView(GenericAPIView):
     Verifies state prerequisites, pulls locked bank metrics, and initiates payout.
     """
     serializer_class = WithdrawalRequestSerializer
-    # permission_classes = [IsNINVerified]
+    permission_classes = [IsNINVerified]
 
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
