@@ -1,0 +1,20 @@
+<!-- templates/admin/base_site.html -->
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block branding %}
+<h1 id="site-name">
+  <a href="{% url 'admin:index' %}">
+    <img src="{% static 'trimly_logo.jpeg' %}" style="height: 30px; vertical-align: middle;">
+    Trimly Admin
+  </a>
+</h1>
+{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+  #header { background: #1a1a1a; }  /* swap for your brand color */
+  .module h2, .module caption { background: #ff6b00; }  /* Trimly orange accent */
+</style>
+{% endblock %}

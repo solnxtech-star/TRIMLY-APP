@@ -1,0 +1,9 @@
+<!-- templates/admin/withdrawal_summary.html -->
+{% extends "admin/base_site.html" %}
+{% block content %}
+<h1>Platform Withdrawal Safety Check</h1>
+<p><strong>Total owed to vendors (pending, not yet released):</strong> ₦{{ total_vendor_pending }}</p>
+<p><strong>Total owed to vendors (available, not yet withdrawn by them):</strong> ₦{{ total_vendor_available }}</p>
+<p style="color: red; font-weight: bold;">{{ note }}</p>
+<p>Check your Flutterwave dashboard balance directly. Anything above (Pending + Available) shown here is safe to withdraw as platform commission.</p>
+{% endblock %}
