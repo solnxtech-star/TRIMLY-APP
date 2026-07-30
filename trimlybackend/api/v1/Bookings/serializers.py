@@ -213,63 +213,42 @@ from rest_framework import serializers
 from .models import Booking
 
 class BookingRescheduleSerializer(serializers.ModelSerializer):
-    # Change the field name here to match the model perfectly
-    date = serializers.DateField()  
-    start_time = serializers.CharField()  
-    end_time = serializers.CharField()    
+    date = serializers.DateField(required=False)
+    start_time = serializers.TimeField(required=False)
+    end_time = serializers.TimeField(required=False)
 
     class Meta:
         model = Booking
-        # Update the fields list to include 'date' instead of 'booking_date'
         fields = ["date", "start_time", "end_time"]
 
     def validate(self, attrs):
-        new_date = attrs.get("date")
-        
-        def parse_time_field(time_input):
-            if not time_input:
-                return None
-            if "T" in time_input or "Z" in time_input:
-                time_str = time_input.split("T")[-1].replace("Z", "").split(".")[0]
-                return datetime.strptime(time_str, "%H:%M:%S").time()
-            try:
-                return datetime.strptime(time_input, "%H:%M:%S").time()
-            except ValueError:
-                return datetime.strptime(time_input, "%H:%M").time()
+        # 1. Resolve date and start_time safely against existing instance
+        booking_date = attrs.get(
+            "date", self.instance.date if self.instance else None
+        )
+        start_time = attrs.get(
+            "start_time", self.instance.start_time if self.instance else None
+        )
 
-        new_start = parse_time_field(attrs.get("start_time"))
-        new_end = parse_time_field(attrs.get("end_time"))
-
-        if not new_date:
-            new_date = self.instance.date
-        if not new_start:
-            new_start = self.instance.start_time
-        if not new_end:
-            new_end = self.instance.end_time
-
-        attrs["start_time"] = new_start
-        attrs["end_time"] = new_end
-
-        if new_start >= new_end:
+        if not booking_date or not start_time:
             raise serializers.ValidationError(
-                {"start_time": "The appointment start time must occur distinctly before the end time."}
+                {"detail": "Both date and start_time must be provided."}
             )
 
-        duplicate_query = Booking.objects.filter(
-            date=new_date,
-            status="confirmed",
-            start_time__lt=new_end,
-            end_time__gt=new_start
-        ).exclude(id=self.instance.id)
+        # 2. Combine date and time to construct a timezone-aware datetime
+        naive_dt = datetime.combine(booking_date, start_time)
 
-        if self.instance.vendor_service:
-            duplicate_query = duplicate_query.filter(vendor_service__vendor=self.instance.vendor_service.vendor)
-        elif self.instance.salon_service:
-            duplicate_query = duplicate_query.filter(salon_service__salon=self.instance.salon_service.salon)
+        try:
+            aware_dt = timezone.make_aware(
+                naive_dt, timezone.get_current_timezone()
+            )
+        except Exception:
+            aware_dt = naive_dt
 
-        if duplicate_query.exists():
+        # 3. Prevent rescheduling into the past
+        if aware_dt < timezone.now():
             raise serializers.ValidationError(
-                {"date": "The selected time slot is already occupied by another client."}
+                {"detail": "Cannot reschedule an appointment to a past date or time."}
             )
 
         return attrs

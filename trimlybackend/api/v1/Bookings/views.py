@@ -214,6 +214,10 @@ class BookingViewSet(ModelViewSet):
         request=BookingRescheduleSerializer,
         responses={200: BookingRescheduleSerializer}
     )
+    @extend_schema(
+        request=BookingRescheduleSerializer,
+        responses={200: BookingRescheduleSerializer}
+    )
     @action(detail=True, methods=["post"], url_path='reschedule')
     def reschedule(self, request, pk=None):
         """
@@ -231,8 +235,6 @@ class BookingViewSet(ModelViewSet):
         if not is_vendor:
             current_now = timezone.now()
             naive_booking_dt = datetime.combine(booking.date, booking.start_time)
-            
-            # Use active timezone to evaluate lockout safely
             booking_datetime = timezone.make_aware(naive_booking_dt, timezone.get_current_timezone())
             
             lockout_threshold = current_now + timedelta(hours=24)
@@ -248,26 +250,34 @@ class BookingViewSet(ModelViewSet):
         with transaction.atomic():
             # Commit mutations directly to DB
             updated_booking = serializer.save()
+            booking_id = updated_booking.id
             
             recipient_id = str(booking.customer.id) if is_vendor else str(vendor_user.id)
             
             transaction.on_commit(lambda: create_and_send_notification.delay(
                 recipient_id=recipient_id, actor_id=str(request.user.id),
-                verb="rescheduled", target_model_name="Booking", target_id=updated_booking.id
+                verb="rescheduled", target_model_name="Booking", target_id=booking_id
             ))
             
-            # Immediately schedule fresh tasks with the newly saved datetimes
+            # FIX: Fetch a fresh instance directly from DB inside on_commit to avoid stale memory
             if updated_booking.status == "confirmed":
-                transaction.on_commit(lambda: self.schedule_booking_automation_tasks(updated_booking))
+                def trigger_automation():
+                    b = Booking.objects.get(id=booking_id)
+                    self.schedule_booking_automation_tasks(b)
+                
+                transaction.on_commit(trigger_automation)
             else:
-                # If pending, just revoke the old scheduled tasks completely
                 old_task_ids = [updated_booking.reminder_task_id, updated_booking.warning_task_id, updated_booking.payout_task_id]
                 for task_id in old_task_ids:
                     if task_id:
                         transaction.on_commit(lambda tid=task_id: current_app.control.revoke(tid, terminate=True))
 
-        return Response({"detail": "Appointment successfully rescheduled.", "data": serializer.data}, status=200)
-
+        # Re-serialize fresh data directly from DB to return to client
+        updated_booking.refresh_from_db()
+        return Response({
+            "detail": "Appointment successfully rescheduled.", 
+            "data": BookingRescheduleSerializer(updated_booking).data
+        }, status=200)
     @action(detail=True, methods=["post"])
     def complete(self, request, pk=None):
         booking = self.get_object()
