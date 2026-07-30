@@ -189,11 +189,16 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+# settings.py
+
+# Enable Django timezone handling
+USE_TZ = True
+
+# Change from 'UTC' to West Africa Time (or your target market's timezone)
+TIME_ZONE = 'Africa/Lagos'
 
 USE_I18N = True
 
-USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
