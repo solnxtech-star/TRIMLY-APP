@@ -8,13 +8,22 @@
     <img src="{% static 'trimly_logo.jpeg' %}" style="height: 30px; vertical-align: middle;">
     Trimly Admin
   </a>
+  <a href="{% url 'admin:withdrawal-summary' %}" style="color:#2FAE43; margin-left:16px; font-size:13px; font-weight:normal;">
+    Withdrawal Summary
+  </a>
 </h1>
 {% endblock %}
 
 {% block extrastyle %}
 {{ block.super }}
 <style>
-  #header { background: #1a1a1a; }  /* swap for your brand color */
-  .module h2, .module caption { background: #ff6b00; }  /* Trimly orange accent */
+  #header { background: #1a1a1a; }
+  #header a:link, #header a:visited { color: #fff; }
+  .module h2, .module caption, .inline-group h2 { background: #2FAE43; }
+  a:link, a:visited { color: #2FAE43; }
+  .button, input[type=submit], input[type=button], .submit-row input, a.button {
+    background: #2FAE43;
+  }
+  .button:hover, input[type=submit]:hover { background: #26963a; }
 </style>
 {% endblock %}
