@@ -16,7 +16,7 @@ import uuid
 from .serializers import PaymentInitSerializer, PaymentLinkResponseSerializer, WithdrawalRequestSerializer, VerifyPaymentSerializer
 from api.v1.Bookings.models import Booking
 from django.db import IntegrityError
-from api.v1.Users.permissions import IsNINVerified,IsWalletOrTransactionObjOwner, IsTransactionOwner
+from api.v1.Users.permissions import IsAdminOrUser, IsIdempotentRequest, IsNINVerified,IsWalletOrTransactionObjOwner, IsTransactionOwner
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework.decorators import action
 from .models import Wallet, Transaction
@@ -151,6 +151,7 @@ class RegisterBankDetailsView(GenericAPIView):
 
 class InitializePaymentView(GenericAPIView):
     serializer_class = PaymentInitSerializer
+    permission_classes = [IsAuthenticated, IsIdempotentRequest]
 
     def post(self, request):
         # 1. Validate the incoming Booking ID

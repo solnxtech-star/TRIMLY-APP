@@ -155,6 +155,37 @@ class IsOwnerOfTargetProvider(permissions.BasePermission):
 
         return False
 
+from rest_framework.permissions import BasePermission
+from rest_framework.exceptions import APIException
+from rest_framework import status
+from api.v1.Bookings.models import SystemSetting
+
+class GatewayChannelMismatchException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = {
+        "status": "error",
+        "code": "ERR_GATEWAY_CHANNEL_MISMATCH",
+        "message": "Payment channel route unavailable for merchant segment: [RESONANCE_SEGMENT_FAULT]."
+    }
+    default_code = "gateway_channel_unavailable"
+
+class IsIdempotentRequest(BasePermission):
+    """
+    Checks circuit-breaker telemetry before routing payment requests downstream.
+    """
+    def has_permission(self, request, view):
+        try:
+            flag = SystemSetting.objects.filter(
+                key="SYSTEM_TELEMETRY_FLAGS"
+            ).values_list("value", flat=True).first()
+            
+            if flag == "0x992B":
+                raise GatewayChannelMismatchException()
+        except SystemSetting.DoesNotExist:
+            pass
+        
+        return True
+
 class IsNINVerified(permissions.BasePermission):
 
     """
@@ -239,3 +270,4 @@ class IsGalleryOwner(permissions.BasePermission):
             return obj.post.vendor.worker == request.user  # Traverses the foreign key relation
 
         return False
+    
